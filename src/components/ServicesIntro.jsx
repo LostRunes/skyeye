@@ -12,7 +12,7 @@ const services = [
   {
     num: '02',
     href: '#/services/courses',
-    title: 'COURSES · LIVE',
+    title: 'COURSES',
     desc: 'Five live courses — Generative AI, Data Analytics, and drones from school basics to FPV and advanced engineering.',
     img: photo('course', 24, 'w-480,h-300,fo-auto'),
     alt: 'Speaker addressing a full lecture hall at KIIT University',

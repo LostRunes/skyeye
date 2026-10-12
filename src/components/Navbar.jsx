@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { brochureCrop, CONTACTS, ik, photo } from '../cdn'
+import { brochureCrop, CONTACTS, ik, newPhoto, photo } from '../cdn'
 import { useTheme } from '../hooks/useTheme'
 import Scramble from './Scramble'
 
@@ -23,7 +23,7 @@ const PANELS = [
     cardsLabel: 'Featured',
     cards: [
       { href: '#/services/skyvertising', label: 'Skyvertising', img: brochureCrop('led-net-city', 'w-560,h-350,fo-auto') },
-      { href: '#/services/courses', label: 'Live courses', img: photo('course', 24, 'w-560,h-350,fo-auto') },
+      { href: '#/services/courses', label: 'Live courses', img: newPhoto('genai-speaker', 'w-560,h-350,fo-auto') },
     ],
   },
   {
@@ -56,7 +56,7 @@ const PANELS = [
     listLabel: 'Services',
     links: [
       { href: '#/services/skyvertising', label: 'Skyvertising' },
-      { href: '#/services/courses', label: 'Courses — live' },
+      { href: '#/services/courses', label: 'Courses' },
       { href: '#/services/drone-as-a-service', label: 'Drone as a Service' },
     ],
     cardsLabel: 'Services',

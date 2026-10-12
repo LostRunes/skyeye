@@ -648,165 +648,32 @@ html.menu-locked body {
 }
 
 /* ============================================
-   HOME — dark hero (Yogisha)
+   HOME — dark hero: the light VideoHero layout on dark footage
    ============================================ */
-.yg-hero {
-  position: relative;
-  min-height: calc(100svh - var(--nav-h));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  background: #0b0b0c;
-  color: #f2f0eb;
-  isolation: isolate;
+.video-hero--dark {
+  background-color: #0b0b0c;
 }
 
-.yg-hero-video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: -2;
+.video-hero--dark .vh-media video {
+  opacity: 0.85;
 }
 
-.yg-hero-scrim {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    linear-gradient(to bottom, rgba(11, 11, 12, 0.35), rgba(11, 11, 12, 0.55) 60%, #0b0b0c),
-    rgba(11, 11, 12, 0.2);
+/* The light hero fades the white header into the footage; in dark mode the
+   same fade runs from the dark header instead. */
+:root[data-theme='dark'] .vh-topfade {
+  background: linear-gradient(to bottom,
+      #101012 0%,
+      rgba(16, 16, 18, 0.9) 8%,
+      rgba(16, 16, 18, 0.55) 30%,
+      rgba(16, 16, 18, 0.2) 60%,
+      rgba(16, 16, 18, 0) 100%);
 }
 
-.yg-hero-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  max-width: min(90vw, 820px);
-  padding: 4rem 0 6rem;
-  text-align: center;
-  animation: yg-rise 1.1s var(--ease) both;
-}
-
-@keyframes yg-rise {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-}
-
-.yg-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: 'Inter', var(--font-sans);
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: #98999d;
-}
-
-.yg-eyebrow::before {
-  content: '';
-  width: 7px;
-  height: 1px;
-  background: #c9793f;
-}
-
-.yg-display-xl {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(2.8rem, 9vw, 6.2rem);
-  line-height: 0.96;
-  letter-spacing: -0.01em;
-}
-
-.yg-hero-sub {
-  max-width: 34ch;
-  font-family: 'Inter', var(--font-sans);
-  font-size: clamp(0.95rem, 1.4vw, 1.05rem);
-  line-height: 1.55;
-  color: #b4b5b9;
-}
-
-.yg-hero-ctas {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
-}
-
-.yg-btn {
-  display: inline-flex;
-  align-items: center;
-  height: 46px;
-  padding: 0 1.4rem;
-  border-radius: 999px;
-  font-family: 'Inter', var(--font-sans);
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
-}
-
-.yg-btn--primary {
-  background: #f2f0eb;
-  color: #0b0b0c;
-}
-
-.yg-btn--primary:hover {
-  background: #c9793f;
-  color: #0b0b0c;
-}
-
-.yg-btn--ghost {
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  color: #f2f0eb;
-}
-
-.yg-btn--ghost:hover {
-  border-color: #f2f0eb;
-}
-
-.yg-hero-cue {
-  position: absolute;
-  left: 50%;
-  bottom: 1.6rem;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.6rem;
-  font-family: 'Inter', var(--font-sans);
-  font-size: 0.66rem;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: #8a8b8f;
-}
-
-.yg-hero-cue-line {
-  width: 1px;
-  height: 28px;
-  background: linear-gradient(#c9793f, transparent);
-  animation: yg-cue 1.8s ease-in-out infinite;
-  transform-origin: top;
-}
-
-@keyframes yg-cue {
-  0%, 100% { transform: scaleY(0.3); opacity: 0.4; }
-  50% { transform: scaleY(1); opacity: 1; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .yg-hero-inner,
-  .yg-hero-cue-line {
-    animation: none;
-  }
+/* Hero type and buttons keep their light-on-footage colours in both themes:
+   inside the hero, the colour tokens go back to their light-theme values. */
+:root[data-theme='dark'] .video-hero {
+  --color-primary: #111111;
+  --color-on-primary: #ffffff;
 }
 
 /* ============================================

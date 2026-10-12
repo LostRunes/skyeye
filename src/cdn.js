@@ -11,6 +11,9 @@ export const ik = (path, tr) => withTr(`${CDN}/skyeye/${path}`, tr)
 export const photo = (cat, n, tr = 'w-1200,q-75') =>
   ik(`photos/${cat}/${cat}-${String(n).padStart(3, '0')}.jpg`, tr)
 
+/** Photo supplied directly by the team, under /skyeye/photos/new. */
+export const newPhoto = (name, tr = 'w-1200,q-78') => ik(`photos/new/${name}.png`, tr)
+
 /**
  * Clip under /skyeye/video, served as the original upload. The ImageKit plan's
  * video-transformation quota is used up, so resized variants and generated

@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { CDN } from '../cdn'
 
-// The Yogisha hero, lifted out of the drone journey so it can stand in for
-// the home hero in dark mode: looping footage, a scrim, and plain white type.
+// Dark-mode home hero. Same layout, type and buttons as the light VideoHero so
+// the two themes read as one site; only the footage, headline and colours change.
 export default function DarkHero() {
   const videoRef = useRef(null)
 
@@ -22,44 +22,48 @@ export default function DarkHero() {
   }, [])
 
   return (
-    <section className="yg-hero">
-      <video
-        ref={videoRef}
-        className="yg-hero-video"
-        src={`${CDN}/videos/hero-background.mp4`}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        aria-hidden="true"
-      />
-      <div className="yg-hero-scrim" />
+    <section className="video-hero video-hero--dark">
+      <div className="vh-media">
+        <video
+          ref={videoRef}
+          src={`${CDN}/videos/hero-background.mp4`}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-label="Drone flying against a dusk sky"
+        />
+      </div>
+      <div className="vh-topfade" />
 
-      <div className="yg-hero-inner">
-        <p className="yg-eyebrow">Sky Eye Technology — Bhubaneswar, Odisha</p>
-        <h1 className="yg-display-xl">
+      <div className="container vh-content">
+        <div className="vh-eyebrow">
+          <span className="vh-eyebrow-dot" />
+          <span>DRONES · ROBOTICS · INTELLIGENT SYSTEMS</span>
+        </div>
+
+        <h1 className="vh-title">
           THE FUTURE
           <br />
           OF FLIGHT.
         </h1>
-        <p className="yg-hero-sub">
-          Professional-grade drones, robotics and AI — unfolding the unfiltered.
-        </p>
-        <div className="yg-hero-ctas">
-          <a className="yg-btn yg-btn--primary" href="#services">
-            Explore services
-          </a>
-          <a className="yg-btn yg-btn--ghost" href="#contact">
-            Contact us
-          </a>
+
+        <div className="vh-body">
+          <p className="vh-desc">
+            Professional-grade drones, robotics and AI — designed, built and flown from Bhubaneswar,
+            Odisha.
+          </p>
+          <div className="vh-ctas">
+            <a className="vh-btn vh-btn-solid" href="#/services">[ Explore Services ]</a>
+            <a className="vh-btn vh-btn-ghost" href="#/contact">[ Talk to Us ]</a>
+          </div>
         </div>
       </div>
 
-      <a className="yg-hero-cue" href="#overview" aria-label="Scroll to overview">
-        Scroll
-        <span className="yg-hero-cue-line" />
-      </a>
+      <div className="vh-footer">
+        <span className="vh-coords">[ LAT 20.2961° N · LON 85.8245° E ]</span>
+      </div>
     </section>
   )
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'motion/react'
-import { brochureCrop, photo } from '../cdn'
+import { brochureCrop, newPhoto, photo } from '../cdn'
 import Scramble from './Scramble'
 
 // Two 21st.dev patterns, joined:
@@ -10,6 +10,7 @@ import Scramble from './Scramble'
 //   photo's own proportions, where a tapped photo grows out of its tile into
 //   a full-screen view over a frosted backdrop and can be dragged away.
 const P = (cat, n, ratio, alt) => ({ id: `${cat}-${n}`, src: (tr) => photo(cat, n, tr), ratio, alt })
+const N = (name, ratio, alt) => ({ id: `n-${name}`, src: (tr) => newPhoto(name, tr), ratio, alt })
 const B = (name, ratio, alt) => ({ id: `b-${name}`, src: (tr) => brochureCrop(name, tr), ratio, alt })
 
 const CATEGORIES = [
@@ -62,8 +63,10 @@ const CATEGORIES = [
     num: '03',
     title: 'In the classroom',
     sub: 'Schools, universities, police and forces',
-    cover: photo('course', 24, 'w-900,h-1100,fo-auto,q-75'),
+    cover: newPhoto('classroom-hall', 'w-900,h-1100,fo-auto,q-78'),
     photos: [
+      N('classroom-hall', 1.777, 'Full lecture hall of students during a Sky Eye session'),
+      N('genai-speaker', 1.321, 'Instructor explaining the history of generative AI on a projected slide'),
       P('course', 24, 1.778, 'Speaker at the KIIT University podium during the AI workshop'),
       P('edu', 356, 1.333, 'School students holding drones they assembled'),
       P('govt', 569, 1.333, 'Police officers watching a live drone demonstration'),
