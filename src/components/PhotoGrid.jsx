@@ -251,7 +251,7 @@ export default function PhotoGrid() {
       <div className="container py-2xl">
         <div className="fg-head">
           <div>
-            <span className="section-label">07.1 / PHOTOGRAPHS</span>
+            <span className="section-label">02 / PHOTOGRAPHS</span>
             <h3 className="sky-h3 fg-title">From the field, the lab and the classroom.</h3>
           </div>
           <button type="button" className={`fg-all${showAll ? ' is-on' : ''}`} onClick={() => setShowAll((s) => !s)} aria-pressed={showAll}>

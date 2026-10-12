@@ -20,14 +20,14 @@ export default function Hero() {
               </h2>
 
               <p className="hero-desc">
-                We build drones, robotics and intelligent technology for real-world applications. High-endurance autonomous hardware engineered without compromise.
+                We put drones, robotics and intelligent technology to work — advertising in the sky, drone services on the ground, and hands-on courses that teach people to build it themselves.
               </p>
             </div>
 
             {/* CTAs */}
             <div className="hero-ctas">
-              <a className="btn-primary" href="#drone-services">[ Drone Services ]</a>
-              <a className="btn-outline" href="#contact">[ Talk to Us ]</a>
+              <a className="btn-primary" href="#/services/drone-as-a-service">[ Drone as a Service ]</a>
+              <a className="btn-request btn-request--sm" href="#/contact">Request a service</a>
             </div>
 
             {/* Quick Metrics */}
@@ -37,12 +37,12 @@ export default function Hero() {
                 <p className="metric-value">BHUBANESWAR</p>
               </div>
               <div>
-                <p className="metric-label">SYSTEM RATING</p>
-                <p className="metric-value">MIL-STD 810H</p>
+                <p className="metric-label">SERVICES</p>
+                <p className="metric-value">SKYVERTISING · DaaS</p>
               </div>
               <div>
-                <p className="metric-label">DEPLOYED FLEET</p>
-                <p className="metric-value">380+ UNITS</p>
+                <p className="metric-label">LIVE COURSES</p>
+                <p className="metric-value">AI · DATA · DRONES</p>
               </div>
             </div>
           </div>

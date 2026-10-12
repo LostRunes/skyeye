@@ -1412,85 +1412,6 @@ html.menu-locked body {
   color: var(--color-on-surface-variant);
 }
 
-.sky-price {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  padding: var(--space-lg);
-  background: #0d1430;
-  background-image: radial-gradient(120% 90% at 100% 0%, rgba(40, 110, 255, 0.35), transparent 60%);
-  color: #fff;
-}
-
-.sky-price .sky-kicker {
-  color: #8fb3ff;
-}
-
-.sky-price-amount {
-  font-size: clamp(44px, 7vw, 64px);
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: -0.04em;
-}
-
-.sky-price-amount span {
-  font-size: 16px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.sky-price-meta {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  border-top: 1px solid rgba(255, 255, 255, 0.16);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
-}
-
-.sky-price-meta div {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: var(--space-md) 0;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.sky-price-meta div + div {
-  padding-left: var(--space-md);
-  border-left: 1px solid rgba(255, 255, 255, 0.16);
-}
-
-.sky-price-meta .material-symbols-outlined {
-  font-size: 18px;
-  color: #8fb3ff;
-}
-
-.sky-price-book {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.sky-price-book a {
-  color: #fff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
-}
-
-.sky-price-cta.btn-primary {
-  margin-top: auto;
-  padding: 14px 16px;
-  background: #fff;
-  color: #0d1430;
-}
-
-.sky-price-cta.btn-primary:hover {
-  background: var(--color-secondary);
-  color: #fff;
-}
-
 .sky-why {
   display: grid;
   grid-template-columns: 1fr;
@@ -1507,44 +1428,6 @@ html.menu-locked body {
   .sky-why {
     grid-template-columns: repeat(3, 1fr);
   }
-}
-
-.sky-formats {
-  display: grid;
-  gap: var(--space-xl);
-  margin-top: var(--space-2xl);
-}
-
-@media (min-width: 1024px) {
-  .sky-formats {
-    grid-template-columns: 4fr 7fr;
-    gap: var(--gutter-desktop);
-  }
-}
-
-.sky-formats-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.sky-formats-list .sky-kicker {
-  margin-bottom: var(--space-md);
-}
-
-.sky-format {
-  padding: var(--space-md) 0;
-  border-top: 1px solid var(--color-surface-container-highest);
-}
-
-.sky-format h4 {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--color-primary);
-}
-
-.sky-format p {
-  font-size: 13px;
-  color: var(--color-on-surface-variant);
 }
 
 .sky-sponsor {
@@ -1866,23 +1749,6 @@ html.menu-locked body {
 .courses-strip-item:hover img {
   filter: none;
   transform: scale(1.05);
-}
-
-/* ============================================
-   SERVICES — drone services CTA
-   ============================================ */
-.sol-cta {
-  display: inline-block;
-  margin-top: var(--space-md);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--color-primary);
-  border-bottom: 1px solid var(--color-secondary);
-  padding-bottom: 2px;
-}
-
-.sol-cta:hover {
-  color: var(--color-secondary);
 }
 
 /* ============================================
@@ -2486,7 +2352,6 @@ html.menu-locked body {
 
   .course-body,
   .contact-form-body,
-  .sky-price,
   .sky-sponsor-body {
     padding: var(--space-md);
   }
@@ -2500,4 +2365,794 @@ html.menu-locked body {
   .vh-ctas {
     flex-wrap: wrap;
   }
+}
+
+/* ============================================
+   PAGES — fade each page in as the route changes
+   ============================================ */
+.page-main {
+  animation: page-in 0.5s var(--nav-ease) both;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-main {
+    animation: none;
+  }
+}
+
+/* ============================================
+   REQUEST BUTTON — the one call to action, always a bold black box
+   (inverted to a light box in dark mode so it still stands out)
+   ============================================ */
+.btn-request {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 52px;
+  padding: 0 1.5rem;
+  background: #0b0b0c;
+  color: #fff;
+  border: 2px solid #0b0b0c;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-request .material-symbols-outlined {
+  font-size: 20px;
+  transition: transform 0.25s var(--nav-ease);
+}
+
+.btn-request:hover {
+  background: var(--color-secondary);
+  border-color: var(--color-secondary);
+  color: #fff;
+}
+
+.btn-request:hover .material-symbols-outlined {
+  transform: translateX(4px);
+}
+
+.btn-request:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 3px;
+}
+
+.btn-request--sm {
+  min-height: 42px;
+  padding: 0 1rem;
+  font-size: 13px;
+}
+
+/* On a black panel the button flips to white */
+.btn-request--invert {
+  background: #fff;
+  color: #0b0b0c;
+  border-color: #fff;
+}
+
+:root[data-theme='dark'] .btn-request {
+  background: #f2f0eb;
+  color: #0b0b0c;
+  border-color: #f2f0eb;
+}
+
+:root[data-theme='dark'] .btn-request:hover,
+.btn-request--invert:hover {
+  background: var(--color-secondary);
+  border-color: var(--color-secondary);
+  color: #fff;
+}
+
+/* Navbar version: compact, but still a solid black box in bold */
+.nav-cta.btn-request {
+  min-height: 38px;
+  height: 38px;
+  padding: 0 1rem;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  font-family: var(--font-sans);
+}
+
+.nav-sheet-request {
+  width: 100%;
+  margin-top: var(--space-lg);
+}
+
+/* ============================================
+   REQUEST BAND — closes every page
+   ============================================ */
+.request-band {
+  padding: var(--space-xl) 0;
+  background: var(--color-surface);
+}
+
+.request-box {
+  display: grid;
+  gap: var(--space-lg);
+  align-items: center;
+  padding: clamp(1.75rem, 4vw, 3.5rem);
+  background: #0b0b0c;
+  color: #fff;
+  border: 1px solid #0b0b0c;
+}
+
+:root[data-theme='dark'] .request-box {
+  background: #141416;
+  border-color: var(--color-surface-container-highest);
+}
+
+@media (min-width: 900px) {
+  .request-box {
+    grid-template-columns: 1fr auto;
+    gap: var(--space-xl);
+  }
+}
+
+.request-kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--color-secondary);
+}
+
+.request-title {
+  margin-top: 0.6rem;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+
+.request-text {
+  margin-top: 0.8rem;
+  max-width: 52ch;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.request-box .btn-request {
+  min-height: 60px;
+  padding: 0 2rem;
+  font-size: 16px;
+}
+
+:root[data-theme='dark'] .request-box .btn-request--invert {
+  background: #f2f0eb;
+  border-color: #f2f0eb;
+}
+
+@media (max-width: 640px) {
+  .request-box .btn-request {
+    width: 100%;
+  }
+}
+
+/* ============================================
+   SKYVERTISING — brochure formats, digital features, booking, uses
+   ============================================ */
+.sky-formats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  border-top: 1px solid var(--color-surface-container-highest);
+  border-left: 1px solid var(--color-surface-container-highest);
+}
+
+@media (min-width: 640px) {
+  .sky-formats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .sky-formats-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.sky-format-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: var(--space-lg) var(--space-md);
+  border-right: 1px solid var(--color-surface-container-highest);
+  border-bottom: 1px solid var(--color-surface-container-highest);
+  transition: background-color 0.2s ease;
+}
+
+.sky-format-card:hover {
+  background: var(--color-surface-container-low);
+}
+
+.sky-format-num {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-outline);
+}
+
+.sky-format-card .sky-icon {
+  font-size: 30px;
+}
+
+.sky-format-card h4 {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-primary);
+}
+
+.sky-format-card p {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-on-surface-variant);
+}
+
+.sky-digital {
+  display: grid;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--color-surface-container-highest);
+}
+
+@media (min-width: 1024px) {
+  .sky-digital {
+    grid-template-columns: 220px 1fr;
+    align-items: center;
+  }
+}
+
+.sky-digital-label {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-primary);
+}
+
+.sky-digital ul {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.6rem 1.5rem;
+}
+
+@media (min-width: 560px) {
+  .sky-digital ul {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .sky-digital ul {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.sky-digital li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--color-on-surface);
+}
+
+.sky-digital li .material-symbols-outlined {
+  font-size: 17px;
+  color: var(--color-secondary);
+}
+
+.sky-book {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: #0b0b0c;
+  color: #fff;
+}
+
+:root[data-theme='dark'] .sky-book {
+  background: #141416;
+  border: 1px solid var(--color-surface-container-highest);
+}
+
+.sky-book-title {
+  font-size: clamp(28px, 3.4vw, 38px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.sky-book-text {
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.sky-book .btn-request {
+  margin-top: auto;
+  width: 100%;
+  min-height: 58px;
+}
+
+.sky-book-call {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.sky-book-call a {
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.sky-uses {
+  display: grid;
+  gap: var(--space-md);
+}
+
+@media (min-width: 768px) {
+  .sky-uses {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.sky-use {
+  position: relative;
+  overflow: hidden;
+  background: #05060a;
+  aspect-ratio: 4 / 5;
+}
+
+.sky-use img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.9s var(--nav-ease);
+}
+
+.sky-use:hover img {
+  transform: scale(1.04);
+}
+
+.sky-use figcaption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 3rem var(--space-md) var(--space-md);
+  background: linear-gradient(to top, rgba(5, 6, 10, 0.92), transparent);
+  color: #fff;
+}
+
+.sky-use h4 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.sky-use p {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.sky-sponsor--wide {
+  margin-top: var(--space-2xl);
+}
+
+.sky-sponsor-body .btn-request {
+  margin-top: var(--space-sm);
+}
+
+.sky-odisha {
+  display: grid;
+  gap: var(--space-md);
+}
+
+@media (min-width: 768px) {
+  .sky-odisha {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.sky-odisha-item {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: var(--color-surface-container);
+}
+
+.sky-odisha-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sky-odisha-item figcaption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 2.5rem var(--space-md) var(--space-md);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  color: #fff;
+  font-size: 13px;
+}
+
+/* ============================================
+   DRONE AS A SERVICE
+   ============================================ */
+.section-daas {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-surface-container-highest);
+}
+
+.daas-lead {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+@media (min-width: 1024px) {
+  .daas-lead {
+    grid-template-columns: 6fr 5fr;
+    gap: var(--gutter-desktop);
+    align-items: end;
+  }
+}
+
+.daas-lead-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-md);
+}
+
+.daas-lead-copy .section-desc {
+  margin-top: 0;
+}
+
+.daas-included {
+  display: grid;
+  grid-template-columns: 1fr;
+  margin-top: var(--space-xl);
+  border-top: 1px solid var(--color-surface-container-highest);
+}
+
+@media (min-width: 640px) {
+  .daas-included {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .daas-included {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.daas-included-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: var(--space-lg) var(--space-md) var(--space-lg) 0;
+  border-bottom: 1px solid var(--color-surface-container-highest);
+}
+
+@media (min-width: 640px) {
+  .daas-included-item {
+    padding-left: var(--space-md);
+    border-right: 1px solid var(--color-surface-container-highest);
+  }
+}
+
+.daas-included-item h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.daas-included-item p {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-on-surface-variant);
+}
+
+.daas-grid {
+  display: grid;
+  gap: var(--space-md);
+}
+
+@media (min-width: 640px) {
+  .daas-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .daas-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.daas-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-surface-container-highest);
+  background: var(--color-surface-container-lowest);
+  transition: border-color 0.2s ease;
+}
+
+.daas-card:hover {
+  border-color: var(--color-primary);
+}
+
+.daas-card-img {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--color-surface-container);
+}
+
+.daas-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s var(--nav-ease);
+}
+
+.daas-card:hover .daas-card-img img {
+  transform: scale(1.05);
+}
+
+.daas-card-num {
+  position: absolute;
+  top: var(--space-sm);
+  left: var(--space-sm);
+  padding: 3px 7px;
+  background: rgba(11, 11, 12, 0.75);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.daas-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: var(--space-md);
+}
+
+.daas-card-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+
+.daas-card-title {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--color-primary);
+}
+
+.daas-card-desc {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-on-surface-variant);
+}
+
+.daas-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+  margin-top: auto;
+  padding-top: var(--space-md);
+}
+
+.daas-card-more {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-on-surface-variant);
+}
+
+.daas-card-more:hover {
+  color: var(--color-primary);
+}
+
+.daas-steps {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+@media (min-width: 640px) {
+  .daas-steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .daas-steps {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.daas-steps li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: var(--space-md);
+  border-top: 2px solid var(--color-primary);
+}
+
+.daas-step-num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-secondary);
+}
+
+.daas-steps h4 {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.daas-steps p {
+  font-size: 14px;
+  color: var(--color-on-surface-variant);
+}
+
+/* ============================================
+   COURSES — groups, modules, instructor
+   ============================================ */
+.course-group {
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.course-group-label {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .course-group {
+    flex-direction: column;
+  }
+
+  .course-group-label {
+    display: block;
+    padding: 0.7rem var(--space-md);
+    background: var(--color-surface-container-low);
+    border-bottom: 1px solid var(--color-surface-container-highest);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-on-surface-variant);
+  }
+
+  .course-group + .course-group {
+    border-top: 1px solid var(--color-surface-container-highest);
+  }
+}
+
+@media (max-width: 1023px) {
+  .course-tab {
+    flex: 0 0 min(78vw, 300px);
+  }
+}
+
+.course-audience {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--color-secondary);
+}
+
+.course-modules {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: var(--space-sm);
+}
+
+.course-modules-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--color-on-surface-variant);
+}
+
+.course-modules ol {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--color-surface-container-highest);
+}
+
+.course-modules li {
+  display: flex;
+  gap: var(--space-md);
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--color-surface-container-highest);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-on-surface-variant);
+}
+
+.course-modules li strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.course-module-num {
+  flex-shrink: 0;
+  padding-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-secondary);
+}
+
+.course-foot .btn-request {
+  width: 100%;
+}
+
+@media (min-width: 560px) {
+  .course-foot .btn-request {
+    width: auto;
+  }
+}
+
+.course-instructor {
+  position: absolute;
+  left: var(--space-md);
+  bottom: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 6px 12px 6px 6px;
+  background: rgba(11, 11, 12, 0.78);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.course-instructor img {
+  position: static;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.course-instructor strong {
+  display: block;
+  font-size: 13px;
 }

@@ -1,43 +1,110 @@
-import { useEffect, useRef, useState } from 'react'
-import { clip, photo, poster } from '../cdn'
-import useIsMobile from '../hooks/useIsMobile'
+import { useState } from 'react'
+import { photo } from '../cdn'
+
+// Five live courses: two in AI & data, three in drones.
+// Module lists are draft outlines built from the course briefs; replace them
+// with the team's confirmed syllabus when it arrives. Add an instructor as
+// { name, role, img } to show their photo on the course.
+const GROUPS = [
+  { key: 'ai', label: 'AI & Data' },
+  { key: 'drone', label: 'Drones' },
+]
 
 const COURSES = [
   {
     id: 'genai',
-    tag: 'UNIVERSITY',
+    group: 'ai',
+    level: 'All levels',
+    audience: 'College students & professionals',
     title: 'Generative AI — from LLMs to AI agents',
-    desc: 'A hands-on workshop on large language models and agentic AI, run live in the lecture hall with students building alongside the session.',
-    meta: ['Live workshop', 'Laptops in hall', 'Q&A on the floor'],
-    where: 'Delivered at KIIT University, Bhubaneswar',
+    desc: 'How generative AI actually works, and how to put it to work. Participants follow along on their own laptops, from the basics of machine learning to building a simple AI agent.',
+    modules: [
+      ['AI foundations', 'Machine learning, deep learning and where generative AI fits in.'],
+      ['Inside a large language model', 'Tokens, training and why models sometimes get things confidently wrong.'],
+      ['Prompting well', 'Giving models context, examples and constraints to get reliable answers.'],
+      ['From chatbot to agent', 'Models that plan, use tools and loop until a task is done.'],
+      ['Hands-on build', 'Building a small AI workflow, step by step, in the session.'],
+      ['Using AI responsibly', 'Accuracy, privacy, bias and knowing when not to use it.'],
+    ],
+    format: ['Live workshop', 'Bring a laptop', 'Hands-on'],
     img: photo('course', 36, 'w-1200,q-75'),
+    instructor: null,
   },
   {
-    id: 'drone',
-    tag: 'SCHOOLS · COLLEGES',
-    title: 'Drone technology & piloting',
-    desc: 'How drones fly, what they carry and where they work — then students wire motors, assemble airframes and rehearse in the simulator before supervised flights on open ground.',
-    meta: ['Build kits', 'Simulator lab', 'Line-of-sight flights'],
-    where: 'Delivered at International Delhi Public School and partner schools',
+    id: 'data',
+    group: 'ai',
+    level: 'Beginner',
+    audience: 'College students & early professionals',
+    title: 'Data Analytics',
+    desc: 'Turning raw data into decisions. A practical course that goes from cleaning a spreadsheet to presenting findings from a real dataset.',
+    modules: [
+      ['Thinking with data', 'Framing the right question before touching the numbers.'],
+      ['Spreadsheets for analysis', 'Cleaning data, formulas, lookups and pivot tables.'],
+      ['Python for data', 'Loading, cleaning and summarising data with pandas.'],
+      ['Statistics that matter', 'Averages, spread, correlation and common traps.'],
+      ['Visualisation & dashboards', 'Charts that explain, and dashboards people actually use.'],
+      ['Capstone project', 'Analyse a real dataset and present the findings.'],
+    ],
+    format: ['Live sessions', 'Bring a laptop', 'Project-based'],
+    img: photo('course', 53, 'w-1200,q-75'),
+    instructor: null,
+  },
+  {
+    id: 'drone-basic',
+    group: 'drone',
+    level: 'Basic',
+    audience: 'School students',
+    title: 'Drone Basics & Assembly',
+    desc: 'An introduction to drones for schools: how they fly, what they are made of, and how to build one — ending with supervised first flights.',
+    modules: [
+      ['How a drone flies', 'Lift and thrust, and the four controls: throttle, yaw, pitch and roll.'],
+      ['Parts of a drone', 'Frame, motors, ESCs, propellers, flight controller, battery and radio.'],
+      ['Hands-on assembly', 'Building a drone from a kit in small teams.'],
+      ['Flying safely', 'Pre-flight checks, safe zones and India’s drone rules made simple.'],
+      ['Simulator practice', 'Learning the controls on a simulator before the real thing.'],
+      ['First flights', 'Supervised flying on open ground.'],
+    ],
+    format: ['In school', 'Build kits', 'Supervised flights'],
     img: photo('edu', 356, 'w-1200,q-75'),
+    instructor: null,
   },
   {
-    id: 'forces',
-    tag: 'POLICE · ARMED FORCES',
-    title: 'Drone operations for uniformed services',
-    desc: 'Classroom fundamentals followed by live surveillance demonstrations, flown for and with police and paramilitary units.',
-    meta: ['Briefing', 'Live demo flights', 'Operational use cases'],
-    where: 'Delivered for police and CRPF personnel',
-    img: photo('govt', 569, 'w-1200,q-75'),
+    id: 'drone-fpv',
+    group: 'drone',
+    level: 'FPV',
+    audience: 'Defence & security training',
+    title: 'FPV Drone Operations & R&D',
+    desc: 'First-person-view flying for defence and security teams — fast and endurance flying, long-range testing, integrating components and developing new builds.',
+    modules: [
+      ['FPV systems', 'Goggles, video transmitters, antennas and control links.'],
+      ['Fast & endurance flying', 'High-speed control, manoeuvring and managing flight time.'],
+      ['Long-range testing', 'Link range, battery endurance and fail-safe behaviour.'],
+      ['Component integration', 'Fitting cameras, payloads and power systems into an airframe.'],
+      ['Tuning & troubleshooting', 'Configuring firmware and diagnosing faults in the field.'],
+      ['R&D', 'Testing, measuring and improving builds through structured trials.'],
+    ],
+    format: ['Field training', 'Live flying', 'R&D projects'],
+    img: photo('fpv', 102, 'w-1200,q-75'),
+    instructor: null,
   },
   {
-    id: 'labs',
-    tag: 'INSTITUTIONS',
-    title: 'Drone labs (D Labs) & robotics',
-    desc: 'Permanent lab set-ups with training benches, airframes, controllers and curriculum — robotics, firmware and edge AI alongside UAVs.',
-    meta: ['Lab set-up', 'Training benches', 'Robotics & edge AI'],
-    where: 'Set up on partner campuses',
+    id: 'drone-advanced',
+    group: 'drone',
+    level: 'Advanced',
+    audience: 'Engineering students & makers',
+    title: 'Advanced Drone Engineering',
+    desc: 'Designing a drone from the ground up: aerodynamics, 3D CAD in Fusion 360 and PCB design, brought together in a full project.',
+    modules: [
+      ['Aerodynamics', 'How multirotor and fixed-wing aircraft generate lift and stay stable.'],
+      ['3D CAD fundamentals', 'Sketches, constraints, parts and assemblies.'],
+      ['Fusion 360', 'Designing frames and components ready for fabrication.'],
+      ['PCB design', 'From schematic to board layout for drone electronics.'],
+      ['Build & test', 'Turning designs into hardware and testing them.'],
+      ['Project work', 'Design, build and test a drone project end to end.'],
+    ],
+    format: ['Lab-based', 'Software + hardware', 'Project'],
     img: photo('labs', 592, 'w-1200,q-75'),
+    instructor: null,
   },
 ]
 
@@ -52,37 +119,6 @@ const STRIP = [
   ['edu', 371, 'Sky Eye team on stage at a startup awards ceremony'],
 ]
 
-function CourseMedia({ course }) {
-  const ref = useRef(null)
-  const isMobile = useIsMobile()
-  useEffect(() => {
-    const v = ref.current
-    if (!v || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const io = new IntersectionObserver(([e]) => (e.isIntersecting ? v.play().catch(() => {}) : v.pause()), {
-      threshold: 0.25,
-    })
-    io.observe(v)
-    return () => io.disconnect()
-  }, [course.id, isMobile])
-
-  if (course.video && !isMobile) {
-    return (
-      <video
-        key={course.id}
-        ref={ref}
-        src={clip(course.video)}
-        poster={poster(course.video)}
-        muted
-        loop
-        playsInline
-        preload="none"
-        aria-label={course.title}
-      />
-    )
-  }
-  return <img key={course.id} src={course.img} alt={course.title} loading="lazy" />
-}
-
 export default function Courses() {
   const [active, setActive] = useState(0)
   const course = COURSES[active]
@@ -92,57 +128,89 @@ export default function Courses() {
       <div className="container py-2xl">
         <div className="courses-head">
           <div>
-            <span className="section-label">06.2 / COURSES</span>
+            <span className="section-label">SERVICES / 02 · COURSES</span>
             <h2 className="section-h2">DON'T JUST LEARN TECHNOLOGY. BUILD IT.</h2>
           </div>
           <p className="section-desc">
-            Live, in-person programmes across drones, robotics and AI. Students, engineers and
-            uniformed services get real hardware in hand — assembly, simulation and flight, not
-            slides about them.
+            Five live, in-person courses — two in AI and data, three in drones from school basics
+            to FPV and advanced engineering. Real hardware and real projects, not slides about them.
           </p>
         </div>
 
         <div className="courses-board">
           <div className="courses-tabs" role="tablist" aria-label="Courses">
-            {COURSES.map((c, i) => (
-              <button
-                key={c.id}
-                role="tab"
-                id={`course-tab-${c.id}`}
-                aria-selected={i === active}
-                aria-controls="course-panel"
-                className={`course-tab${i === active ? ' is-active' : ''}`}
-                onClick={() => setActive(i)}
-              >
-                <span className="course-tab-top">
-                  <span className="course-tab-tag">{c.tag}</span>
-                  <span className="course-live">
-                    <span className="course-live-dot" />
-                    LIVE
-                  </span>
-                </span>
-                <span className="course-tab-title">{c.title}</span>
-              </button>
+            {GROUPS.map((g) => (
+              <div key={g.key} className="course-group">
+                <span className="course-group-label">{g.label}</span>
+                {COURSES.map((c, i) =>
+                  c.group !== g.key ? null : (
+                    <button
+                      key={c.id}
+                      role="tab"
+                      id={`course-tab-${c.id}`}
+                      aria-selected={i === active}
+                      aria-controls="course-panel"
+                      className={`course-tab${i === active ? ' is-active' : ''}`}
+                      onClick={() => setActive(i)}
+                    >
+                      <span className="course-tab-top">
+                        <span className="course-tab-tag">{c.level.toUpperCase()}</span>
+                        <span className="course-live">
+                          <span className="course-live-dot" />
+                          LIVE
+                        </span>
+                      </span>
+                      <span className="course-tab-title">{c.title}</span>
+                    </button>
+                  )
+                )}
+              </div>
             ))}
           </div>
 
           <div className="course-panel" id="course-panel" role="tabpanel" aria-labelledby={`course-tab-${course.id}`}>
             <div className="course-media">
-              <CourseMedia course={course} />
-              <span className="course-media-badge">● LIVE · ENROLLING</span>
+              <img key={course.id} src={course.img} alt={course.title} loading="lazy" />
+              <span className="course-media-badge">● LIVE · {course.level.toUpperCase()}</span>
+              {course.instructor && (
+                <div className="course-instructor">
+                  <img src={course.instructor.img} alt="" />
+                  <span>
+                    <strong>{course.instructor.name}</strong>
+                    {course.instructor.role}
+                  </span>
+                </div>
+              )}
             </div>
             <div className="course-body">
+              <span className="course-audience">FOR · {course.audience.toUpperCase()}</span>
               <h3 className="course-title">{course.title}</h3>
               <p className="course-desc">{course.desc}</p>
+
+              <div className="course-modules">
+                <span className="course-modules-label">WHAT YOU WILL LEARN</span>
+                <ol>
+                  {course.modules.map(([t, d], i) => (
+                    <li key={t}>
+                      <span className="course-module-num">{String(i + 1).padStart(2, '0')}</span>
+                      <span>
+                        <strong>{t}</strong>
+                        {d}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
               <ul className="course-meta">
-                {course.meta.map((m) => (
+                {course.format.map((m) => (
                   <li key={m}>{m}</li>
                 ))}
               </ul>
               <div className="course-foot">
-                <span className="course-where">{course.where}</span>
-                <a className="btn-primary" href="#contact" data-service="Courses">
-                  [ Enquire about this course → ]
+                <a className="btn-request" href="#/contact" data-service={`Course: ${course.title}`}>
+                  Enquire about this course
+                  <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
                 </a>
               </div>
             </div>

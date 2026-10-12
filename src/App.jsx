@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { ThemeProvider } from './hooks/useTheme'
+import { useRoute } from './router'
 import { scrambleOnView } from './utils/scramble'
 import Navbar from './components/Navbar'
 import HomeHero from './components/HomeHero'
@@ -11,47 +12,120 @@ import Recognition from './components/Recognition'
 import ServicesIntro from './components/ServicesIntro'
 import Skyvertising from './components/Skyvertising'
 import Courses from './components/Courses'
-import Solutions from './components/Solutions'
-import Technology from './components/Technology'
-import Product from './components/Product'
+import DroneService from './components/DroneService'
 import VideoStrip from './components/VideoStrip'
 import Gallery from './components/Gallery'
 import Contact from './components/Contact'
+import RequestBand from './components/RequestBand'
 import Footer from './components/Footer'
 
-// One page, five stops: Home · About Us · Our Services · Gallery · Contact Us.
+// Separate pages behind one navbar: Home · About Us · Our Services
+// (Skyvertising, Courses, Drone as a Service) · Gallery · Contact Us.
+const PAGES = {
+  '/': {
+    title: 'Sky Eye Technology — Unfolding The Unfiltered',
+    render: () => (
+      <>
+        <HomeHero />
+        <Hero />
+        <ServicesIntro />
+        <VideoStrip />
+        <RequestBand />
+      </>
+    ),
+  },
+  '/about': {
+    title: 'About Us — Sky Eye Technology',
+    render: () => (
+      <>
+        <DroneJourney />
+        <Engineering />
+        <RnD />
+        <Recognition />
+        <RequestBand />
+      </>
+    ),
+  },
+  '/services': {
+    title: 'Our Services — Sky Eye Technology',
+    render: () => (
+      <>
+        <ServicesIntro />
+        <RequestBand />
+      </>
+    ),
+  },
+  '/services/skyvertising': {
+    title: 'Skyvertising — Sky Eye Technology',
+    render: () => (
+      <>
+        <Skyvertising />
+        <RequestBand
+          service="Skyvertising"
+          title="Put your brand in the sky."
+          text="Tell us about your event, launch or campaign — date, place and what you want flown — and we'll plan the show."
+          label="Request Skyvertising"
+        />
+      </>
+    ),
+  },
+  '/services/courses': {
+    title: 'Courses — Sky Eye Technology',
+    render: () => (
+      <>
+        <Courses />
+        <RequestBand
+          service="Courses"
+          title="Bring a course to your institution."
+          text="Schools, colleges and training units — tell us the course, the group size and the dates."
+          label="Enquire about a course"
+        />
+      </>
+    ),
+  },
+  '/services/drone-as-a-service': {
+    title: 'Drone as a Service — Sky Eye Technology',
+    render: () => (
+      <>
+        <DroneService />
+        <RequestBand
+          service="Drone as a Service"
+          title="Need a drone on the job?"
+          text="Tell us what needs doing, where and when. We bring the aircraft, the crew and the permissions."
+        />
+      </>
+    ),
+  },
+  '/gallery': {
+    title: 'Gallery — Sky Eye Technology',
+    render: () => (
+      <>
+        <Gallery />
+        <RequestBand />
+      </>
+    ),
+  },
+  '/contact': {
+    title: 'Contact Us — Sky Eye Technology',
+    render: () => <Contact />,
+  },
+}
+
 export default function App() {
-  // Section labels decode out of jumbled letters as they scroll in, echoing the menu.
-  useEffect(() => scrambleOnView('.section-label, .sky-kicker'), [])
+  const route = useRoute()
+  const page = PAGES[route.path] || PAGES['/']
+
+  useEffect(() => {
+    document.title = page.title
+    // Section labels decode out of jumbled letters as they scroll in, echoing the menu.
+    return scrambleOnView('.section-label, .sky-kicker')
+  }, [page])
 
   return (
     <ThemeProvider>
-      <Navbar />
-      <main className="page-main">
-        <div id="home" className="anchor-block">
-          <HomeHero />
-          <Hero />
-        </div>
-
-        <div id="about" className="anchor-block">
-          <DroneJourney />
-          <Engineering />
-          <RnD />
-          <Recognition />
-        </div>
-
-        <div id="services" className="anchor-block">
-          <ServicesIntro />
-          <Skyvertising />
-          <Courses />
-          <Solutions />
-          <Technology />
-          <Product />
-          <VideoStrip />
-        </div>
-
-        <Gallery />
-        <Contact />
+      <Navbar path={route.path} />
+      <main className="page-main" key={route.path} data-page={route.path}>
+        {page.render()}
       </main>
       <Footer />
     </ThemeProvider>

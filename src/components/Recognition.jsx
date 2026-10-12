@@ -189,7 +189,7 @@ export default function Recognition() {
       <div className="rec-sticky">
         <div className="container rec-container">
           <div className="section-header rec-header">
-            <span className="section-label">05 / TRACK RECORD</span>
+            <span className="section-label">04 / TRACK RECORD</span>
             <h2 className="section-h2">ON RECORD. ON DUTY. ON CAMPUS.</h2>
           </div>
 

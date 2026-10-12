@@ -40,7 +40,7 @@ export default function Engineering() {
     <section className="section-engineering" id="engineering">
       <div className="container py-2xl">
         <div className="section-header">
-          <span className="section-label">03 / ENGINEERING</span>
+          <span className="section-label">02 / ENGINEERING</span>
           <h2 className="section-h2">FROM IDEA TO FLIGHT.</h2>
           <p className="section-desc">
             A relentless lifecycle of physical prototyping, stress analysis, and software simulation. We do not ship concepts; we build, break, and validate real machines.

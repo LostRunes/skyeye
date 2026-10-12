@@ -292,7 +292,7 @@ export default function DroneJourney({ scrollLength = 560 }) {
 
         <div className="journey__intro" ref={introRef}>
           <div className="journey__intro-inner">
-            <span className="section-label">02 / ABOUT US</span>
+            <span className="section-label">01 / ABOUT US</span>
             <h2 className="journey__display">
               WE BUILD SYSTEMS
               <br />

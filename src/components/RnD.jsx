@@ -40,7 +40,7 @@ export default function RnD() {
     <section className="section-rnd" id="rnd">
       <div className="container py-2xl">
         <div className="section-header">
-          <span className="section-label">04 / R&D</span>
+          <span className="section-label">03 / R&D</span>
           <h2 className="section-h2">THE NEXT SYSTEM STARTS WITH A QUESTION.</h2>
           <p className="section-desc">
             We explore UAVs, robotics, artificial intelligence and emerging technologies to create systems capable of solving real-world problems.
