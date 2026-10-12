@@ -1,23 +1,21 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { CONTACTS, brochureCrop } from '../cdn'
+import { takePendingService } from '../router'
 
-const SERVICES = ['Skyvertising', 'Courses', 'Drone Services', 'Something else']
+const SERVICES = ['Skyvertising', 'Drone as a Service', 'Courses', 'Something else']
 
 // There is no backend, so the form composes the enquiry and hands it to the
 // visitor's mail app or WhatsApp — either way it lands with the team.
 export default function Contact() {
-  const [form, setForm] = useState({ name: '', reach: '', service: SERVICES[0], message: '' })
-
-  // Any "[ Book … ]" / "[ Enquire … ]" link elsewhere on the page carries a
-  // data-service, so the form arrives with the right service already picked.
-  useEffect(() => {
-    const onClick = (e) => {
-      const a = e.target.closest?.('a[data-service]')
-      if (a) setForm((f) => ({ ...f, service: a.dataset.service }))
-    }
-    document.addEventListener('click', onClick)
-    return () => document.removeEventListener('click', onClick)
-  }, [])
+  // "Request this service" buttons across the site carry a data-service, so
+  // the form arrives with the right service already picked.
+  const [form, setForm] = useState(() => ({
+    name: '',
+    reach: '',
+    service: takePendingService() || SERVICES[0],
+    message: '',
+  }))
+  const options = SERVICES.includes(form.service) ? SERVICES : [form.service, ...SERVICES]
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
@@ -39,7 +37,7 @@ export default function Contact() {
       <div className="container py-2xl">
         <div className="cta-grid">
           <div className="cta-left contact-left">
-            <span className="section-label">08 / CONTACT US</span>
+            <span className="section-label">CONTACT US</span>
             <h2 className="cta-h2">
               WHAT ARE
               <br />
@@ -48,8 +46,8 @@ export default function Contact() {
               NEXT?
             </h2>
             <p className="section-desc contact-lede">
-              A drone ad show, a course for your institution, a survey over your site — or something
-              we haven't flown yet. Tell us what you need.
+              Skyvertising for your event, a course for your institution, a drone on your site — or
+              something we haven't flown yet. Tell us what you need.
             </p>
 
             <div className="contact-cards">
@@ -89,7 +87,7 @@ export default function Contact() {
                 <label className="field">
                   <span>Service</span>
                   <select value={form.service} onChange={set('service')}>
-                    {SERVICES.map((s) => (
+                    {options.map((s) => (
                       <option key={s}>{s}</option>
                     ))}
                   </select>
@@ -99,7 +97,7 @@ export default function Contact() {
                   <textarea rows={4} value={form.message} onChange={set('message')} placeholder="Event date, location, group size…" />
                 </label>
                 <div className="contact-form-actions">
-                  <button type="submit" className="btn-primary">[ Send by email → ]</button>
+                  <button type="submit" className="btn-request">Send request by email</button>
                   <button type="button" className="btn-outline" onClick={sendWhatsApp}>
                     [ Send on WhatsApp ]
                   </button>

@@ -165,20 +165,14 @@ export default function VideoHero() {
             operations — designed, built and flown in India.
           </p>
           <div className="vh-ctas">
-            <a className="vh-btn vh-btn-solid" href="#services">[ Explore Services ]</a>
-            <a className="vh-btn vh-btn-ghost" href="#contact">[ Talk to Us ]</a>
+            <a className="vh-btn vh-btn-solid" href="#/services">[ Explore Services ]</a>
+            <a className="vh-btn vh-btn-ghost" href="#/contact">[ Talk to Us ]</a>
           </div>
         </div>
       </div>
 
       <div className="vh-footer" ref={cueRef}>
         <span className="vh-coords">[ LAT 20.2961° N · LON 85.8245° E ]</span>
-        <a className="vh-cue" href="#overview" aria-label="Scroll to overview">
-          <span>SCROLL</span>
-          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
-            arrow_downward
-          </span>
-        </a>
         {!isMobile && (
         <button
           className="vh-toggle"

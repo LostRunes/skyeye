@@ -30,16 +30,20 @@ export function ThemeProvider({ children }) {
   }, [theme])
 
   const toggle = useCallback(() => {
-    setTheme((t) => {
-      const next = t === 'dark' ? 'light' : 'dark'
-      if (next === 'dark') {
-        requestAnimationFrame(() =>
-          document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' })
-        )
-      }
-      return next
-    })
-  }, [])
+    const next = theme === 'dark' ? 'light' : 'dark'
+    setTheme(next)
+    // Dark mode shows off the Yogisha hero, so switching to it goes home.
+    if (next === 'dark') {
+      requestAnimationFrame(() => {
+        if (window.location.hash.replace(/^#/, '') && window.location.hash !== '#/') {
+          window.location.hash = '#/'
+        } else {
+          if (window.__lenis) window.__lenis.scrollTo(0)
+          else window.scrollTo({ top: 0, behavior: 'smooth' })
+        }
+      })
+    }
+  }, [theme])
 
   return createElement(ThemeContext.Provider, { value: { theme, toggle } }, children)
 }

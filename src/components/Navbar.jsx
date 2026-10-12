@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { brochureCrop, CONTACTS, ik, photo } from '../cdn'
+import { brochureCrop, CONTACTS, ik, newPhoto, photo } from '../cdn'
 import { useTheme } from '../hooks/useTheme'
 import Scramble from './Scramble'
+import { scrollToSection, scrollToTop } from '../router'
 
 // Modelled on anduril.com: hovering any item drops one translucent sheet out
 // of the bar, the page behind blurs, and moving between items cross-fades the
@@ -10,95 +11,114 @@ import Scramble from './Scramble'
 const PANELS = [
   {
     key: 'home',
-    href: '#home',
+    homeTo: 'top',
+    path: '/',
+    href: '#/',
     label: 'Home',
     kicker: 'Sky Eye Technology',
-    desc: 'Drones, robotics and intelligent technology for real-world work — designed, built and flown from Bhubaneswar, Odisha.',
+    desc: 'Drones, robotics and intelligent technology for real-world work — from Bhubaneswar, Odisha.',
     listLabel: 'Home',
     links: [
-      { href: '#home', label: 'Top of page' },
-      { href: '#overview', label: 'Overview' },
+      { href: '#/', label: 'Home' },
+      { href: '#/?to=overview', label: 'Overview' },
     ],
     cardsLabel: 'Featured',
     cards: [
-      { href: '#skyvertising', label: 'Skyvertising', img: brochureCrop('led-net-city', 'w-560,h-350,fo-auto') },
-      { href: '#courses', label: 'Live courses', img: photo('course', 24, 'w-560,h-350,fo-auto') },
+      { href: '#/services/skyvertising', label: 'Skyvertising', img: brochureCrop('led-net-city', 'w-560,h-350,fo-auto') },
+      { href: '#/services/courses', label: 'Live courses', img: newPhoto('genai-speaker', 'w-560,h-350,fo-auto') },
     ],
   },
   {
     key: 'about',
-    href: '#about',
+    homeTo: 'home-about',
+    path: '/about',
+    href: '#/about',
     label: 'About Us',
     kicker: 'About Us',
-    desc: 'Sky Eye Technology (SET) Pvt. Ltd. designs, assembles, tests and commissions UAVs and robotic systems. Manufacturing locally, training nationally.',
+    desc: 'Sky Eye Technology (SET) Pvt. Ltd. — drones, robotics and AI, working across research, training and real-world deployment.',
     listLabel: 'About',
     links: [
-      { href: '#about', label: 'The aircraft' },
-      { href: '#engineering', label: 'Engineering' },
-      { href: '#rnd', label: 'Research & development' },
-      { href: '#track-record', label: 'Track record' },
+      { href: '#/about', label: 'Who we are' },
+      { href: '#/about?to=engineering', label: 'Engineering' },
+      { href: '#/about?to=rnd', label: 'Research & development' },
+      { href: '#/about?to=track-record', label: 'Track record' },
     ],
     cardsLabel: 'Inside',
     cards: [
-      { href: '#rnd', label: 'R&D bench', img: photo('rnd', 264, 'w-560,h-350,fo-auto') },
-      { href: '#engineering', label: 'Drone labs', img: photo('labs', 590, 'w-560,h-350,fo-auto') },
+      { href: '#/about?to=rnd', label: 'R&D bench', img: photo('rnd', 264, 'w-560,h-350,fo-auto') },
+      { href: '#/about?to=track-record', label: 'Track record', img: photo('govt', 569, 'w-560,h-350,fo-auto') },
     ],
   },
   {
     key: 'services',
-    href: '#services',
+    homeTo: 'home-services',
+    path: '/services',
+    href: '#/services',
     label: 'Our Services',
     kicker: 'Our Services',
-    desc: 'Three ways we put drones to work — on your brand, in your classroom and over your site.',
+    desc: 'Three ways we put drones to work — on your brand, in your classroom and on your site.',
     listLabel: 'Services',
     links: [
-      { href: '#skyvertising', label: 'Skyvertising' },
-      { href: '#courses', label: 'Courses — live' },
-      { href: '#drone-services', label: 'Drone services' },
-      { href: '#platforms', label: 'Platforms' },
-      { href: '#products', label: 'A1 agriculture UAV' },
+      { href: '#/services/skyvertising', label: 'Skyvertising' },
+      { href: '#/services/courses', label: 'Courses' },
+      { href: '#/services/drone-as-a-service', label: 'Drone as a Service' },
     ],
     cardsLabel: 'Services',
     cards: [
-      { href: '#skyvertising', label: 'Skyvertising', img: brochureCrop('sky-is-live', 'w-560,h-350,fo-auto') },
-      { href: '#courses', label: 'Courses', img: photo('edu', 356, 'w-560,h-350,fo-auto') },
-      { href: '#drone-services', label: 'Drone services', img: photo('agri', 141, 'w-560,h-350,fo-auto') },
+      { href: '#/services/skyvertising', label: 'Skyvertising', img: brochureCrop('sky-is-live', 'w-560,h-350,fo-auto') },
+      { href: '#/services/courses', label: 'Courses', img: photo('edu', 356, 'w-560,h-350,fo-auto') },
+      { href: '#/services/drone-as-a-service', label: 'Drone as a Service', img: photo('agri', 141, 'w-560,h-350,fo-auto') },
     ],
   },
   {
     key: 'gallery',
-    href: '#gallery',
+    path: '/gallery',
+    href: '#/gallery',
     label: 'Gallery',
     kicker: 'Gallery',
     desc: 'The field, the lab and the classroom — photographs from the company’s own archive.',
     listLabel: 'Gallery',
     links: [
-      { href: '#gallery', label: 'On the ground' },
-      { href: '#photos', label: 'All photos' },
+      { href: '#/gallery', label: 'On the ground' },
+      { href: '#/gallery?to=photos', label: 'All photos' },
     ],
     cardsLabel: 'Recent',
     cards: [
-      { href: '#photos', label: 'Field operations', img: photo('agri', 139, 'w-560,h-350,fo-auto') },
-      { href: '#photos', label: 'Training', img: photo('govt', 569, 'w-560,h-350,fo-auto') },
+      { href: '#/gallery?to=photos', label: 'Field operations', img: photo('agri', 139, 'w-560,h-350,fo-auto') },
+      { href: '#/gallery?to=photos', label: 'Training', img: photo('edu', 344, 'w-560,h-350,fo-auto') },
     ],
   },
   {
     key: 'contact',
-    href: '#contact',
+    homeTo: 'home-contact',
+    path: '/contact',
+    href: '#/contact',
     label: 'Contact Us',
     kicker: 'Contact Us',
-    desc: 'A drone ad show, a course for your institution or a survey over your site. Bhubaneswar, Odisha · India.',
+    desc: 'A drone ad show, a course for your institution or a drone on your site. Bhubaneswar, Odisha · India.',
     listLabel: 'Reach us',
     links: [
       ...CONTACTS.people.map((p) => ({ href: `tel:${p.tel}`, label: `${p.name} · ${p.phone}` })),
       { href: `mailto:${CONTACTS.email}`, label: CONTACTS.email },
       { href: CONTACTS.whatsapp, label: 'WhatsApp', external: true },
-      { href: '#contact', label: 'Enquiry form' },
+      { href: '#/contact', label: 'Enquiry form' },
     ],
-    cardsLabel: 'Book',
-    cards: [{ href: '#skyvertising', label: 'Drone ad show · ₹89,999 + GST', img: brochureCrop('led-net-city', 'w-560,h-350,fo-auto') }],
+    cardsLabel: 'Request',
+    cards: [{ href: '#/contact', label: 'Request a service', img: brochureCrop('led-net-city', 'w-560,h-350,fo-auto') }],
   },
 ]
+
+// On the home page, items with a homeTo scroll to that summary section
+// instead of leaving the page (Gallery always opens its own page).
+const goHomeSection = (panel) => (e) => {
+  e.preventDefault()
+  if (panel.homeTo === 'top') scrollToTop(true)
+  else scrollToSection(panel.homeTo)
+}
+
+// A page belongs to the top-level item whose path it starts with.
+const keyForPath = (path) =>
+  (PANELS.slice(1).find((p) => path === p.path || path.startsWith(p.path + '/')) || PANELS[0]).key
 
 function ThemeToggle() {
   const { theme, toggle } = useTheme()
@@ -120,12 +140,12 @@ function ThemeToggle() {
   )
 }
 
-function NavLink({ panel, isOpen, isActive, onEnter, onClick }) {
+function NavLink({ panel, href, isOpen, isActive, onEnter, onClick }) {
   const ref = useRef(null)
   return (
     <a
       ref={ref}
-      href={panel.href}
+      href={href}
       className={`nav-link${isOpen ? ' is-open' : ''}${isActive ? ' is-active' : ''}`}
       onMouseEnter={onEnter}
       onFocus={onEnter}
@@ -161,14 +181,15 @@ function PanelCard({ card, onClick, tabbable }) {
   )
 }
 
-export default function Navbar() {
+export default function Navbar({ path = '/' }) {
+  const onHome = path === '/'
+  const [homeActive, setHomeActive] = useState('home')
   const [hidden, setHidden] = useState(false)
   const [openKey, setOpenKey] = useState(null)
   const [switches, setSwitches] = useState(0)
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuCount, setMenuCount] = useState(0)
   const [servicesOpen, setServicesOpen] = useState(false)
-  const [active, setActive] = useState('#home')
   const [panelH, setPanelH] = useState(0)
   const closeTimer = useRef(0)
   const panelRefs = useRef({})
@@ -195,17 +216,6 @@ export default function Navbar() {
       window.removeEventListener('scroll', onScroll)
       if (frame) cancelAnimationFrame(frame)
     }
-  }, [])
-
-  // Underline whichever top-level section owns the middle of the viewport.
-  useEffect(() => {
-    const els = PANELS.map((p) => document.getElementById(p.href.slice(1))).filter(Boolean)
-    const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => e.isIntersecting && setActive(`#${e.target.id}`)),
-      { rootMargin: '-45% 0px -50% 0px' }
-    )
-    els.forEach((el) => observer.observe(el))
-    return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
@@ -250,6 +260,33 @@ export default function Navbar() {
     setOpenKey(null)
     setMenuOpen(false)
   }
+  // On the home page, mark whichever summary section is mid-screen.
+  useEffect(() => {
+    if (!onHome) return
+    const ids = PANELS.filter((p) => p.homeTo && p.homeTo !== 'top').map((p) => [p.homeTo, p.key])
+    const observer = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return
+          const hit = ids.find(([id]) => id === e.target.id)
+          if (hit) setHomeActive(hit[1])
+        }),
+      { rootMargin: '-45% 0px -50% 0px' }
+    )
+    ids.forEach(([id]) => {
+      const el = document.getElementById(id)
+      if (el) observer.observe(el)
+    })
+    const onScroll = () => {
+      if (window.scrollY < window.innerHeight * 0.6) setHomeActive('home')
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('scroll', onScroll)
+    }
+  }, [onHome])
+
   const toggleMenu = () => {
     if (!menuOpen) setMenuCount((c) => c + 1)
     setMenuOpen(!menuOpen)
@@ -269,7 +306,7 @@ export default function Navbar() {
         <div className="nav-sheet-bg" style={{ '--panel-h': open ? `${panelH}px` : '0px' }} aria-hidden="true" />
 
         <div className="nav-bar">
-          <a className="nav-logo" href="#home" onClick={closeAll} onMouseEnter={leaveSoon} aria-label="Sky Eye Technology, home">
+          <a className="nav-logo" href="#/" onClick={closeAll} onMouseEnter={leaveSoon} aria-label="Sky Eye Technology, home">
             <img className="nav-logo-mark nav-logo-mark--light" src={ik('site/logo-mark.png', 'h-64')} alt="" />
             <img className="nav-logo-mark nav-logo-mark--dark" src={ik('site/logo-mark-light.png', 'h-64')} alt="" />
             <span className="nav-logo-text">
@@ -283,18 +320,22 @@ export default function Navbar() {
               <NavLink
                 key={p.key}
                 panel={p}
+                href={onHome && p.homeTo ? `#/?to=${p.homeTo}` : p.href}
                 isOpen={openKey === p.key}
-                isActive={active === p.href}
+                isActive={onHome ? homeActive === p.key : keyForPath(path) === p.key}
                 onEnter={() => enter(p.key)}
-                onClick={closeAll}
+                onClick={(e) => {
+                  closeAll()
+                  if (onHome && p.homeTo) goHomeSection(p)(e)
+                }}
               />
             ))}
           </nav>
 
           <div className="nav-actions" onMouseEnter={leaveSoon}>
             <ThemeToggle />
-            <a className="nav-cta" href="#contact" onClick={closeAll}>
-              <Scramble text="Talk to us" hover duration={420} />
+            <a className="nav-cta btn-request" href="#/contact" onClick={closeAll}>
+              <Scramble text="Request a service" hover duration={420} />
             </a>
             <button
               type="button"
@@ -386,7 +427,15 @@ export default function Navbar() {
                     </div>
                   </>
                 ) : (
-                  <a className="nav-sheet-link" href={p.href} onClick={closeAll} tabIndex={menuOpen ? 0 : -1}>
+                  <a
+                    className="nav-sheet-link"
+                    href={onHome && p.homeTo ? `#/?to=${p.homeTo}` : p.href}
+                    onClick={(e) => {
+                      closeAll()
+                      if (onHome && p.homeTo) goHomeSection(p)(e)
+                    }}
+                    tabIndex={menuOpen ? 0 : -1}
+                  >
                     <span className="nav-sheet-num">0{i + 1}</span>
                     <Scramble text={p.label} replay={menuCount} duration={560} />
                   </a>
@@ -394,6 +443,10 @@ export default function Navbar() {
               </div>
             ))}
           </nav>
+          <a className="btn-request nav-sheet-request" href="#/contact" onClick={closeAll} tabIndex={menuOpen ? 0 : -1}>
+            Request a service
+            <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+          </a>
           <div className="nav-sheet-foot">
             <ThemeToggle />
             <span>Bhubaneswar · Odisha · India</span>

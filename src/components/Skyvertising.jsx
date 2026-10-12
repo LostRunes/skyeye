@@ -25,13 +25,36 @@ const WHY = [
   { icon: 'contrast', title: 'Day & night shows', desc: 'Effective visibility in daylight and after dark.' },
 ]
 
+// "Skyvertising can include" and "Digital display features" — page 2 of the
+// updated brochure.
 const FORMATS = [
-  { title: 'Drone advertising', desc: 'Coordinated drones carrying logos, text and branded visuals.' },
-  { title: 'Sky displays', desc: 'Illuminated drones creating branded shows after dark.' },
-  { title: 'Banner flights', desc: 'Large printed banners carried over the crowd.' },
-  { title: 'Awareness campaigns', desc: 'Public messages that travel further than a hoarding.' },
-  { title: 'Custom advertisements', desc: 'Any brand. Any message. Any size.' },
+  { icon: 'flag', title: 'Banner Towing', desc: 'Large advertising banners carried across the sky, putting your message above the crowd.' },
+  { icon: 'cloud', title: 'Skywriting', desc: 'Words, messages or logos written in the sky.' },
+  { icon: 'flight', title: 'Aerial Advertising', desc: 'Promotional signs and branded messages displayed from above.' },
+  { icon: 'scatter_plot', title: 'Drone Advertising', desc: 'Coordinated drones creating logos, text, symbols and animated formations in the night sky.' },
+  { icon: 'auto_awesome', title: 'Sky Displays', desc: 'Illuminated, branded visual shows designed to draw attention and be remembered.' },
 ]
+
+const DIGITAL = [
+  'High-impact visuals & images',
+  'Custom branding & logos',
+  'Dynamic video displays',
+  'Text, messages & announcements',
+  'Animated graphics & motion visuals',
+  'Interactive digital content',
+  'Digital advertisements & promotions',
+  'Real-time updates & information',
+]
+
+const USES = [
+  { img: 'your-ad-here-led', title: 'Brand promotions', desc: 'Make your brand unmissable in the sky.' },
+  { img: 'awareness', title: 'Awareness campaigns', desc: 'Spread important messages that reach further.' },
+  { img: 'your-ad-here', title: 'Custom advertisements', desc: 'Any brand. Any message. Any size.' },
+]
+
+// Flights done in Odisha. Add { img, title, place } entries (images on
+// ImageKit) once the photos are shared — the block appears automatically.
+const ODISHA_WORK = []
 
 const WALL = [
   { img: 'sky-is-live', alt: 'LED banner reading "Sky is live" flown above a crowd at dusk' },
@@ -69,17 +92,18 @@ export default function Skyvertising() {
         {/* Lead */}
         <div className="sky-lead">
           <div className="sky-lead-text">
-            <span className="section-label">06.1 / SKYVERTISING</span>
+            <span className="section-label">SERVICES / 01 · SKYVERTISING</span>
             <h2 className="section-h2">
               TAKE YOUR BRAND
               <br />
               TO THE SKY.
             </h2>
             <p className="section-desc">
-              Skyvertising is advertising in the sky — drones and aerial technology carrying posters
-              or LED-lit banners to create brand experiences people see from the ground, photograph
-              and remember. Instead of competing on crowded streets, screens and feeds, your brand
-              gets a larger-than-life presence above the event.
+              Skyvertising is advertising that takes your brand beyond traditional media and into
+              the sky. Drones and aerial displays carry your brand, product, event or message above
+              the crowd — a visual experience people see from the ground, photograph and remember.
+              Instead of competing on crowded streets, screens and feeds, your brand gets a
+              larger-than-life presence.
             </p>
             <div className="sky-equation">
               <span>SKY</span>
@@ -135,7 +159,36 @@ export default function Skyvertising() {
           </figure>
         </div>
 
-        {/* Complete set + pricing */}
+        {/* Can include + digital features */}
+        <div className="sky-block">
+          <div className="sky-block-head">
+            <span className="sky-kicker">SKYVERTISING CAN INCLUDE</span>
+            <h3 className="sky-h3">Five ways to take a brand into the sky.</h3>
+          </div>
+          <div className="sky-formats-grid">
+            {FORMATS.map((f, i) => (
+              <div key={f.title} className="sky-format-card">
+                <span className="sky-format-num">{String(i + 1).padStart(2, '0')}</span>
+                <span className="material-symbols-outlined sky-icon" aria-hidden="true">{f.icon}</span>
+                <h4>{f.title}</h4>
+                <p>{f.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div className="sky-digital">
+            <span className="sky-digital-label">DIGITAL DISPLAY FEATURES</span>
+            <ul>
+              {DIGITAL.map((d) => (
+                <li key={d}>
+                  <span className="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                  {d}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Complete set + request */}
         <div className="sky-kit">
           <div className="sky-kit-left">
             <span className="sky-kicker">WHAT SET WILL PROVIDE</span>
@@ -154,29 +207,42 @@ export default function Skyvertising() {
             </ol>
           </div>
 
-          <div className="sky-price">
-            <span className="sky-kicker">OUR PRICING</span>
-            <p className="sky-price-amount">
-              ₹89,999 <span>+ GST</span>
+          <div className="sky-book">
+            <span className="sky-kicker">BOOK A SHOW</span>
+            <p className="sky-book-title">Your brand in the sky.</p>
+            <p className="sky-book-text">
+              Drones carrying posters or LED-lit displays, flown for your launch, festival, concert
+              or public gathering — day or night, with your branding.
             </p>
-            <div className="sky-price-meta">
-              <div>
-                <span className="material-symbols-outlined" aria-hidden="true">schedule</span>
-                60-minute show
-              </div>
-              <div>
-                <span className="material-symbols-outlined" aria-hidden="true">brush</span>
-                Your branding
-              </div>
-            </div>
-            <p className="sky-price-book">
-              Bookings: <a href="tel:+918455041474">+91 84550 41474</a>
-            </p>
-            <a className="btn-primary sky-price-cta" href="#contact" data-service="Skyvertising">
-              [ Book a drone ad show → ]
+            <a className="btn-request btn-request--invert" href="#/contact" data-service="Skyvertising">
+              Request this service
+              <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
             </a>
+            <p className="sky-book-call">
+              Or call <a href="tel:+918455041474">+91 84550 41474</a>
+            </p>
           </div>
         </div>
+
+        {ODISHA_WORK.length > 0 && (
+          <div className="sky-block">
+            <div className="sky-block-head">
+              <span className="sky-kicker">FLOWN IN ODISHA</span>
+              <h3 className="sky-h3">Our work, close to home.</h3>
+            </div>
+            <div className="sky-odisha">
+              {ODISHA_WORK.map((w) => (
+                <figure key={w.img} className="sky-odisha-item">
+                  <img src={w.img} alt={w.title} loading="lazy" />
+                  <figcaption>
+                    <strong>{w.title}</strong>
+                    <span>{w.place}</span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Why */}
         <div className="sky-block">
@@ -195,31 +261,40 @@ export default function Skyvertising() {
           </div>
         </div>
 
-        {/* Formats + sponsorship */}
-        <div className="sky-formats">
-          <div className="sky-formats-list">
-            <span className="sky-kicker">FORMATS</span>
-            {FORMATS.map((f) => (
-              <div key={f.title} className="sky-format">
-                <h4>{f.title}</h4>
-                <p>{f.desc}</p>
-              </div>
+        {/* Use cases */}
+        <div className="sky-block">
+          <div className="sky-block-head">
+            <span className="sky-kicker">WHAT IT IS FOR</span>
+            <h3 className="sky-h3">The sky becomes your billboard.</h3>
+          </div>
+          <div className="sky-uses">
+            {USES.map((u) => (
+              <figure key={u.img} className="sky-use">
+                <img src={brochureCrop(u.img, 'w-700,q-78')} alt="" loading="lazy" />
+                <figcaption>
+                  <h4>{u.title}</h4>
+                  <p>{u.desc}</p>
+                </figcaption>
+              </figure>
             ))}
           </div>
-          <div className="sky-sponsor">
-            <img src={brochureCrop('led-tower', 'w-900,q-75')} alt="LED banner reading 'For an upgrade?' flown beside a lit residential tower" loading="lazy" />
-            <div className="sky-sponsor-body">
-              <span className="sky-kicker">EVENT SPONSORSHIPS</span>
-              <h3 className="sky-h3">Sponsoring an event? Fly it.</h3>
-              <p className="sky-p">
-                From Model UN conferences and college fests to concerts and product launches, Sky Eye
-                comes on board as an aerial sponsor — flying the event's and its partners' banners
-                over the venue as the crowd arrives.
-              </p>
-              <a className="btn-outline" href="#contact" data-service="Skyvertising">
-                [ Partner with us → ]
-              </a>
-            </div>
+        </div>
+
+        {/* Sponsorship */}
+        <div className="sky-sponsor sky-sponsor--wide">
+          <img src={brochureCrop('led-tower', 'w-900,q-75')} alt="LED banner reading 'For an upgrade?' flown beside a lit residential tower" loading="lazy" />
+          <div className="sky-sponsor-body">
+            <span className="sky-kicker">EVENT SPONSORSHIPS</span>
+            <h3 className="sky-h3">Sponsoring an event? Fly it.</h3>
+            <p className="sky-p">
+              From Model UN conferences and college fests to concerts and product launches, Sky Eye
+              comes on board as an aerial sponsor — flying the event's and its partners' banners
+              over the venue as the crowd arrives.
+            </p>
+            <a className="btn-request" href="#/contact" data-service="Skyvertising — event sponsorship">
+              Partner with us
+              <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+            </a>
           </div>
         </div>
       </div>

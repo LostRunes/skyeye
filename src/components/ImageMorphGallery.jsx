@@ -336,9 +336,9 @@ export default function ImageMorphGallery() {
       <div className="morph-viewport">
         <div className="morph-text-col">
           <div ref={introRef} className="morph-text-overlay">
-            <span className="section-label">07 / GALLERY</span>
+            <span className="section-label">01 / GALLERY</span>
             <h2>ONE PLATFORM. EVERY ENVIRONMENT.</h2>
-            <p>{canHover ? 'Hover any frame to preview · Scroll to explore' : 'Scroll to explore'}</p>
+            {canHover && <p>Hover any frame to preview</p>}
           </div>
 
           <div ref={exploreRef} className="morph-text-overlay morph-text-overlay--explore">
