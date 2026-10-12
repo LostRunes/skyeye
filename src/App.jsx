@@ -1,15 +1,18 @@
 import { useEffect } from 'react'
 import { ThemeProvider } from './hooks/useTheme'
 import { useRoute } from './router'
+import useSmoothScroll from './hooks/useSmoothScroll'
 import { scrambleOnView } from './utils/scramble'
 import Navbar from './components/Navbar'
 import HomeHero from './components/HomeHero'
 import Hero from './components/Hero'
-import DroneJourney from './components/DroneJourney'
+import Drone3D from './components/Drone3D'
+import Terrain3D from './components/Terrain3D'
 import Engineering from './components/Engineering'
 import RnD from './components/RnD'
 import Recognition from './components/Recognition'
 import ServicesIntro from './components/ServicesIntro'
+import HomeServices from './components/HomeServices'
 import Skyvertising from './components/Skyvertising'
 import Courses from './components/Courses'
 import DroneService from './components/DroneService'
@@ -28,9 +31,15 @@ const PAGES = {
       <>
         <HomeHero />
         <Hero />
-        <ServicesIntro />
+        <div id="home-about" className="anchor-block">
+          <Drone3D more="#/about" />
+        </div>
+        <HomeServices />
         <VideoStrip />
-        <RequestBand />
+        <Terrain3D />
+        <div id="home-contact" className="anchor-block">
+          <Contact />
+        </div>
       </>
     ),
   },
@@ -38,7 +47,7 @@ const PAGES = {
     title: 'About Us — Sky Eye Technology',
     render: () => (
       <>
-        <DroneJourney />
+        <Drone3D />
         <Engineering />
         <RnD />
         <Recognition />
@@ -113,6 +122,7 @@ const PAGES = {
 
 export default function App() {
   const route = useRoute()
+  useSmoothScroll()
   const page = PAGES[route.path] || PAGES['/']
 
   useEffect(() => {

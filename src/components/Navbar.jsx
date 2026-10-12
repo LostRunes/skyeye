@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { brochureCrop, CONTACTS, ik, newPhoto, photo } from '../cdn'
 import { useTheme } from '../hooks/useTheme'
 import Scramble from './Scramble'
+import { scrollToSection, scrollToTop } from '../router'
 
 // Modelled on anduril.com: hovering any item drops one translucent sheet out
 // of the bar, the page behind blurs, and moving between items cross-fades the
@@ -10,6 +11,7 @@ import Scramble from './Scramble'
 const PANELS = [
   {
     key: 'home',
+    homeTo: 'top',
     path: '/',
     href: '#/',
     label: 'Home',
@@ -28,6 +30,7 @@ const PANELS = [
   },
   {
     key: 'about',
+    homeTo: 'home-about',
     path: '/about',
     href: '#/about',
     label: 'About Us',
@@ -48,6 +51,7 @@ const PANELS = [
   },
   {
     key: 'services',
+    homeTo: 'home-services',
     path: '/services',
     href: '#/services',
     label: 'Our Services',
@@ -86,6 +90,7 @@ const PANELS = [
   },
   {
     key: 'contact',
+    homeTo: 'home-contact',
     path: '/contact',
     href: '#/contact',
     label: 'Contact Us',
@@ -102,6 +107,14 @@ const PANELS = [
     cards: [{ href: '#/contact', label: 'Request a service', img: brochureCrop('led-net-city', 'w-560,h-350,fo-auto') }],
   },
 ]
+
+// On the home page, items with a homeTo scroll to that summary section
+// instead of leaving the page (Gallery always opens its own page).
+const goHomeSection = (panel) => (e) => {
+  e.preventDefault()
+  if (panel.homeTo === 'top') scrollToTop(true)
+  else scrollToSection(panel.homeTo)
+}
 
 // A page belongs to the top-level item whose path it starts with.
 const keyForPath = (path) =>
@@ -127,12 +140,12 @@ function ThemeToggle() {
   )
 }
 
-function NavLink({ panel, isOpen, isActive, onEnter, onClick }) {
+function NavLink({ panel, href, isOpen, isActive, onEnter, onClick }) {
   const ref = useRef(null)
   return (
     <a
       ref={ref}
-      href={panel.href}
+      href={href}
       className={`nav-link${isOpen ? ' is-open' : ''}${isActive ? ' is-active' : ''}`}
       onMouseEnter={onEnter}
       onFocus={onEnter}
@@ -169,6 +182,8 @@ function PanelCard({ card, onClick, tabbable }) {
 }
 
 export default function Navbar({ path = '/' }) {
+  const onHome = path === '/'
+  const [homeActive, setHomeActive] = useState('home')
   const [hidden, setHidden] = useState(false)
   const [openKey, setOpenKey] = useState(null)
   const [switches, setSwitches] = useState(0)
@@ -245,6 +260,33 @@ export default function Navbar({ path = '/' }) {
     setOpenKey(null)
     setMenuOpen(false)
   }
+  // On the home page, mark whichever summary section is mid-screen.
+  useEffect(() => {
+    if (!onHome) return
+    const ids = PANELS.filter((p) => p.homeTo && p.homeTo !== 'top').map((p) => [p.homeTo, p.key])
+    const observer = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return
+          const hit = ids.find(([id]) => id === e.target.id)
+          if (hit) setHomeActive(hit[1])
+        }),
+      { rootMargin: '-45% 0px -50% 0px' }
+    )
+    ids.forEach(([id]) => {
+      const el = document.getElementById(id)
+      if (el) observer.observe(el)
+    })
+    const onScroll = () => {
+      if (window.scrollY < window.innerHeight * 0.6) setHomeActive('home')
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('scroll', onScroll)
+    }
+  }, [onHome])
+
   const toggleMenu = () => {
     if (!menuOpen) setMenuCount((c) => c + 1)
     setMenuOpen(!menuOpen)
@@ -278,10 +320,14 @@ export default function Navbar({ path = '/' }) {
               <NavLink
                 key={p.key}
                 panel={p}
+                href={onHome && p.homeTo ? `#/?to=${p.homeTo}` : p.href}
                 isOpen={openKey === p.key}
-                isActive={keyForPath(path) === p.key}
+                isActive={onHome ? homeActive === p.key : keyForPath(path) === p.key}
                 onEnter={() => enter(p.key)}
-                onClick={closeAll}
+                onClick={(e) => {
+                  closeAll()
+                  if (onHome && p.homeTo) goHomeSection(p)(e)
+                }}
               />
             ))}
           </nav>
@@ -381,7 +427,15 @@ export default function Navbar({ path = '/' }) {
                     </div>
                   </>
                 ) : (
-                  <a className="nav-sheet-link" href={p.href} onClick={closeAll} tabIndex={menuOpen ? 0 : -1}>
+                  <a
+                    className="nav-sheet-link"
+                    href={onHome && p.homeTo ? `#/?to=${p.homeTo}` : p.href}
+                    onClick={(e) => {
+                      closeAll()
+                      if (onHome && p.homeTo) goHomeSection(p)(e)
+                    }}
+                    tabIndex={menuOpen ? 0 : -1}
+                  >
                     <span className="nav-sheet-num">0{i + 1}</span>
                     <Scramble text={p.label} replay={menuCount} duration={560} />
                   </a>

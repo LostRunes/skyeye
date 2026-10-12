@@ -58,12 +58,20 @@ export const takePendingService = () => {
   return s
 }
 
-const scrollToSection = (id) => {
+// Scroll through Lenis when it is running so it stays in sync.
+export const scrollToTop = (smooth) => {
+  if (window.__lenis) window.__lenis.scrollTo(0, { immediate: !smooth, force: true })
+  else window.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'instant' })
+}
+
+export const scrollToSection = (id) => {
   // Wait two frames so the new page has laid out before measuring.
   requestAnimationFrame(() =>
     requestAnimationFrame(() => {
       const el = document.getElementById(id)
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      if (!el) return
+      if (window.__lenis) window.__lenis.scrollTo(el, { offset: -64 })
+      else el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     })
   )
 }
@@ -83,9 +91,9 @@ export function useRoute() {
       }
       const prev = current.path
       current.path = next.path
-      if (prev !== next.path) window.scrollTo({ top: 0, behavior: 'instant' })
+      if (prev !== next.path) scrollToTop(false)
       if (next.to) scrollToSection(next.to)
-      else if (prev === next.path) window.scrollTo({ top: 0, behavior: 'smooth' })
+      else if (prev === next.path) scrollToTop(true)
       setRoute({ path: next.path, to: next.to })
     }
     // Canonicalise a legacy hash on first load as well.

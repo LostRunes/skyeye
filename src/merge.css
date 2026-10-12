@@ -3023,3 +3023,481 @@ html.menu-locked body {
   display: block;
   font-size: 13px;
 }
+/* ============================================
+   SMOOTH SCROLL (Lenis)
+   ============================================ */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* CSS scroll-snap fights eased scrolling; the Track Record section still
+   steps cleanly between pairs without it. */
+html.lenis.rec-snapping {
+  scroll-snap-type: none;
+}
+
+/* ============================================
+   ABOUT — live 3D drone
+   ============================================ */
+.drone3d {
+  position: relative;
+  height: 320vh;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-surface-container-highest);
+}
+
+.drone3d-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  background:
+    radial-gradient(60% 55% at 62% 52%, var(--color-surface-container-lowest) 0%, transparent 70%),
+    var(--color-surface);
+}
+
+.drone3d-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.drone3d-canvas canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.drone3d-fallback {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-outline);
+}
+
+.drone3d-hud {
+  position: absolute;
+  left: var(--margin);
+  right: var(--margin);
+  top: calc(var(--nav-h) + 1.25rem);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--color-outline);
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .drone3d-hud {
+    left: var(--margin-desktop);
+    right: var(--margin-desktop);
+  }
+}
+
+@media (hover: none) {
+  .drone3d-hud-hint {
+    display: none;
+  }
+}
+
+.drone3d-copy {
+  position: absolute;
+  left: var(--margin);
+  right: var(--margin);
+  bottom: 9vh;
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .drone3d-copy {
+    left: var(--margin-desktop);
+    right: auto;
+    bottom: auto;
+    top: 50%;
+    width: min(36vw, 520px);
+    transform: translateY(-50%);
+  }
+}
+
+.drone3d-beat {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.5s var(--nav-ease), transform 0.7s var(--nav-ease);
+}
+
+@media (min-width: 1024px) {
+  .drone3d-beat {
+    bottom: auto;
+    top: 0;
+    transform: translateY(calc(-50% + 18px));
+  }
+}
+
+.drone3d-beat.is-on {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+@media (min-width: 1024px) {
+  .drone3d-beat.is-on {
+    transform: translateY(-50%);
+  }
+}
+
+.drone3d-title {
+  font-size: clamp(30px, 4.6vw, 64px);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--color-primary);
+}
+
+.drone3d-text {
+  max-width: 44ch;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-on-surface-variant);
+}
+
+.drone3d-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 2rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--color-surface-container-highest);
+}
+
+.drone3d-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.drone3d-stat-v {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-primary);
+}
+
+.drone3d-stat-l {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-outline);
+}
+
+.drone3d-progress {
+  position: absolute;
+  right: var(--margin);
+  bottom: 2rem;
+  display: flex;
+  gap: 6px;
+}
+
+@media (min-width: 1024px) {
+  .drone3d-progress {
+    right: var(--margin-desktop);
+  }
+}
+
+.drone3d-progress span {
+  width: 28px;
+  height: 2px;
+  background: var(--color-surface-container-highest);
+  transition: background-color 0.4s ease;
+}
+
+.drone3d-progress span.is-on {
+  background: var(--color-secondary);
+}
+
+/* On phones the drone sits in the top half, the copy in the bottom half */
+@media (max-width: 1023px) {
+  .drone3d-canvas {
+    bottom: 42%;
+    top: calc(var(--nav-h) + 1rem);
+  }
+
+  .drone3d-copy {
+    bottom: 4.5rem;
+  }
+}
+
+/* ============================================
+   HOME — 3D terrain
+   ============================================ */
+.terrain3d {
+  position: relative;
+  padding-top: var(--space-2xl);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-surface-container-highest);
+  overflow: hidden;
+}
+
+.terrain3d-head {
+  display: grid;
+  gap: var(--space-md);
+  position: relative;
+  z-index: 2;
+}
+
+@media (min-width: 1024px) {
+  .terrain3d-head {
+    grid-template-columns: 7fr 5fr;
+    align-items: end;
+    gap: var(--gutter-desktop);
+  }
+}
+
+.terrain3d-stage {
+  position: relative;
+  height: clamp(420px, 80vh, 820px);
+  margin-top: calc(var(--space-xl) * -0.5);
+}
+
+.terrain3d-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.terrain3d-canvas canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.terrain3d-pin {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.terrain3d-pin > * {
+  position: absolute;
+  left: 0;
+  transform: translateX(-50%);
+}
+
+.terrain3d-pin-stem {
+  bottom: 0;
+  width: 1px;
+  height: 46px;
+  background: var(--color-primary);
+}
+
+.terrain3d-pin-dot {
+  bottom: 44px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.terrain3d-pin-label {
+  bottom: 80px;
+  padding: 4px 8px;
+  white-space: nowrap;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-surface-container-highest);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--color-primary);
+}
+
+.terrain3d-hud {
+  position: absolute;
+  left: var(--margin);
+  right: var(--margin);
+  bottom: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--color-outline);
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .terrain3d-hud {
+    left: var(--margin-desktop);
+    right: var(--margin-desktop);
+  }
+}
+
+@media (max-width: 640px) {
+  .terrain3d-pin-label {
+    font-size: 10px;
+  }
+}
+
+/* ============================================
+   HOME — services summary
+   ============================================ */
+.home-services {
+  background: var(--color-surface-container-lowest);
+  border-bottom: 1px solid var(--color-surface-container-highest);
+}
+
+.home-services-head {
+  display: grid;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+@media (min-width: 1024px) {
+  .home-services-head {
+    grid-template-columns: 7fr 5fr;
+    align-items: end;
+    gap: var(--gutter-desktop);
+  }
+}
+
+.home-services-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.hs-block {
+  display: grid;
+  gap: var(--space-lg);
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .hs-block {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gutter-desktop);
+  }
+  .hs-block--flip .hs-media {
+    order: 2;
+  }
+}
+
+.hs-media {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 11;
+  overflow: hidden;
+  background: var(--color-surface-container);
+}
+
+.hs-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.9s var(--nav-ease);
+}
+
+.hs-media:hover img {
+  transform: scale(1.04);
+}
+
+.hs-num {
+  position: absolute;
+  top: var(--space-md);
+  left: var(--space-md);
+  padding: 4px 8px;
+  background: rgba(11, 11, 12, 0.75);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.hs-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-md);
+}
+
+.hs-title {
+  font-size: clamp(26px, 3.2vw, 40px);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--color-primary);
+}
+
+.hs-text {
+  max-width: 46ch;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-on-surface-variant);
+}
+
+.hs-chips {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.hs-chips li {
+  padding: 5px 10px;
+  border: 1px solid var(--color-surface-container-highest);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-on-surface-variant);
+}
+
+.hs-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+  padding-top: var(--space-xs);
+}
+
+.hs-more {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-primary);
+  border-bottom: 1px solid var(--color-secondary);
+  padding-bottom: 2px;
+}
+
+.hs-more:hover {
+  color: var(--color-secondary);
+}
+
+.drone3d-more {
+  align-self: flex-start;
+}
