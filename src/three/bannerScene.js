@@ -183,12 +183,12 @@ export function mountBanner(container, { dark = false, mode = 'inline', logoUrl 
   const rig = new THREE.Group()
   scene.add(rig)
   const { drone, props } = buildDrone()
-  drone.scale.setScalar(0.42)
+  drone.scale.setScalar(0.6)
   drone.rotation.set(0.22, 0.35, 0)
   rig.add(drone)
 
   const bannerPivot = new THREE.Group() // hangs from the drone, swings
-  bannerPivot.position.y = -0.2
+  bannerPivot.position.y = -0.29
   rig.add(bannerPivot)
   const tex = bannerTexture(logoUrl)
   const uniforms = {
@@ -301,7 +301,7 @@ export function mountBanner(container, { dark = false, mode = 'inline', logoUrl 
     const scale = (cur.size * worldPerPx) / BW
     const bob = reduced ? 0 : Math.sin(t * 1.3) * 0.06
     const wx = (cur.x - viewW / 2) * worldPerPx
-    const wy = -(cur.y - viewH / 2) * worldPerPx + (0.2 + DROP + BH / 2) * scale
+    const wy = -(cur.y - viewH / 2) * worldPerPx + (0.29 + DROP + BH / 2) * scale
     rig.position.set(wx, wy + bob * scale, 0)
     rig.scale.setScalar(scale)
     rig.rotation.z = THREE.MathUtils.clamp(-vx * 0.0004, -0.18, 0.18)
@@ -339,7 +339,7 @@ export function mountBanner(container, { dark = false, mode = 'inline', logoUrl 
     // Cables, in rig space: drone belly → banner top corners
     bannerPivot.updateMatrix()
     cables.forEach((line, i) => {
-      a.set(i ? 0.12 : -0.12, -0.12, 0.05)
+      a.set(i ? 0.17 : -0.17, -0.17, 0.07)
       b.set((i ? 1 : -1) * BW * 0.5, -DROP, 0).applyMatrix4(bannerPivot.matrix)
       const d = b.clone().sub(a)
       line.position.copy(a).addScaledVector(d, 0.5)
