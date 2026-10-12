@@ -3295,41 +3295,51 @@ html.lenis.rec-snapping {
   position: absolute;
   left: 0;
   top: 0;
-  z-index: 2;
+  z-index: 3;
   opacity: 0;
   transition: opacity 0.3s ease;
-  pointer-events: none;
   will-change: transform;
 }
 
-.terrain3d-pin > * {
+.terrain3d-pin-stem {
   position: absolute;
   left: 0;
-  transform: translateX(-50%);
-}
-
-.terrain3d-pin-stem {
   bottom: 0;
   width: 1px;
   height: 46px;
   background: var(--color-primary);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* The clickable part: label + dot, sitting on top of the stem */
+.terrain3d-pin-hit {
+  position: absolute;
+  left: 0;
+  bottom: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transform: translateX(-50%);
+  cursor: pointer;
 }
 
 .terrain3d-pin-dot {
-  bottom: 44px;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   display: grid;
   place-items: center;
   border-radius: 50%;
   background: var(--color-primary);
   color: var(--color-on-primary);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1;
+  transition: transform 0.3s var(--nav-ease), background-color 0.2s ease;
 }
 
 .terrain3d-pin-label {
-  bottom: 80px;
+  order: -1;
   padding: 4px 8px;
   white-space: nowrap;
   background: var(--color-surface-container-lowest);
@@ -3338,6 +3348,99 @@ html.lenis.rec-snapping {
   font-size: 11px;
   letter-spacing: 0.06em;
   color: var(--color-primary);
+  transition: opacity 0.2s ease;
+}
+
+/* Hover card: a short brief and a link through to the service */
+.terrain3d-pin-card {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 14px 16px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-surface-container-highest);
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.35);
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 8px);
+  transition: opacity 0.25s ease, transform 0.35s var(--nav-ease), visibility 0s linear 0.35s;
+  pointer-events: none;
+}
+
+.terrain3d-pin-card strong {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.terrain3d-pin-card span {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-on-surface-variant);
+}
+
+.terrain3d-pin-card em {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-secondary);
+}
+
+.terrain3d-pin:hover,
+.terrain3d-pin:focus-within {
+  z-index: 4;
+}
+
+.terrain3d-pin-hit:hover .terrain3d-pin-card,
+.terrain3d-pin-hit:focus-visible .terrain3d-pin-card {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+  transition: opacity 0.25s ease, transform 0.35s var(--nav-ease), visibility 0s;
+}
+
+.terrain3d-pin-hit:hover .terrain3d-pin-label,
+.terrain3d-pin-hit:focus-visible .terrain3d-pin-label {
+  opacity: 0;
+}
+
+.terrain3d-pin-hit:hover .terrain3d-pin-dot,
+.terrain3d-pin-hit:focus-visible .terrain3d-pin-dot {
+  background: var(--color-secondary);
+  color: #fff;
+  transform: scale(1.15);
+}
+
+.terrain3d-pin-hit:focus-visible {
+  outline: none;
+}
+
+@media (max-width: 640px) {
+  .terrain3d-pin-label {
+    font-size: 10px;
+  }
+  .terrain3d-pin-card {
+    width: 200px;
+  }
+}
+
+/* The home page's flying drone: a fixed layer over the page, click-through */
+.flying-drone {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
+
+.flying-drone canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .terrain3d-hud {
@@ -3361,11 +3464,6 @@ html.lenis.rec-snapping {
   }
 }
 
-@media (max-width: 640px) {
-  .terrain3d-pin-label {
-    font-size: 10px;
-  }
-}
 
 /* ============================================
    HOME — services summary

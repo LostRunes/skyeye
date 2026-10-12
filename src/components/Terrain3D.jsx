@@ -4,10 +4,26 @@ import { useTheme } from '../hooks/useTheme'
 // Closing piece of the home page: a generated mountain range with glowing
 // contour lines, a scanning sweep and service pins — "mapped from the air".
 const PINS = [
-  { x: -2.4, z: 0.6, label: 'Mapping & survey' },
-  { x: 0.4, z: -0.8, label: 'Skyvertising' },
-  { x: 2.6, z: 0.9, label: 'Inspection' },
-  { x: -0.6, z: 2.4, label: 'Agriculture' },
+  {
+    x: -2.4, z: 0.6, label: 'Mapping & survey',
+    text: 'Aerial maps, measurements and 3D models of land, sites and infrastructure.',
+    href: '#/services/drone-as-a-service?to=daas-mapping',
+  },
+  {
+    x: 0.4, z: -0.8, label: 'Skyvertising',
+    text: 'Banners and LED displays flown above events, launches and public gatherings.',
+    href: '#/services/skyvertising',
+  },
+  {
+    x: 2.6, z: 0.9, label: 'Inspection',
+    text: 'Thermal and solar inspection — find faults without shutting anything down.',
+    href: '#/services/drone-as-a-service?to=daas-inspection',
+  },
+  {
+    x: -0.6, z: 2.4, label: 'Agriculture',
+    text: 'Even, fast crop spraying without anyone walking the field with a tank.',
+    href: '#/services/drone-as-a-service?to=daas-agriculture',
+  },
 ]
 
 export default function Terrain3D() {
@@ -97,10 +113,17 @@ export default function Terrain3D() {
         <div className="terrain3d-canvas" ref={canvasRef} aria-hidden="true" />
         {!failed &&
           PINS.map((p, i) => (
-            <div key={p.label} className="terrain3d-pin" ref={(el) => (pinRefs.current[i] = el)} aria-hidden="true">
-              <span className="terrain3d-pin-label">{p.label}</span>
-              <span className="terrain3d-pin-dot">+</span>
-              <span className="terrain3d-pin-stem" />
+            <div key={p.label} className="terrain3d-pin" ref={(el) => (pinRefs.current[i] = el)}>
+              <a className="terrain3d-pin-hit" href={p.href} aria-label={`${p.label}: ${p.text}`}>
+                <span className="terrain3d-pin-card" aria-hidden="true">
+                  <strong>{p.label}</strong>
+                  <span>{p.text}</span>
+                  <em>Learn more →</em>
+                </span>
+                <span className="terrain3d-pin-label" aria-hidden="true">{p.label}</span>
+                <span className="terrain3d-pin-dot" aria-hidden="true">+</span>
+              </a>
+              <span className="terrain3d-pin-stem" aria-hidden="true" />
             </div>
           ))}
         <div className="terrain3d-hud" aria-hidden="true">

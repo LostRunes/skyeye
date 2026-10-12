@@ -8,6 +8,7 @@ import HomeHero from './components/HomeHero'
 import Hero from './components/Hero'
 import Drone3D from './components/Drone3D'
 import Terrain3D from './components/Terrain3D'
+import FlyingDrone from './components/FlyingDrone'
 import Engineering from './components/Engineering'
 import RnD from './components/RnD'
 import Recognition from './components/Recognition'
@@ -29,10 +30,11 @@ const PAGES = {
     title: 'Sky Eye Technology — Unfolding The Unfiltered',
     render: () => (
       <>
+        <FlyingDrone />
         <HomeHero />
         <Hero />
         <div id="home-about" className="anchor-block">
-          <Drone3D more="#/about" />
+          <Drone3D more="#/about" bare />
         </div>
         <HomeServices />
         <VideoStrip />

@@ -31,7 +31,9 @@ const BEATS = [
   },
 ]
 
-export default function Drone3D({ more }) {
+// `bare`: the page supplies its own drone (the home page's FlyingDrone), so
+// this section only provides the pinned copy.
+export default function Drone3D({ more, bare = false }) {
   const { theme } = useTheme()
   const sectionRef = useRef(null)
   const canvasRef = useRef(null)
@@ -41,6 +43,7 @@ export default function Drone3D({ more }) {
 
   // Load three.js only when the section is near
   useEffect(() => {
+    if (bare) return
     const el = sectionRef.current
     let cancelled = false
     const io = new IntersectionObserver(
@@ -65,7 +68,7 @@ export default function Drone3D({ more }) {
       sceneRef.current?.dispose()
       sceneRef.current = null
     }
-  }, [])
+  }, [bare])
 
   useEffect(() => {
     sceneRef.current?.setTheme(theme === 'dark')
@@ -100,7 +103,7 @@ export default function Drone3D({ more }) {
   return (
     <section className="drone3d" ref={sectionRef} aria-label="About Sky Eye Technology">
       <div className="drone3d-stage">
-        <div className="drone3d-canvas" ref={canvasRef} aria-hidden="true" />
+        {!bare && <div className="drone3d-canvas" ref={canvasRef} aria-hidden="true" />}
         {failed && <p className="drone3d-fallback">3D view unavailable on this device.</p>}
 
         <div className="drone3d-hud" aria-hidden="true">

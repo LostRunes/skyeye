@@ -68,10 +68,22 @@ export const scrollToSection = (id) => {
   // Wait two frames so the new page has laid out before measuring.
   requestAnimationFrame(() =>
     requestAnimationFrame(() => {
-      const el = document.getElementById(id)
-      if (!el) return
-      if (window.__lenis) window.__lenis.scrollTo(el, { offset: -64 })
-      else el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const go = (smooth) => {
+        const el = document.getElementById(id)
+        if (!el) return
+        const y = el.getBoundingClientRect().top + window.scrollY - 64
+        if (window.__lenis) {
+          // The page may have just changed height; let Lenis re-measure first
+          window.__lenis.resize()
+          window.__lenis.scrollTo(y, { immediate: !smooth, force: true })
+        } else window.scrollTo({ top: y, behavior: smooth ? 'smooth' : 'instant' })
+      }
+      go(true)
+      // Images above the target can still be loading — re-aim once they settle
+      setTimeout(() => {
+        const el = document.getElementById(id)
+        if (el && Math.abs(el.getBoundingClientRect().top - 64) > 40) go(true)
+      }, 1200)
     })
   )
 }

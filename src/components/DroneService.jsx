@@ -130,7 +130,7 @@ export default function DroneService() {
           </div>
           <div className="daas-grid">
             {OFFERINGS.map((o, i) => (
-              <article key={o.id} className="daas-card">
+              <article key={o.id} id={`daas-${o.id}`} className="daas-card">
                 <div className="daas-card-img">
                   <img src={o.img} alt="" loading="lazy" />
                   <span className="daas-card-num">{String(i + 1).padStart(2, '0')}</span>
