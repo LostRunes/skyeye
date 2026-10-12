@@ -3640,8 +3640,24 @@ html.lenis.rec-snapping {
 }
 
 /* ============================================
-   SKYVERTISING — drone towing a cloth banner
+   SKYVERTISING — drone towing a vertical logo banner
    ============================================ */
+/* Wide screens: a fixed, click-through layer; the drone flies the margins */
+.skybanner-fly {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
+
+.skybanner-fly canvas,
+.skybanner-stage canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Narrower screens: a compact stage of its own above the info */
 .skybanner {
   position: relative;
   background:
@@ -3652,24 +3668,17 @@ html.lenis.rec-snapping {
 
 .skybanner-stage {
   position: relative;
-  height: clamp(420px, 72vh, 760px);
+  height: clamp(440px, 66vh, 640px);
   touch-action: pan-y;
-}
-
-.skybanner-stage canvas {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
 }
 
 .skybanner-hud {
   position: absolute;
-  left: var(--margin);
-  right: var(--margin);
-  bottom: 1.25rem;
+  left: 0;
+  right: 0;
+  bottom: 1.1rem;
   display: flex;
-  justify-content: space-between;
-  gap: var(--space-md);
+  justify-content: center;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.12em;
@@ -3677,21 +3686,9 @@ html.lenis.rec-snapping {
   pointer-events: none;
 }
 
-@media (min-width: 1024px) {
-  .skybanner-hud {
-    left: var(--margin-desktop);
-    right: var(--margin-desktop);
-  }
-}
-
-@media (max-width: 640px) {
-  .skybanner-hud span:not(.skybanner-hint) {
-    display: none;
-  }
-  .skybanner-hud {
-    justify-content: center;
-  }
+@media (hover: none) {
   .skybanner-hint::before {
     content: 'TAP OR ';
   }
 }
+
