@@ -51,7 +51,7 @@ function bladeGeometry() {
   return g
 }
 
-function buildDrone() {
+export function buildDrone() {
   const shell = new THREE.MeshPhysicalMaterial({ color: 0xeef0f2, roughness: 0.3, metalness: 0.05, clearcoat: 0.8, clearcoatRoughness: 0.2 })
   const shellDark = new THREE.MeshPhysicalMaterial({ color: 0xc9cfd4, roughness: 0.38, metalness: 0.12, clearcoat: 0.5 })
   const graphite = new THREE.MeshPhysicalMaterial({ color: 0x2a2f34, roughness: 0.42, metalness: 0.3, clearcoat: 0.4 })

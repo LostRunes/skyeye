@@ -3599,3 +3599,99 @@ html.lenis.rec-snapping {
 .drone3d-more {
   align-self: flex-start;
 }
+
+/* ============================================
+   HOME — light hero on phones
+   A portrait screen crops the 16:9 footage to its middle third, which blows
+   the drone up. On phones the photo sits as a wide strip at the top and
+   melts into a matching sky gradient behind the copy. Desktop is untouched.
+   ============================================ */
+@media (max-width: 767px) {
+  .video-hero:not(.video-hero--dark) {
+    background: linear-gradient(to bottom, #6a8fbc 0%, #5d86b3 45%, #3f6894 100%);
+  }
+
+  .video-hero:not(.video-hero--dark) .vh-media {
+    inset: 0 0 auto 0;
+    height: min(92vw, 62svh);
+    transform: none !important;
+  }
+
+  .video-hero:not(.video-hero--dark) .vh-media img {
+    opacity: 1;
+    object-fit: cover;
+    object-position: 56% 42%;
+  }
+
+  .video-hero:not(.video-hero--dark) .vh-media::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 55%;
+    background: linear-gradient(to bottom, rgba(106, 143, 188, 0) 0%, #6a8fbc 100%);
+  }
+
+  .video-hero:not(.video-hero--dark) .vh-content {
+    padding-top: calc(min(92vw, 62svh) * 0.62);
+    padding-bottom: var(--space-xl);
+  }
+}
+
+/* ============================================
+   SKYVERTISING — drone towing a cloth banner
+   ============================================ */
+.skybanner {
+  position: relative;
+  background:
+    radial-gradient(70% 60% at 50% 45%, var(--color-surface-container-lowest) 0%, transparent 75%),
+    var(--color-surface);
+  border-bottom: 1px solid var(--color-surface-container-highest);
+}
+
+.skybanner-stage {
+  position: relative;
+  height: clamp(420px, 72vh, 760px);
+  touch-action: pan-y;
+}
+
+.skybanner-stage canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.skybanner-hud {
+  position: absolute;
+  left: var(--margin);
+  right: var(--margin);
+  bottom: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--color-outline);
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .skybanner-hud {
+    left: var(--margin-desktop);
+    right: var(--margin-desktop);
+  }
+}
+
+@media (max-width: 640px) {
+  .skybanner-hud span:not(.skybanner-hint) {
+    display: none;
+  }
+  .skybanner-hud {
+    justify-content: center;
+  }
+  .skybanner-hint::before {
+    content: 'TAP OR ';
+  }
+}

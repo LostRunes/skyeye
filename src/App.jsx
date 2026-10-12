@@ -15,6 +15,7 @@ import Recognition from './components/Recognition'
 import ServicesIntro from './components/ServicesIntro'
 import HomeServices from './components/HomeServices'
 import Skyvertising from './components/Skyvertising'
+import SkyBanner3D from './components/SkyBanner3D'
 import Courses from './components/Courses'
 import DroneService from './components/DroneService'
 import VideoStrip from './components/VideoStrip'
@@ -70,6 +71,7 @@ const PAGES = {
     title: 'Skyvertising — Sky Eye Technology',
     render: () => (
       <>
+        <SkyBanner3D />
         <Skyvertising />
         <RequestBand
           service="Skyvertising"
