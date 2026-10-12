@@ -4,14 +4,15 @@ import { ik } from '../cdn'
 import { useTheme } from '../hooks/useTheme'
 
 // Skyvertising: the Sky Eye drone towing a vertical logo banner.
-// Wide screens — it flies around the Skyvertising info itself: a fixed layer
-// over the page keeps the drone in the empty margins beside the content,
-// crossing from one side to the other (arcing up and over) as you scroll.
-// Narrower screens have no margins, so it gets a compact stage of its own.
+// Laptops and up — it flies around the Skyvertising info itself: a fixed,
+// click-through layer keeps the drone along the side margins (overlapping the
+// content edge where the margin is narrow), crossing from one side to the
+// other, arcing up and over, as you scroll. Tablets and phones get a compact stage instead,
+// so the banner never sits over the text being read (single-column layouts).
 // Hover or tap the banner and it ripples, flips and flows.
 
 const LOGO = ik('site/logo-mark-light.png', 'h-400')
-const MIN_GUTTER = 100 // px of free margin needed to fly beside the content
+const MIN_WIDTH = 1024 // below this (tablets, phones), use the compact stage
 
 const smooth = (t) => t * t * (3 - 2 * t)
 const clamp01 = (v) => Math.min(Math.max(v, 0), 1)
@@ -45,20 +46,12 @@ function sideAt(p) {
 }
 
 function useWideEnough() {
-  const check = () => {
-    const g = gutters()
-    return g ? g.width >= MIN_GUTTER : window.innerWidth >= 1340
-  }
+  const check = () => window.innerWidth >= MIN_WIDTH
   const [wide, setWide] = useState(check)
   useEffect(() => {
     const onResize = () => setWide(check())
     window.addEventListener('resize', onResize)
-    // The section mounts after this component, so measure again once it exists
-    const id = requestAnimationFrame(onResize)
-    return () => {
-      window.removeEventListener('resize', onResize)
-      cancelAnimationFrame(id)
-    }
+    return () => window.removeEventListener('resize', onResize)
   }, [])
   return wide
 }
@@ -105,9 +98,12 @@ function FlyingBanner() {
       const r = section.getBoundingClientRect()
       // Progress of the screen's centre line through the section
       const p = (vh * 0.5 - r.top) / r.height
-      const size = Math.min(130, g.width - 26)
-      const leftX = g.width / 2
-      const rightX = vw - g.width / 2
+      // Fixed, comfortable size; centred in the margin when there is room,
+      // otherwise kept just inside the screen edge, overlapping the content
+      const size = Math.min(124, Math.max(96, vw * 0.075))
+      const inset = Math.max(g.width / 2, size * 1.15 + 18)
+      const leftX = inset
+      const rightX = vw - inset
       if (p < -0.05) {
         s.setPose({ x: vw + 160, y: vh * 0.25, size, show: 0 })
         return
