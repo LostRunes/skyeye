@@ -1,45 +1,59 @@
-import { useImageSequence } from './hooks/useImageSequence'
-import { CDN } from './cdn'
-import Loader from './components/Loader'
+import { useEffect } from 'react'
+import { ThemeProvider } from './hooks/useTheme'
+import { scrambleOnView } from './utils/scramble'
 import Navbar from './components/Navbar'
+import HomeHero from './components/HomeHero'
+import Hero from './components/Hero'
 import DroneJourney from './components/DroneJourney'
-import ProductSection from './components/ProductSection'
-import TechnologySection from './components/TechnologySection'
-import ApplicationsSection from './components/ApplicationsSection'
-import CompanySection from './components/CompanySection'
-import FinalCta from './components/FinalCta'
+import Engineering from './components/Engineering'
+import RnD from './components/RnD'
+import Recognition from './components/Recognition'
+import ServicesIntro from './components/ServicesIntro'
+import Skyvertising from './components/Skyvertising'
+import Courses from './components/Courses'
+import Solutions from './components/Solutions'
+import Technology from './components/Technology'
+import Product from './components/Product'
+import VideoStrip from './components/VideoStrip'
+import Gallery from './components/Gallery'
+import Contact from './components/Contact'
 import Footer from './components/Footer'
 
-// The journey is now one continuous two-act sequence: the assembly/zoom
-// act (frames2) plays first, then hands off to the fold/unfold act (frames).
-const SEQUENCES = [
-  { key: 'assembly', folder: `${CDN}/frames2`, count: 90 },
-  { key: 'flight', folder: `${CDN}/frames`, count: 57 },
-]
-
+// One page, five stops: Home · About Us · Our Services · Gallery · Contact Us.
 export default function App() {
-  const { images, progress, ready } = useImageSequence(SEQUENCES)
+  // Section labels decode out of jumbled letters as they scroll in, echoing the menu.
+  useEffect(() => scrambleOnView('.section-label, .sky-kicker'), [])
 
   return (
-    <>
-      {!ready && <Loader progress={progress} />}
+    <ThemeProvider>
+      <Navbar />
+      <main className="page-main">
+        <div id="home" className="anchor-block">
+          <HomeHero />
+          <Hero />
+        </div>
 
-      <div className="site" id="top" style={{ visibility: ready ? 'visible' : 'hidden' }}>
-        <Navbar />
+        <div id="about" className="anchor-block">
+          <DroneJourney />
+          <Engineering />
+          <RnD />
+          <Recognition />
+        </div>
 
-        <DroneJourney
-          assemblyImages={images.assembly ?? []}
-          flightImages={images.flight ?? []}
-          scrollLength={600}
-        />
+        <div id="services" className="anchor-block">
+          <ServicesIntro />
+          <Skyvertising />
+          <Courses />
+          <Solutions />
+          <Technology />
+          <Product />
+          <VideoStrip />
+        </div>
 
-        <ProductSection />
-        <TechnologySection />
-        <ApplicationsSection />
-        <CompanySection />
-        <FinalCta />
-        <Footer />
-      </div>
-    </>
+        <Gallery />
+        <Contact />
+      </main>
+      <Footer />
+    </ThemeProvider>
   )
 }
