@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { brochureCrop, CONTACTS, ik, newPhoto, photo } from '../cdn'
 import { useTheme } from '../hooks/useTheme'
 import Scramble from './Scramble'
+import { COURSES } from '../data/courses'
 import { scrollToSection, scrollToTop } from '../router'
 
 // Modelled on anduril.com: hovering any item drops one translucent sheet out
@@ -25,7 +26,7 @@ const PANELS = [
     cardsLabel: 'Featured',
     cards: [
       { href: '#/services/skyvertising', label: 'Skyvertising', img: brochureCrop('led-net-city', 'w-560,h-350,fo-auto') },
-      { href: '#/services/courses', label: 'Live courses', img: newPhoto('genai-speaker', 'w-560,h-350,fo-auto') },
+      { href: '#/training', label: 'Live training', img: newPhoto('genai-speaker', 'w-560,h-350,fo-auto') },
     ],
   },
   {
@@ -56,18 +57,32 @@ const PANELS = [
     href: '#/services',
     label: 'Our Services',
     kicker: 'Our Services',
-    desc: 'Three ways we put drones to work — on your brand, in your classroom and on your site.',
+    desc: 'Two ways we put drones to work — on your brand and on your site.',
     listLabel: 'Services',
     links: [
       { href: '#/services/skyvertising', label: 'Skyvertising' },
-      { href: '#/services/courses', label: 'Courses' },
       { href: '#/services/drone-as-a-service', label: 'Drone as a Service' },
     ],
     cardsLabel: 'Services',
     cards: [
       { href: '#/services/skyvertising', label: 'Skyvertising', img: brochureCrop('sky-is-live', 'w-560,h-350,fo-auto') },
-      { href: '#/services/courses', label: 'Courses', img: photo('edu', 356, 'w-560,h-350,fo-auto') },
       { href: '#/services/drone-as-a-service', label: 'Drone as a Service', img: photo('agri', 141, 'w-560,h-350,fo-auto') },
+    ],
+  },
+  {
+    key: 'training',
+    homeTo: 'home-training',
+    path: '/training',
+    href: '#/training',
+    label: 'Training',
+    kicker: 'Education & Training',
+    desc: 'Live, hands-on training in drones and AI for schools, colleges, professionals and defence training units.',
+    listLabel: 'Courses',
+    links: COURSES.map((c) => ({ href: `#/training?to=course-tab-${c.id}`, label: c.title })),
+    cardsLabel: 'In session',
+    cards: [
+      { href: '#/training', label: 'Generative AI', img: newPhoto('genai-speaker', 'w-560,h-350,fo-auto') },
+      { href: '#/training?to=course-tab-drone-basic', label: 'Drone training', img: photo('edu', 356, 'w-560,h-350,fo-auto') },
     ],
   },
   {

@@ -11,14 +11,6 @@ const services = [
   },
   {
     num: '02',
-    href: '#/services/courses',
-    title: 'COURSES',
-    desc: 'Five live courses — Generative AI, Data Analytics, and drones from school basics to FPV and advanced engineering.',
-    img: photo('course', 24, 'w-480,h-300,fo-auto'),
-    alt: 'Speaker addressing a full lecture hall at KIIT University',
-  },
-  {
-    num: '03',
     href: '#/services/drone-as-a-service',
     title: 'DRONE AS A SERVICE',
     desc: 'The outcome without owning a drone — spraying, mapping, inspection, filming, surveillance support and more, flown by our crew.',
@@ -33,10 +25,10 @@ export default function ServicesIntro() {
       <div className="container section-what-inner">
         <div className="section-header">
           <span className="section-label">OUR SERVICES</span>
-          <h2 className="section-h2">THREE WAYS WE FLY FOR YOU.</h2>
+          <h2 className="section-h2">TWO WAYS WE FLY FOR YOU.</h2>
           <p className="section-desc">
-            Sky Eye Technology puts drones to work on your brand, in your classroom and on your
-            site. Pick a service to see what it covers.
+            Sky Eye Technology puts drones to work on your brand and on your site. Pick a service to
+            see what it covers — training has its own section.
           </p>
         </div>
 
