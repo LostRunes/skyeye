@@ -3,9 +3,9 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { buildDrone } from './droneScene.js'
 
 // Skyvertising: the Sky Eye drone towing a vertical cloth banner with the
-// company logo and name. The cloth is animated in a vertex shader — wind
-// ripple, swing from the drone's motion, a ripple from wherever the pointer
-// touches it, and a flip that rolls down its length on hover.
+// company logo and name. The banner is a real cloth simulation (see below):
+// it hangs, catches the wind, swings behind the drone and is stirred by the
+// pointer; a first touch twists it so it flips and settles on its own.
 //
 // mode 'overlay': a fixed full-viewport layer; the page steers the drone with
 //   setPose({ x, y, size, show }) in CSS pixels (banner centre, banner width).
@@ -94,70 +94,19 @@ function bannerTexture(logoUrl) {
   return t
 }
 
-const VERT = /* glsl */ `
-  uniform float uTime;
-  uniform float uFlip;
-  uniform float uFlipOn;
-  uniform vec2 uHit;
-  uniform float uHitAmp;
-  uniform float uHitTime;
-  uniform float uSwing;
-  uniform float uAmp;
-  varying vec2 vUv;
-  varying vec3 vPos;
-
-  void main() {
-    vUv = uv;
-    vec3 p = position;
-    float down = 1.0 - uv.y;                 // 0 at the top hem, 1 at the bottom
-    float free = down * (0.6 + 0.4 * down);  // the top is held by the cables
-
-    // Wind: waves travelling down the cloth, rippling across it
-    float wave = sin(down * 7.0 - uTime * 3.0 + uv.x * 2.0) * 0.16
-               + sin(down * 13.0 - uTime * 4.3 + uv.x * 5.0) * 0.05;
-    p.z += wave * uAmp * free;
-    p.x += sin(down * 5.0 - uTime * 2.2) * 0.05 * uAmp * free;
-
-    // Swing from the drone's motion: the tail trails and the cloth bows
-    p.x -= uSwing * 0.7 * free * down;
-    p.z -= abs(uSwing) * 0.35 * sin(down * 3.14159);
-
-    // Pointer ripple spreading from the contact point
-    vec2 d = (uv - uHit) * vec2(${(BW / BH).toFixed(3)}, 1.0);
-    float dist = length(d);
-    float ring = sin(dist * 18.0 - uHitTime * 9.0) * exp(-dist * 2.6) * exp(-uHitTime * 1.1);
-    p.z += ring * 0.28 * uHitAmp * (0.3 + free);
-    p.z += exp(-dist * dist * 16.0) * 0.16 * uHitAmp;
-
-    // Rolling flip: a full turn of the cloth around its vertical centre line,
-    // travelling from the top hem to the bottom. The top stays put.
-    float a = 6.28318 * smoothstep(uFlip - 0.3, uFlip, down) * uFlipOn;
-    float cx = p.x;
-    float cz = p.z;
-    p.x = cx * cos(a) - cz * sin(a);
-    p.z = cx * sin(a) + cz * cos(a);
-
-    vec4 world = modelMatrix * vec4(p, 1.0);
-    vPos = world.xyz;
-    gl_Position = projectionMatrix * viewMatrix * world;
-  }
-`
-
-const FRAG = /* glsl */ `
-  uniform sampler2D uMap;
-  varying vec2 vUv;
-  varying vec3 vPos;
-  void main() {
-    // Mirror the print on the back so it reads correctly from either side
-    vec2 uv = gl_FrontFacing ? vUv : vec2(1.0 - vUv.x, vUv.y);
-    vec4 tex = texture2D(uMap, uv);
-    vec3 n = normalize(cross(dFdx(vPos), dFdy(vPos)));
-    vec3 L = normalize(vec3(0.35, 0.5, 0.8));
-    float diff = abs(dot(n, L));
-    vec3 col = tex.rgb * (0.55 + 0.6 * diff) + pow(diff, 24.0) * 0.3;
-    gl_FragColor = vec4(col, 1.0);
-  }
-`
+// ── Cloth simulation ──────────────────────────────────────────────
+// Adapted from the "drape, set free" silk in VAYANA (SareeCloth): Verlet
+// integration over a particle sheet with structural and bend constraints,
+// one edge pinned, wind gusts, and a pointer that stirs the cloth it passes.
+// Here the pinned edge is the top hem under the drone, and the sheet lives in
+// a frame that travels with the drone — when the drone moves, the frame moves
+// and the cloth genuinely lags and swings behind it.
+const GX = 14
+const GY = 42
+const SIM_DT = 1 / 60
+const DAMP = 0.982
+const GRAVITY = -2.4
+const ITERATIONS = 6
 
 export function mountBanner(container, { dark = false, mode = 'inline', logoUrl } = {}) {
   const overlay = mode === 'overlay'
@@ -171,10 +120,13 @@ export function mountBanner(container, { dark = false, mode = 'inline', logoUrl 
   const scene = new THREE.Scene()
   const pmrem = new THREE.PMREMGenerator(renderer)
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture
-  const key = new THREE.DirectionalLight(0xffffff, 1.3)
-  key.position.set(3, 6, 5)
+  const key = new THREE.DirectionalLight(0xffffff, 1.4)
+  key.position.set(-3, 4, 5)
   scene.add(key)
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xaab4bb, 0.6))
+  const rim = new THREE.DirectionalLight(0x9fc4ff, 0.8)
+  rim.position.set(4, -1, 2.5)
+  scene.add(rim)
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xaab4bb, 0.55))
 
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100)
   camera.position.set(0, 0, 10)
@@ -187,27 +139,158 @@ export function mountBanner(container, { dark = false, mode = 'inline', logoUrl 
   drone.rotation.set(0.22, 0.35, 0)
   rig.add(drone)
 
-  const bannerPivot = new THREE.Group() // hangs from the drone, swings
-  bannerPivot.position.y = -0.29
-  rig.add(bannerPivot)
+  // The cloth: its top hem hangs DROP below the drone's belly
+  const TOP = -0.29 - DROP
+  const geometry = new THREE.PlaneGeometry(BW, BH, GX, GY)
+  geometry.translate(0, TOP - BH / 2, 0)
   const tex = bannerTexture(logoUrl)
-  const uniforms = {
-    uTime: { value: 0 },
-    uFlip: { value: 0 },
-    uFlipOn: { value: 0 },
-    uHit: { value: new THREE.Vector2(0.5, 0.5) },
-    uHitAmp: { value: 0 },
-    uHitTime: { value: 10 },
-    uSwing: { value: 0 },
-    uAmp: { value: reduced ? 0.2 : 1 },
-    uMap: { value: tex },
+  // Front shows the print; the back gets a mirrored copy so it reads correctly
+  const texBack = tex.clone()
+  texBack.wrapS = THREE.RepeatWrapping
+  texBack.repeat.x = -1
+  texBack.offset.x = 1
+  const clothMat = (map, side) =>
+    new THREE.MeshPhysicalMaterial({
+      map,
+      side,
+      roughness: 0.62,
+      metalness: 0,
+      sheen: 0.22,
+      sheenColor: new THREE.Color(0x8fb2ff),
+      sheenRoughness: 0.5,
+      envMapIntensity: 0.32,
+    })
+  const front = new THREE.Mesh(geometry, clothMat(tex, THREE.FrontSide))
+  const back = new THREE.Mesh(geometry, clothMat(texBack, THREE.BackSide))
+  // (The clone shares the canvas source, so redraws reach both sides.)
+  rig.add(front, back)
+
+  // Particles, in rig-local units
+  const pos = geometry.attributes.position
+  const N = (GX + 1) * (GY + 1)
+  const cur = new Float32Array(N * 3)
+  const prev = new Float32Array(N * 3)
+  const rest = new Float32Array(N * 3)
+  for (let i = 0; i < N; i++) {
+    cur[i * 3] = prev[i * 3] = rest[i * 3] = pos.getX(i)
+    cur[i * 3 + 1] = prev[i * 3 + 1] = rest[i * 3 + 1] = pos.getY(i)
   }
-  const banner = new THREE.Mesh(
-    new THREE.PlaneGeometry(BW, BH, 36, 120),
-    new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: FRAG, uniforms, side: THREE.DoubleSide })
-  )
-  banner.position.y = -DROP - BH / 2
-  bannerPivot.add(banner)
+  const idx = (ix, iy) => ix + iy * (GX + 1)
+  const restH = BW / GX
+  const restV = BH / GY
+  const cons = [] // a, b, restLength, stiffness
+  for (let iy = 0; iy <= GY; iy++)
+    for (let ix = 0; ix <= GX; ix++) {
+      if (ix < GX) cons.push(idx(ix, iy), idx(ix + 1, iy), restH, 1)
+      if (iy < GY) cons.push(idx(ix, iy), idx(ix, iy + 1), restV, 1)
+      if (ix < GX && iy < GY) cons.push(idx(ix, iy), idx(ix + 1, iy + 1), Math.hypot(restH, restV), 0.5)
+      if (ix < GX - 1) cons.push(idx(ix, iy), idx(ix + 2, iy), restH * 2, 0.2)
+      if (iy < GY - 1) cons.push(idx(ix, iy), idx(ix, iy + 2), restV * 2, 0.15)
+    }
+  const pinned = (p) => p < GX + 1 // the top row
+
+  // The top hem: held by the cables, swaying slightly
+  const pinAt = (ix, t, o) => {
+    const r = idx(ix, 0) * 3
+    cur[o] = rest[r]
+    cur[o + 1] = rest[r + 1] + 0.015 * Math.sin(t * 1.3)
+    cur[o + 2] = 0.03 * Math.sin(t * 0.9 + ix * 0.3)
+  }
+
+  const pointer = { x: 0, y: 0, strength: 0 }
+  let twist = 0 // hover "flip": a twisting push that the cloth works out itself
+  let gustBoost = 0
+
+  const step = (t) => {
+    const gust = 0.55 + 0.3 * Math.sin(t * 0.55) + 0.15 * Math.sin(t * 1.7 + 1.1) + gustBoost
+    for (let iy = 1; iy <= GY; iy++) {
+      const cy = iy / GY // 0 at the top hem, 1 at the tail
+      const reach = Math.pow(cy, 1.1)
+      for (let ix = 0; ix <= GX; ix++) {
+        const cx = ix / GX
+        const i = idx(ix, iy) * 3
+        let fx = (0.35 * Math.sin(t * 0.8 + cy * 2) + 0.08) * gust * reach
+        const fy = GRAVITY
+        let fz =
+          (Math.sin(t * 2.6 - cy * 6.5 + cx * 1.6) + 0.45 * Math.sin(t * 4.4 - cy * 11 + cx * 4)) *
+          1.6 * reach * gust
+        if (pointer.strength > 0.01) {
+          const dx = cur[i] - pointer.x
+          const dy = cur[i + 1] - pointer.y
+          const d2 = dx * dx + dy * dy
+          if (d2 < 0.35) {
+            const f = (1 - d2 / 0.35) * pointer.strength
+            fz += f * 18
+            fx += dx * f * 8
+          }
+        }
+        if (twist > 0.01) fz += (cx - 0.5) * 2 * twist * 34 * reach
+        const v0 = (cur[i] - prev[i]) * DAMP
+        const v1 = (cur[i + 1] - prev[i + 1]) * DAMP
+        const v2 = (cur[i + 2] - prev[i + 2]) * DAMP
+        prev[i] = cur[i]
+        prev[i + 1] = cur[i + 1]
+        prev[i + 2] = cur[i + 2]
+        cur[i] += v0 + fx * SIM_DT * SIM_DT
+        cur[i + 1] += v1 + fy * SIM_DT * SIM_DT
+        cur[i + 2] += v2 + fz * SIM_DT * SIM_DT
+      }
+    }
+    for (let it = 0; it < ITERATIONS; it++) {
+      for (let ix = 0; ix <= GX; ix++) pinAt(ix, t, idx(ix, 0) * 3)
+      for (let c = 0; c < cons.length; c += 4) {
+        const ia = cons[c]
+        const ib = cons[c + 1]
+        const aP = pinned(ia)
+        const bP = pinned(ib)
+        if (aP && bP) continue
+        const a = ia * 3
+        const b = ib * 3
+        const dx = cur[b] - cur[a]
+        const dy = cur[b + 1] - cur[a + 1]
+        const dz = cur[b + 2] - cur[a + 2]
+        const d = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1e-6
+        const diff = ((d - cons[c + 2]) / d) * 0.5 * cons[c + 3]
+        const wA = aP ? 0 : bP ? 2 : 1
+        const wB = bP ? 0 : aP ? 2 : 1
+        cur[a] += dx * diff * wA
+        cur[a + 1] += dy * diff * wA
+        cur[a + 2] += dz * diff * wA
+        cur[b] -= dx * diff * wB
+        cur[b + 1] -= dy * diff * wB
+        cur[b + 2] -= dz * diff * wB
+      }
+    }
+    for (let ix = 0; ix <= GX; ix++) {
+      const o = idx(ix, 0) * 3
+      pinAt(ix, t, o)
+      prev[o] = cur[o]
+      prev[o + 1] = cur[o + 1]
+      prev[o + 2] = cur[o + 2]
+    }
+    pointer.strength *= 0.9
+    twist *= 0.93
+    gustBoost *= 0.97
+  }
+
+  // When the drone moves, the cloth's frame moves with it: shift every free
+  // particle (now and previous) the other way, so in the world it stays put
+  // for that instant and then gets dragged along by the hem.
+  const shiftFrame = (dx, dy) => {
+    for (let i = GX + 1; i < N; i++) {
+      const o = i * 3
+      cur[o] -= dx
+      prev[o] -= dx
+      cur[o + 1] -= dy
+      prev[o + 1] -= dy
+    }
+  }
+
+  const commit = () => {
+    pos.array.set(cur)
+    pos.needsUpdate = true
+    geometry.computeVertexNormals()
+  }
 
   // Cables: thin rods from the drone's belly to the banner's top corners
   const cableMat = new THREE.MeshStandardMaterial({ color: 0x5b636a, roughness: 0.4, metalness: 0.6 })
@@ -225,15 +308,18 @@ export function mountBanner(container, { dark = false, mode = 'inline', logoUrl 
   }
   setTheme(dark)
 
-  // Pointer: tracked on window so the overlay can stay click-through
+  // Pointer: tracked on window so the overlay layer can stay click-through
   const raycaster = new THREE.Raycaster()
   const ndc = new THREE.Vector2(9, 9)
-  const pointer = { x: 0, active: false }
+  const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0)
+  const hitPt = new THREE.Vector3()
+  const view = { x: 0, active: false }
+  let hovering = false
   const onMove = (e) => {
     const r = renderer.domElement.getBoundingClientRect()
     ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1)
-    pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1
-    pointer.active = e.clientY >= r.top && e.clientY <= r.bottom
+    view.x = ((e.clientX - r.left) / r.width) * 2 - 1
+    view.active = e.clientY >= r.top && e.clientY <= r.bottom
   }
   window.addEventListener('pointermove', onMove, { passive: true })
   window.addEventListener('pointerdown', onMove, { passive: true })
@@ -257,90 +343,96 @@ export function mountBanner(container, { dark = false, mode = 'inline', logoUrl 
 
   let visible = !overlay
   let entered = false
-  const io = new IntersectionObserver(([e]) => {
-    visible = e.isIntersecting
-    if (visible) entered = true
-  }, { threshold: 0.1 })
+  const io = new IntersectionObserver(
+    ([e]) => {
+      visible = e.isIntersecting
+      if (visible) entered = true
+    },
+    { threshold: 0.1 }
+  )
   io.observe(container)
 
   // Pose target (CSS px, banner centre). Overlay mode gets it from the page.
   const pose = { x: -300, y: 300, size: 110, show: 0 }
-  const cur = { x: -300, y: 300, size: 110 }
+  const cur2 = { x: -300, y: 300, size: 110 }
   let vx = 0
-  let swing = 0
-  let hovering = false
-  let flipT = 1
-  let cooldown = 0
+  let lastRig = null
   const clock = new THREE.Clock()
+  let simT = 0
+  let acc = 0
   const a = new THREE.Vector3()
   const b = new THREE.Vector3()
   let raf = 0
 
+  // Settle into a hanging pose before the first frame
+  for (let s = 0; s < 120; s++) step((simT += SIM_DT))
+  commit()
+
   const tick = () => {
     raf = requestAnimationFrame(tick)
-    const dt = Math.min(clock.getDelta(), 0.05)
+    const dt = Math.min(clock.getDelta(), 0.1)
     if (document.hidden) return
-    if (overlay ? !pose.show && Math.abs(cur.x - pose.x) < 1 : !visible) return
+    if (overlay ? !pose.show && Math.abs(cur2.x - pose.x) < 1 : !visible) return
     const t = clock.elapsedTime
-    uniforms.uTime.value = t
 
     if (!overlay) {
       // Inline: fly in from the left, then hover centre and drift to the pointer
-      pose.x = entered ? viewW / 2 + (pointer.active ? pointer.x * viewW * 0.12 : Math.sin(t * 0.35) * viewW * 0.08) : -300
+      pose.x = entered ? viewW / 2 + (view.active ? view.x * viewW * 0.12 : Math.sin(t * 0.35) * viewW * 0.08) : -300
       pose.y = viewH * 0.55
       pose.size = Math.min(viewW * 0.3, viewH * 0.17)
     }
 
-    const px = cur.x
-    cur.x = damp(cur.x, pose.x, 1.8, dt)
-    cur.y = damp(cur.y, pose.y, 2.2, dt)
-    cur.size = damp(cur.size, pose.size, 2.5, dt)
-    vx = damp(vx, (cur.x - px) / Math.max(dt, 1e-3), 5, dt)
+    const px = cur2.x
+    cur2.x = damp(cur2.x, pose.x, 1.8, dt)
+    cur2.y = damp(cur2.y, pose.y, 2.2, dt)
+    cur2.size = damp(cur2.size, pose.size, 2.5, dt)
+    vx = damp(vx, (cur2.x - px) / Math.max(dt, 1e-3), 5, dt)
 
     // Pixel pose → world. The pose is the banner's centre.
-    const scale = (cur.size * worldPerPx) / BW
+    const scale = (cur2.size * worldPerPx) / BW
     const bob = reduced ? 0 : Math.sin(t * 1.3) * 0.06
-    const wx = (cur.x - viewW / 2) * worldPerPx
-    const wy = -(cur.y - viewH / 2) * worldPerPx + (0.29 + DROP + BH / 2) * scale
-    rig.position.set(wx, wy + bob * scale, 0)
+    const wx = (cur2.x - viewW / 2) * worldPerPx
+    const wy = -(cur2.y - viewH / 2) * worldPerPx + (0.29 + DROP + BH / 2) * scale + bob * scale
+    // Hand the drone's movement to the cloth (in its own units)
+    if (lastRig) shiftFrame((wx - lastRig.x) / scale, (wy - lastRig.y) / scale)
+    lastRig = { x: wx, y: wy }
+    rig.position.set(wx, wy, 0)
     rig.scale.setScalar(scale)
     rig.rotation.z = THREE.MathUtils.clamp(-vx * 0.0004, -0.18, 0.18)
     for (const p of props) p.group.rotation.y += (reduced ? 0 : 38) * dt * p.dir
 
-    // The banner swings behind the drone's motion
-    swing = damp(swing, THREE.MathUtils.clamp(vx * 0.0012, -1, 1), 3, dt)
-    bannerPivot.rotation.z = -swing * 0.25
-    uniforms.uSwing.value = swing
-
-    // Hover: ripple from the contact point, and a flip on first touch
+    // Hover: the pointer stirs the cloth; the first touch gives it a twist
     raycaster.setFromCamera(ndc, camera)
-    const hit = raycaster.intersectObject(banner, false)[0]
-    if (hit && hit.uv) {
-      uniforms.uHit.value.lerp(hit.uv, 1 - Math.exp(-12 * dt))
-      uniforms.uHitAmp.value = damp(uniforms.uHitAmp.value, 1, 6, dt)
-      uniforms.uHitTime.value = hovering ? uniforms.uHitTime.value + dt : 0
-      if (!hovering && flipT >= 1 && cooldown <= 0 && !reduced) flipT = 0
+    const onCloth = raycaster.intersectObject(front, false)[0] || raycaster.intersectObject(back, false)[0]
+    if (onCloth && raycaster.ray.intersectPlane(plane, hitPt)) {
+      rig.worldToLocal(hitPt)
+      pointer.x = hitPt.x
+      pointer.y = hitPt.y
+      pointer.strength = Math.min(1, pointer.strength + 0.3)
+      if (!hovering && !reduced) {
+        twist = 1
+        gustBoost = 0.6
+      }
       hovering = true
-    } else {
-      uniforms.uHitAmp.value = damp(uniforms.uHitAmp.value, 0, 2.5, dt)
-      uniforms.uHitTime.value += dt
-      hovering = false
-    }
-    if (flipT < 1) {
-      flipT = Math.min(1, flipT + dt / 1.5)
-      uniforms.uFlip.value = flipT * 1.35
-      uniforms.uFlipOn.value = 1
-      if (flipT >= 1) cooldown = 0.6
-    } else {
-      uniforms.uFlipOn.value = 0
-      cooldown -= dt
-    }
+    } else hovering = false
 
-    // Cables, in rig space: drone belly → banner top corners
-    bannerPivot.updateMatrix()
+    // Fixed-step simulation
+    acc += dt
+    let n = 0
+    while (acc >= SIM_DT && n < 6) {
+      simT += SIM_DT
+      if (!reduced || n === 0) step(simT)
+      acc -= SIM_DT
+      n++
+    }
+    if (n === 6) acc = 0
+    commit()
+
+    // Cables: drone belly → the banner's top corners
     cables.forEach((line, i) => {
       a.set(i ? 0.17 : -0.17, -0.17, 0.07)
-      b.set((i ? 1 : -1) * BW * 0.5, -DROP, 0).applyMatrix4(bannerPivot.matrix)
+      const o = idx(i ? GX : 0, 0) * 3
+      b.set(cur[o], cur[o + 1], cur[o + 2])
       const d = b.clone().sub(a)
       line.position.copy(a).addScaledVector(d, 0.5)
       line.scale.set(1, d.length(), 1)
@@ -362,9 +454,10 @@ export function mountBanner(container, { dark = false, mode = 'inline', logoUrl 
       io.disconnect()
       scene.traverse((o) => {
         o.geometry?.dispose()
-        if (o.material) [].concat(o.material).forEach((m) => { m.map?.dispose?.(); m.dispose() })
+        if (o.material) [].concat(o.material).forEach((m) => m.dispose())
       })
       tex.dispose()
+      texBack.dispose()
       pmrem.dispose()
       renderer.dispose()
       renderer.domElement.remove()

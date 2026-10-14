@@ -3693,3 +3693,12 @@ html.lenis.rec-snapping {
 }
 
 
+
+/* Phones/tablets: the navbar's "Request a service" box stays out of the bar
+   (it lives in the menu sheet instead). .btn-request sets display later in
+   this file, so this needs the extra specificity to win. */
+@media (max-width: 1023px) {
+  .nav-bar .nav-cta.btn-request {
+    display: none;
+  }
+}
