@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { CONTACTS, brochureCrop } from '../cdn'
 import { takePendingService } from '../router'
 
-const SERVICES = ['Skyvertising', 'Drone as a Service', 'Courses', 'Something else']
+const SERVICES = ['Skyvertising', 'Drone as a Service', 'Training', 'Something else']
 
 // There is no backend, so the form composes the enquiry and hands it to the
 // visitor's mail app or WhatsApp — either way it lands with the team.

@@ -1,6 +1,6 @@
-import { brochureCrop, newPhoto, photo } from '../cdn'
+import { brochureCrop, photo } from '../cdn'
 
-// Home-page summary of the three services. Each block gives the gist and
+// Home-page summary of the two services (training has its own section). Each block gives the gist and
 // links through to its full page.
 const BLOCKS = [
   {
@@ -25,17 +25,6 @@ const BLOCKS = [
     page: '#/services/drone-as-a-service',
     service: 'Drone as a Service',
   },
-  {
-    num: '03',
-    kicker: 'COURSES',
-    title: "Don't just learn it. Build it.",
-    text: 'Five live, hands-on courses for schools, colleges, professionals and defence training units.',
-    chips: ['Generative AI', 'Data Analytics', 'Drone Basics & Assembly', 'FPV Operations & R&D', 'Advanced Drone Engineering'],
-    img: newPhoto('genai-speaker', 'w-1100,h-760,fo-auto,q-78'),
-    alt: 'Instructor explaining generative AI to a class',
-    page: '#/services/courses',
-    service: 'Courses',
-  },
 ]
 
 export default function HomeServices() {
@@ -45,11 +34,10 @@ export default function HomeServices() {
         <div className="home-services-head">
           <div>
             <span className="section-label">02 / OUR SERVICES</span>
-            <h2 className="section-h2">THREE WAYS WE FLY FOR YOU.</h2>
+            <h2 className="section-h2">TWO WAYS WE FLY FOR YOU.</h2>
           </div>
           <p className="section-desc">
-            On your brand, on your site and in your classroom. Each service has its own page with the
-            full details.
+            On your brand and on your site. Each service has its own page with the full details.
           </p>
         </div>
 

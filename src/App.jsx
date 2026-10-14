@@ -14,6 +14,7 @@ import RnD from './components/RnD'
 import Recognition from './components/Recognition'
 import ServicesIntro from './components/ServicesIntro'
 import HomeServices from './components/HomeServices'
+import HomeTraining from './components/HomeTraining'
 import Skyvertising from './components/Skyvertising'
 import SkyBanner3D from './components/SkyBanner3D'
 import Courses from './components/Courses'
@@ -25,7 +26,7 @@ import RequestBand from './components/RequestBand'
 import Footer from './components/Footer'
 
 // Separate pages behind one navbar: Home · About Us · Our Services
-// (Skyvertising, Courses, Drone as a Service) · Gallery · Contact Us.
+// (Skyvertising, Drone as a Service) · Training · Gallery · Contact Us.
 const PAGES = {
   '/': {
     title: 'Sky Eye Technology — Unfolding The Unfiltered',
@@ -38,6 +39,7 @@ const PAGES = {
           <Drone3D more="#/about" bare />
         </div>
         <HomeServices />
+        <HomeTraining />
         <VideoStrip />
         <Terrain3D />
         <div id="home-contact" className="anchor-block">
@@ -82,13 +84,13 @@ const PAGES = {
       </>
     ),
   },
-  '/services/courses': {
-    title: 'Courses — Sky Eye Technology',
+  '/training': {
+    title: 'Education & Training — Sky Eye Technology',
     render: () => (
       <>
         <Courses />
         <RequestBand
-          service="Courses"
+          service="Training"
           title="Bring a course to your institution."
           text="Schools, colleges and training units — tell us the course, the group size and the dates."
           label="Enquire about a course"

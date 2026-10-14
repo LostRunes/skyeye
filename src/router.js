@@ -9,7 +9,7 @@ export const PAGES = [
   '/about',
   '/services',
   '/services/skyvertising',
-  '/services/courses',
+  '/training',
   '/services/drone-as-a-service',
   '/gallery',
   '/contact',
@@ -25,7 +25,8 @@ const LEGACY = {
   'track-record': ['/about', 'track-record'],
   services: ['/services'],
   skyvertising: ['/services/skyvertising'],
-  courses: ['/services/courses'],
+  courses: ['/training'],
+  training: ['/training'],
   'drone-services': ['/services/drone-as-a-service'],
   'drone-as-a-service': ['/services/drone-as-a-service'],
   gallery: ['/gallery'],
@@ -42,6 +43,10 @@ export function parseHash(hash = window.location.hash) {
     return { path: '/', to: null, legacy: !!raw }
   }
   const [p, q = ''] = raw.split('?')
+  // Courses moved out of Services into their own Training section
+  if (p.replace(/\/$/, '') === '/services/courses') {
+    return { path: '/training', to: new URLSearchParams(q).get('to'), legacy: true }
+  }
   const path = PAGES.includes(p.replace(/\/$/, '') || '/') ? p.replace(/\/$/, '') || '/' : '/'
   const to = new URLSearchParams(q).get('to')
   return { path, to }

@@ -31,12 +31,12 @@ export default function Footer() {
               <span className="footer-links-heading">COMPANY</span>
               <a className="footer-link" href="#/">Home</a>
               <a className="footer-link" href="#/about">About Us</a>
+              <a className="footer-link" href="#/training">Training</a>
               <a className="footer-link" href="#/gallery">Gallery</a>
             </div>
             <div className="footer-links-group">
               <span className="footer-links-heading">SERVICES</span>
               <a className="footer-link" href="#/services/skyvertising">Skyvertising</a>
-              <a className="footer-link" href="#/services/courses">Courses</a>
               <a className="footer-link" href="#/services/drone-as-a-service">Drone as a Service</a>
             </div>
             <div className="footer-links-group">
