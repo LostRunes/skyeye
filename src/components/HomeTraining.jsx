@@ -36,7 +36,7 @@ export default function HomeTraining() {
                   <span className="ht-num">{String(i + 1).padStart(2, '0')}</span>
                   <span className="ht-body">
                     <span className="ht-tag">
-                      {c.level} · {c.audience}
+                      {c.program || c.level} · {c.audience}
                     </span>
                     <span className="ht-title">{c.title}</span>
                   </span>
@@ -48,7 +48,7 @@ export default function HomeTraining() {
         </div>
 
         <div className="hs-actions ht-actions">
-          <a className="btn-request btn-request--sm" href="#/contact" data-service="Training">
+          <a className="btn-request btn-request--sm" href="#/training?to=training-enquiry">
             Enquire about training
           </a>
           <a className="hs-more" href="#/training">

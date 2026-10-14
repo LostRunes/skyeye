@@ -18,6 +18,7 @@ import HomeTraining from './components/HomeTraining'
 import Skyvertising from './components/Skyvertising'
 import SkyBanner3D from './components/SkyBanner3D'
 import Courses from './components/Courses'
+import TrainingEnquiry from './components/TrainingEnquiry'
 import DroneService from './components/DroneService'
 import VideoStrip from './components/VideoStrip'
 import Gallery from './components/Gallery'
@@ -89,12 +90,7 @@ const PAGES = {
     render: () => (
       <>
         <Courses />
-        <RequestBand
-          service="Training"
-          title="Bring a course to your institution."
-          text="Schools, colleges and training units — tell us the course, the group size and the dates."
-          label="Enquire about a course"
-        />
+        <TrainingEnquiry />
       </>
     ),
   },
