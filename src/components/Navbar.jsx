@@ -78,7 +78,10 @@ const PANELS = [
     kicker: 'Education & Training',
     desc: 'Live, hands-on training in drones and AI for schools, colleges, professionals and defence training units.',
     listLabel: 'Courses',
-    links: COURSES.map((c) => ({ href: `#/training?to=course-tab-${c.id}`, label: c.title })),
+    links: [
+      ...COURSES.map((c) => ({ href: `#/training?to=course-tab-${c.id}`, label: c.title })),
+      { href: '#/training?to=training-enquiry', label: 'Training enquiry form' },
+    ],
     cardsLabel: 'In session',
     cards: [
       { href: '#/training', label: 'Generative AI', img: newPhoto('genai-speaker', 'w-560,h-350,fo-auto') },

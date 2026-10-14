@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { CONTACTS, brochureCrop } from '../cdn'
 import { takePendingService } from '../router'
 
-const SERVICES = ['Skyvertising', 'Drone as a Service', 'Training', 'Something else']
+const SERVICES = ['Skyvertising', 'Drone as a Service', 'Something else']
 
 // There is no backend, so the form composes the enquiry and hands it to the
 // visitor's mail app or WhatsApp — either way it lands with the team.
@@ -48,6 +48,11 @@ export default function Contact() {
             <p className="section-desc contact-lede">
               Skyvertising for your event, a course for your institution, a drone on your site — or
               something we haven't flown yet. Tell us what you need.
+            </p>
+
+            <p className="te-alt">
+              Enquiring about training or a course?{' '}
+              <a href="#/training?to=training-enquiry">Use the training enquiry form →</a>
             </p>
 
             <div className="contact-cards">

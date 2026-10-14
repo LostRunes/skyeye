@@ -120,7 +120,7 @@ export default function Courses() {
                 ))}
               </ul>
               <div className="course-foot">
-                <a className="btn-request" href="#/contact" data-service={`Course: ${course.title}`}>
+                <a className="btn-request" href="#/training?to=training-enquiry" data-service={`Course: ${course.title}`}>
                   Enquire about this course
                   <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
                 </a>

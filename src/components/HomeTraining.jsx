@@ -48,7 +48,7 @@ export default function HomeTraining() {
         </div>
 
         <div className="hs-actions ht-actions">
-          <a className="btn-request btn-request--sm" href="#/contact" data-service="Training">
+          <a className="btn-request btn-request--sm" href="#/training?to=training-enquiry">
             Enquire about training
           </a>
           <a className="hs-more" href="#/training">
