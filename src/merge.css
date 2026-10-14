@@ -3922,3 +3922,27 @@ html.lenis.rec-snapping {
     gap: 1.25rem;
   }
 }
+
+/* Panels with a second link column (Training): four columns */
+.nav-panel-page--wide {
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.8fr);
+}
+
+.nav-panel-page--wide .nav-panel-link {
+  font-size: clamp(15px, 1.35vw, 19px);
+}
+
+.nav-panel-page--wide .nav-panel-cards--1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Course images shown whole (e.g. a projected slide) sit over a blurred,
+   darkened copy of themselves that fills the rest of the box */
+.course-media img.is-contain {
+  padding: var(--space-md);
+}
+
+.course-media img.course-media-backdrop {
+  transform: scale(1.15);
+  filter: blur(26px) brightness(0.55) saturate(1.1);
+}
