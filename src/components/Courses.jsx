@@ -83,7 +83,12 @@ export default function Courses() {
 
           <div className="course-panel" id="course-panel" role="tabpanel" aria-labelledby={`course-tab-${course.id}`}>
             <div className="course-media">
-              <img key={course.id} src={course.img} alt={course.title} loading="lazy" />
+              {course.imgFit === 'contain' && (
+                <img key={`${course.id}-bg`} className="course-media-backdrop" src={course.img} alt="" aria-hidden="true" />
+              )}
+              <img key={course.id} src={course.img} alt={course.title} loading="lazy" style={{ objectPosition: course.imgPos, objectFit: course.imgFit }}
+                className={course.imgFit === 'contain' ? 'is-contain' : undefined}
+              />
               <span className="course-media-badge">● LIVE · {course.level.toUpperCase()}</span>
               {course.instructor && (
                 <div className="course-instructor">

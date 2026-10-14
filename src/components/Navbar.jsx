@@ -9,6 +9,12 @@ import { scrollToSection, scrollToTop } from '../router'
 // of the bar, the page behind blurs, and moving between items cross-fades the
 // panel while its labels decode out of jumbled letters. The panel height
 // glides between items, and the bar tucks away on the way down the page.
+const courseLinks = (group) =>
+  COURSES.filter((c) => c.group === group).map((c) => ({
+    href: `#/training?to=course-tab-${c.id}`,
+    label: c.short || c.title,
+  }))
+
 const PANELS = [
   {
     key: 'home',
@@ -76,17 +82,16 @@ const PANELS = [
     href: '#/training',
     label: 'Training',
     kicker: 'Education & Training',
-    desc: 'Live, hands-on training in drones and AI for schools, colleges, professionals and defence training units.',
+    desc: 'Live, hands-on training in drones and AI for schools, colleges, professionals and enthusiasts.',
     listLabel: 'Courses',
     links: [
-      ...COURSES.map((c) => ({ href: `#/training?to=course-tab-${c.id}`, label: c.short || c.title })),
+      ...courseLinks('ai'),
       { href: '#/training?to=training-enquiry', label: 'Training enquiry form' },
     ],
+    // A second link column beside the first
+    extra: { label: 'Drone courses', links: courseLinks('drone') },
     cardsLabel: 'In session',
-    cards: [
-      { href: '#/training', label: 'Generative AI', img: newPhoto('genai-speaker', 'w-560,h-350,fo-auto') },
-      { href: '#/training?to=course-tab-drone-basic', label: 'Drone training', img: photo('edu', 356, 'w-560,h-350,fo-auto') },
-    ],
+    cards: [{ href: '#/training', label: 'Live training', img: newPhoto('genai-speaker', 'w-560,h-350,fo-auto') }],
   },
   {
     key: 'gallery',
@@ -382,7 +387,7 @@ export default function Navbar({ path = '/' }) {
               <div
                 key={p.key}
                 ref={(el) => (panelRefs.current[p.key] = el)}
-                className={`nav-panel-page${shown ? ' is-shown' : ''}`}
+                className={`nav-panel-page${p.extra ? ' nav-panel-page--wide' : ''}${shown ? ' is-shown' : ''}`}
               >
                 <div className="nav-panel-col nav-panel-col--intro">
                   <h3 className="nav-panel-label">
@@ -400,6 +405,18 @@ export default function Navbar({ path = '/' }) {
                     ))}
                   </div>
                 </div>
+                {p.extra && (
+                  <div className="nav-panel-col">
+                    <h3 className="nav-panel-label">
+                      <Scramble text={p.extra.label} replay={switches} />
+                    </h3>
+                    <div className="nav-panel-links">
+                      {p.extra.links.map((l) => (
+                        <PanelLink key={l.label} link={l} onClick={closeAll} tabbable={shown} />
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="nav-panel-col nav-panel-col--cards">
                   <h3 className="nav-panel-label">
                     <Scramble text={p.cardsLabel} replay={switches} />

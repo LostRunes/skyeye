@@ -1,4 +1,4 @@
-import { photo } from '../cdn'
+import { ik, photo } from '../cdn'
 
 // Five live courses: two in AI & data, three in drones.
 // Module lists are draft outlines built from the course briefs; replace them
@@ -27,7 +27,8 @@ export const COURSES = [
       ['Using AI responsibly', 'Accuracy, privacy, bias and knowing when not to use it.'],
     ],
     format: ['Live workshop', 'Bring a laptop', 'Hands-on'],
-    img: photo('course', 36, 'w-1200,q-75'),
+    img: ik('photos/new/genai-course.jpg', 'q-88'),
+    imgFit: 'contain', // a projected slide: show it whole rather than cropping it
     instructor: null,
   },
   {
@@ -46,7 +47,8 @@ export const COURSES = [
       ['Capstone project', 'Analyse a real dataset and present the findings.'],
     ],
     format: ['Live sessions', 'Bring a laptop', 'Project-based'],
-    img: photo('course', 53, 'w-1200,q-75'),
+    img: ik('photos/new/data-course.jpg', 'q-90'),
+    imgPos: 'center 18%', // portrait shot: keep the instructor's face in frame
     instructor: null,
   },
   {
@@ -106,7 +108,7 @@ export const COURSES = [
       ['Build, tune & repair', 'Assembling, tuning and fixing an FPV drone yourself.'],
     ],
     format: ['Beginners welcome', 'Simulator + live flying', 'Hands-on'],
-    img: photo('fpv', 102, 'w-1200,q-75'),
+    img: ik('photos/new/fpv-academy.jpg', 'w-1200,q-78'),
     instructor: null,
   },
 ]
