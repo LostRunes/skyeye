@@ -16,6 +16,7 @@ export const COURSES = [
     level: 'All levels',
     audience: 'College students & professionals',
     title: 'Generative AI — from LLMs to AI agents',
+    short: 'Generative AI', // label in menus
     desc: 'How generative AI actually works, and how to put it to work. Participants follow along on their own laptops, from the basics of machine learning to building a simple AI agent.',
     modules: [
       ['AI foundations', 'Machine learning, deep learning and where generative AI fits in.'],
