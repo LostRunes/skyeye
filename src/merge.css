@@ -3880,3 +3880,17 @@ html.lenis.rec-snapping {
     grid-template-columns: 1fr 1.3fr 1fr;
   }
 }
+
+.course-program {
+  margin-top: -0.35rem;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--color-on-surface-variant);
+}
+
+.course-tab-program {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-outline);
+}

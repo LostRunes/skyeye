@@ -73,6 +73,7 @@ export default function Courses() {
                         </span>
                       </span>
                       <span className="course-tab-title">{c.title}</span>
+                      {c.program && <span className="course-tab-program">{c.program}</span>}
                     </button>
                   )
                 )}
@@ -97,6 +98,7 @@ export default function Courses() {
             <div className="course-body">
               <span className="course-audience">FOR · {course.audience.toUpperCase()}</span>
               <h3 className="course-title">{course.title}</h3>
+              {course.program && <p className="course-program">{course.program}</p>}
               <p className="course-desc">{course.desc}</p>
 
               <div className="course-modules">
