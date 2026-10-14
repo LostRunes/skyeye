@@ -3894,3 +3894,31 @@ html.lenis.rec-snapping {
   font-size: 11px;
   color: var(--color-outline);
 }
+
+/* Drop-panel links never spill into the next column: long labels clip with
+   an ellipsis (they stay on one line for the decode animation). */
+.nav-panel-col {
+  overflow: hidden;
+}
+
+.nav-panel-link .scramble {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.nav-panel-link .scramble-size {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Small laptops: six menu items leave no room for the wordmark beside the
+   logo mark, so it steps aside until there is space. */
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .nav-logo-text {
+    display: none;
+  }
+  .nav-links {
+    gap: 1.25rem;
+  }
+}
