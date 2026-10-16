@@ -90,21 +90,29 @@ export default function Courses() {
                 className={course.imgFit === 'contain' ? 'is-contain' : undefined}
               />
               <span className="course-media-badge">● LIVE · {course.level.toUpperCase()}</span>
-              {course.instructor && (
-                <div className="course-instructor">
-                  <img src={course.instructor.img} alt="" />
-                  <span>
-                    <strong>{course.instructor.name}</strong>
-                    {course.instructor.role}
-                  </span>
-                </div>
-              )}
+
             </div>
             <div className="course-body">
               <span className="course-audience">FOR · {course.audience.toUpperCase()}</span>
               <h3 className="course-title">{course.title}</h3>
               {course.program && <p className="course-program">{course.program}</p>}
               <p className="course-desc">{course.desc}</p>
+
+              {course.instructor && (
+                <div className="course-teacher">
+                  <img src={course.instructor.img} alt={course.instructor.name || 'Course instructor'} loading="lazy" />
+                  <div className="course-teacher-body">
+                    <span className="course-modules-label">
+                      {course.instructor.name ? `${course.instructor.role.toUpperCase()} · ${course.instructor.name.toUpperCase()}` : 'YOUR INSTRUCTOR'}
+                    </span>
+                    <ul>
+                      {course.instructor.quals.map((q) => (
+                        <li key={q}>{q}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
 
               <div className="course-modules">
                 <span className="course-modules-label">WHAT YOU WILL LEARN</span>

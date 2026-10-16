@@ -3946,3 +3946,266 @@ html.lenis.rec-snapping {
   transform: scale(1.15);
   filter: blur(26px) brightness(0.55) saturate(1.1);
 }
+
+/* ============================================
+   ABOUT — live 3D drone assembly (blueprint → built → flight)
+   ============================================ */
+.assembly {
+  position: relative;
+  height: 520vh;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-surface-container-highest);
+}
+
+.assembly-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+/* Blueprint grid behind the build */
+.assembly-grid {
+  position: absolute;
+  inset: 0;
+  --grid: color-mix(in srgb, var(--color-outline) 18%, transparent);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(70% 70% at 62% 50%, #000 30%, transparent 85%);
+  mask-image: radial-gradient(70% 70% at 62% 50%, #000 30%, transparent 85%);
+}
+
+.assembly-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.assembly-canvas canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.assembly-hud {
+  position: absolute;
+  left: var(--margin);
+  right: var(--margin);
+  top: calc(var(--nav-h) + 1.25rem);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--color-outline);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.assembly-copy {
+  position: absolute;
+  left: var(--margin);
+  right: var(--margin);
+  bottom: 5.5rem;
+  pointer-events: none;
+}
+
+.assembly-beat {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.45s var(--nav-ease), transform 0.6s var(--nav-ease);
+}
+
+.assembly-beat.is-on {
+  opacity: 1;
+  transform: none;
+}
+
+.assembly-title {
+  font-size: clamp(28px, 4.4vw, 60px);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--color-primary);
+}
+
+.assembly-text {
+  max-width: 42ch;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-on-surface-variant);
+}
+
+.assembly-chips {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.assembly-chips li {
+  padding: 5px 10px;
+  border: 1px solid var(--color-surface-container-highest);
+  background: color-mix(in srgb, var(--color-surface-container-lowest) 80%, transparent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-on-surface-variant);
+}
+
+/* Parts list — ticks off as each part seats */
+.assembly-parts {
+  display: none;
+  list-style: none;
+}
+
+.assembly-progress {
+  position: absolute;
+  left: var(--margin);
+  right: var(--margin);
+  bottom: 2rem;
+  height: 2px;
+  background: var(--color-surface-container-highest);
+}
+
+.assembly-progress span {
+  display: block;
+  height: 100%;
+  background: var(--color-secondary);
+  transform-origin: left;
+}
+
+@media (min-width: 1024px) {
+  .assembly-hud,
+  .assembly-progress {
+    left: var(--margin-desktop);
+    right: var(--margin-desktop);
+  }
+
+  .assembly-copy {
+    left: var(--margin-desktop);
+    right: auto;
+    bottom: auto;
+    top: 50%;
+    width: min(34vw, 480px);
+  }
+
+  .assembly-beat {
+    bottom: auto;
+    top: 0;
+    transform: translateY(calc(-50% + 16px));
+  }
+
+  .assembly-beat.is-on {
+    transform: translateY(-50%);
+  }
+
+  .assembly-parts {
+    position: absolute;
+    right: var(--margin-desktop);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 200px;
+    pointer-events: none;
+  }
+
+  .assembly-parts li {
+    display: flex;
+    gap: 0.75rem;
+    align-items: baseline;
+    padding: 0.55rem 0.75rem;
+    border-left: 2px solid var(--color-surface-container-highest);
+    font-size: 13px;
+    color: var(--color-outline);
+    transition: color 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
+  }
+
+  .assembly-parts li.is-now {
+    color: var(--color-primary);
+    border-left-color: var(--color-secondary);
+    background: color-mix(in srgb, var(--color-surface-container-lowest) 85%, transparent);
+  }
+
+  .assembly-parts li.is-done {
+    color: var(--color-primary);
+    border-left-color: var(--color-primary);
+  }
+
+  .assembly-part-n {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--color-secondary);
+  }
+}
+
+/* Phones: the build sits in the upper part of the screen, copy below */
+@media (max-width: 1023px) {
+  .assembly-canvas {
+    top: calc(var(--nav-h) + 1.5rem);
+    bottom: 40%;
+  }
+}
+
+/* ============================================
+   TRAINING — instructor card
+   ============================================ */
+.course-teacher {
+  display: flex;
+  gap: var(--space-md);
+  align-items: center;
+  padding: var(--space-md);
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--color-surface-container-highest);
+}
+
+.course-teacher img {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.course-teacher-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.course-teacher ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-on-surface);
+}
+
+.course-teacher li::before {
+  content: '+ ';
+  color: var(--color-secondary);
+}
+
+@media (min-width: 1024px) {
+  .assembly-parts {
+    z-index: 2;
+    padding: 6px;
+    background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+}

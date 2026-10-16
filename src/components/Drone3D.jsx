@@ -4,7 +4,7 @@ import { useTheme } from '../hooks/useTheme'
 // About-page opener: the live 3D drone. The stage is pinned while the section
 // scrolls; scroll turns the aircraft and swaps the copy beside it, and the
 // gimbal camera follows the pointer the whole time.
-const BEATS = [
+const DEFAULT_BEATS = [
   {
     kicker: '01 / ABOUT US',
     title: ['WE PUT DRONES', 'TO WORK.'],
@@ -33,7 +33,7 @@ const BEATS = [
 
 // `bare`: the page supplies its own drone (the home page's FlyingDrone), so
 // this section only provides the pinned copy.
-export default function Drone3D({ more, bare = false }) {
+export default function Drone3D({ more, bare = false, beats: BEATS = DEFAULT_BEATS, label = 'About Sky Eye Technology' }) {
   const { theme } = useTheme()
   const sectionRef = useRef(null)
   const canvasRef = useRef(null)
@@ -98,10 +98,10 @@ export default function Drone3D({ more, bare = false }) {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
     }
-  }, [])
+  }, [BEATS.length])
 
   return (
-    <section className="drone3d" ref={sectionRef} aria-label="About Sky Eye Technology">
+    <section className="drone3d" ref={sectionRef} aria-label={label}>
       <div className="drone3d-stage">
         {!bare && <div className="drone3d-canvas" ref={canvasRef} aria-hidden="true" />}
         {failed && <p className="drone3d-fallback">3D view unavailable on this device.</p>}

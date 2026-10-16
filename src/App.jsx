@@ -7,6 +7,7 @@ import Navbar from './components/Navbar'
 import HomeHero from './components/HomeHero'
 import Hero from './components/Hero'
 import Drone3D from './components/Drone3D'
+import DroneAssembly from './components/DroneAssembly'
 import Terrain3D from './components/Terrain3D'
 import FlyingDrone from './components/FlyingDrone'
 import Engineering from './components/Engineering'
@@ -53,7 +54,7 @@ const PAGES = {
     title: 'About Us — Sky Eye Technology',
     render: () => (
       <>
-        <Drone3D />
+        <DroneAssembly />
         <Engineering />
         <RnD />
         <Recognition />
