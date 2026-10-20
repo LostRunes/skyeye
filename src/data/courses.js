@@ -4,7 +4,7 @@ import { ik, photo } from '../cdn'
 // Module lists are draft outlines built from the course briefs; replace them
 // with the team's confirmed syllabus when it arrives. Add an instructor as
 // { name, role, img } to show their photo on the course.
-// Instructor for the AI & data courses. Add `name` once confirmed.
+// Generative AI instructor. Add `name` once confirmed.
 const AI_INSTRUCTOR = {
   img: ik('photos/new/instructor.jpg', 'w-320,h-320,fo-face,q-85'),
   role: 'Course instructor',
@@ -61,7 +61,7 @@ export const COURSES = [
     format: ['Live sessions', 'Bring a laptop', 'Project-based'],
     img: ik('photos/new/data-course.jpg', 'q-90'),
     imgPos: 'center 18%', // portrait shot: keep the instructor's face in frame
-    instructor: AI_INSTRUCTOR,
+    instructor: null,
   },
   {
     id: 'drone-basic',
