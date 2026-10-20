@@ -60,7 +60,7 @@ export const COURSES = [
     ],
     format: ['Live sessions', 'Bring a laptop', 'Project-based'],
     img: ik('photos/new/data-course.jpg', 'q-90'),
-    imgPos: 'center 18%', // portrait shot: keep the instructor's face in frame
+    imgFit: 'contain', // small portrait shot: show it whole over a blurred backdrop
     instructor: null,
   },
   {
