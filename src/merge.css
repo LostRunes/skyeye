@@ -4313,3 +4313,39 @@ html.lenis.rec-snapping {
 .course-modules li {
   padding: 0.85rem 0;
 }
+
+/* Instructor: full portrait photo beside the qualifications */
+.course-teacher {
+  align-items: stretch;
+  gap: var(--space-lg);
+  padding: var(--space-md);
+}
+
+.course-teacher img {
+  width: clamp(120px, 34%, 180px);
+  height: auto;
+  aspect-ratio: 3 / 4;
+  border-radius: 0;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.course-teacher-body {
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.course-teacher ul {
+  gap: 0.35rem;
+  font-size: 14px;
+}
+
+@media (max-width: 420px) {
+  .course-teacher {
+    flex-direction: column;
+  }
+  .course-teacher img {
+    width: 100%;
+    max-width: 260px;
+  }
+}

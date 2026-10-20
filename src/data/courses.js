@@ -6,7 +6,7 @@ import { ik, photo } from '../cdn'
 // { name, role, img } to show their photo on the course.
 // Generative AI instructor. Add `name` once confirmed.
 const AI_INSTRUCTOR = {
-  img: ik('photos/new/instructor.jpg', 'w-320,h-320,fo-face,q-85'),
+  img: ik('photos/new/instructor-full.jpg', 'w-600,q-85'),
   role: 'Course instructor',
   quals: [
     'B.Tech in CSE, IIIT Ranchi',
