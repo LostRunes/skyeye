@@ -6,7 +6,6 @@ import { scrambleOnView } from './utils/scramble'
 import Navbar from './components/Navbar'
 import HomeHero from './components/HomeHero'
 import Hero from './components/Hero'
-import Drone3D from './components/Drone3D'
 import DroneAssembly from './components/DroneAssembly'
 import Terrain3D from './components/Terrain3D'
 import FlyingDrone from './components/FlyingDrone'
@@ -40,7 +39,7 @@ const PAGES = {
         <HomeHero />
         <Hero />
         <div id="home-about" className="anchor-block">
-          <Drone3D more="#/about" bare />
+          <DroneAssembly more="#/about" />
         </div>
         <HomeServices />
         <HomeTraining />

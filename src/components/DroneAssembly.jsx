@@ -64,7 +64,8 @@ const STEPS = [
 ]
 const PART_LIST = STEPS.filter((s) => s.kicker.startsWith('PART'))
 
-export default function DroneAssembly() {
+// `more` (home page only) adds a link through to the full About page.
+export default function DroneAssembly({ more }) {
   const { theme } = useTheme()
   const sectionRef = useRef(null)
   const canvasRef = useRef(null)
@@ -154,6 +155,11 @@ export default function DroneAssembly() {
                 ))}
               </h2>
               <p className="assembly-text">{s.text}</p>
+              {more && s.key === 'intro' && (
+                <a className="hs-more assembly-link" href={more}>
+                  More about us →
+                </a>
+              )}
               {s.link && (
                 <a className="hs-more assembly-link" href={s.link.href}>
                   {s.link.label}
