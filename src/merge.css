@@ -4668,3 +4668,4 @@ html.lenis.rec-snapping {
   letter-spacing: 0.14em;
   color: var(--color-secondary);
 }
+.assembly-link { pointer-events: auto; align-self: flex-start; }

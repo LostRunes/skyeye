@@ -9,56 +9,57 @@ const STEPS = [
     key: 'intro',
     at: 0,
     kicker: '01 / ABOUT US',
-    title: ['BUILT HERE.', 'PART BY PART.'],
-    text: 'Sky Eye Technology (SET) Pvt. Ltd. designs, assembles and tests its drones in Bhubaneswar, Odisha. Scroll to build one.',
+    title: ['HOW A DRONE', 'COMES TOGETHER.'],
+    text: 'Every multirotor is a handful of systems working as one. Scroll to build a quadcopter, part by part — the same way students do in our workshops.',
   },
   {
     key: 'airframe',
     at: 0.08,
     kicker: 'PART 01 · AIRFRAME',
-    title: ['THE AIRFRAME'],
-    text: 'A rigid, lightweight body that carries the battery, flight controller and sensors, with forward and downward vision.',
-    chips: ['Flight controller', 'Battery bay', 'Vision sensors'],
+    title: ['FRAME & FLIGHT ELECTRONICS'],
+    text: 'Top and bottom plates form the core. Between them sit the flight controller, power module, GPS and receiver — the drone’s brain and senses.',
+    chips: ['Flight controller', 'GPS', 'Power module'],
   },
   {
     key: 'arms',
     at: 0.24,
     kicker: 'PART 02 · ARMS',
-    title: ['FOLDING ARMS'],
-    text: 'Four arms on hinges, so the drone folds down for transport and opens out ready to fly.',
-    chips: ['Hinged joints', 'Fold-out design'],
+    title: ['ARMS & SPEED CONTROLLERS'],
+    text: 'Four arms bolt to the frame. On each one, an electronic speed controller turns the flight controller’s commands into motor power.',
+    chips: ['4 arms', 'ESCs'],
   },
   {
     key: 'motors',
     at: 0.4,
     kicker: 'PART 03 · PROPULSION',
     title: ['MOTORS & LANDING GEAR'],
-    text: 'Brushless motors with cooling fins at each corner, with landing legs and navigation lights beneath them.',
-    chips: ['Brushless motors', 'Landing legs', 'Nav lights'],
+    text: 'A brushless motor at the end of each arm, with landing legs underneath to protect the electronics on take-off and touch-down.',
+    chips: ['Brushless motors', 'Landing gear'],
   },
   {
     key: 'props',
     at: 0.56,
     kicker: 'PART 04 · PROPELLERS',
     title: ['PROPELLERS'],
-    text: 'Shaped blades in counter-rotating pairs, which keeps the drone stable and lets it turn on the spot.',
-    chips: ['Counter-rotating', 'Airfoil blades'],
+    text: 'Two pairs spinning in opposite directions. Speeding up one pair over the other is how a quadcopter turns, climbs and holds still.',
+    chips: ['Counter-rotating pairs'],
   },
   {
     key: 'camera',
     at: 0.7,
     kicker: 'PART 05 · PAYLOAD',
     title: ['GIMBAL CAMERA'],
-    text: 'A stabilised camera that holds steady footage while the drone moves — for mapping, inspection and filming.',
-    chips: ['Stabilised gimbal', 'Survey & media'],
+    text: 'A stabilised gimbal keeps the camera level while the drone moves — the payload behind mapping, inspection and aerial filming.',
+    chips: ['Stabilised gimbal', 'Camera mount'],
   },
   {
     key: 'flight',
     at: 0.84,
     kicker: 'READY TO FLY',
-    title: ['ASSEMBLED.', 'TESTED. FLOWN.'],
-    text: 'The same build discipline goes into every drone we fly for clients and every drone our students build in class.',
-    chips: ['Manufacturing locally', 'Training nationally'],
+    title: ['ASSEMBLED.', 'READY TO FLY.'],
+    text: 'Want to build one yourself? Our drone courses take you from your first assembly to advanced builds and FPV flying.',
+    chips: ['Drone Explorer', 'UAV Masterclass', 'FPV Flight Academy'],
+    link: { href: '#/training', label: 'Explore drone courses →' },
   },
 ]
 const PART_LIST = STEPS.filter((s) => s.kicker.startsWith('PART'))
@@ -136,7 +137,7 @@ export default function DroneAssembly() {
         {failed && <p className="drone3d-fallback">3D view unavailable on this device.</p>}
 
         <div className="assembly-hud" aria-hidden="true">
-          <span>[ SKY EYE · UAV BUILD ]</span>
+          <span>[ QUADCOPTER BUILD ]</span>
           <span>[ {String(built).padStart(2, '0')} / {String(PART_LIST.length).padStart(2, '0')} PARTS ]</span>
         </div>
 
@@ -153,6 +154,11 @@ export default function DroneAssembly() {
                 ))}
               </h2>
               <p className="assembly-text">{s.text}</p>
+              {s.link && (
+                <a className="hs-more assembly-link" href={s.link.href}>
+                  {s.link.label}
+                </a>
+              )}
               {s.chips && (
                 <ul className="assembly-chips">
                   {s.chips.map((c) => (

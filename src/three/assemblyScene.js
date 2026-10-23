@@ -1,5 +1,7 @@
 import * as THREE from 'three'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
 import { buildDrone } from './droneScene.js'
 
 // About Us: the Sky Eye drone assembling itself as you scroll — built from
@@ -40,9 +42,9 @@ function explodeOffset(part, pos) {
     case 'airframe':
       return new THREE.Vector3(0, 0.15 + pos.y * 1.6, pos.z * 0.35)
     case 'arms':
-      return out.multiplyScalar(1.2).add(new THREE.Vector3(0, 0.15, 0))
+      return out.multiplyScalar(0.95).add(new THREE.Vector3(0, 0.15, 0))
     case 'motors':
-      return out.multiplyScalar(1.7).add(new THREE.Vector3(0, 0.45 + pos.y * 0.4, 0))
+      return out.multiplyScalar(1.3).add(new THREE.Vector3(0, 0.45 + pos.y * 0.4, 0))
     case 'props':
       return out.multiplyScalar(0.7).add(new THREE.Vector3(0, 1.35, 0))
     case 'camera':
@@ -52,7 +54,8 @@ function explodeOffset(part, pos) {
   }
 }
 
-export function mountAssembly(container, { dark = false } = {}) {
+export function mountAssembly(container, { dark = false, modelUrl = '/models/quad-assembly.glb' } = {}) {
+  let disposed = false
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75))
@@ -72,20 +75,17 @@ export function mountAssembly(container, { dark = false } = {}) {
 
   const rig = new THREE.Group()
   scene.add(rig)
-  const { drone, props, gimbalYaw } = buildDrone()
-  rig.add(drone)
-
   const blueprint = new THREE.Color()
-  const propSet = new Set(props.map((p) => p.group))
+  const pieces = []
+  const props = []
 
-  // Every direct child of the model becomes one movable piece
-  const pieces = drone.children.map((obj) => {
-    const part = classify(obj, propSet, gimbalYaw)
+  // Each movable piece: home position, where it waits when exploded, and a
+  // blueprint-edge overlay that fades as it turns solid.
+  const addPiece = (obj, part, unit = 1) => {
     const home = obj.position.clone()
-    const offset = explodeOffset(part, home)
+    const offset = explodeOffset(part, home.clone().multiplyScalar(unit)).divideScalar(unit)
     const spin = new THREE.Euler((Math.random() - 0.5) * 0.9, (Math.random() - 0.5) * 1.6, (Math.random() - 0.5) * 0.9)
     const homeRot = obj.rotation.clone()
-    // Own copies of materials (they are shared in the model) + blueprint edges
     const meshes = []
     obj.traverse((m) => {
       if (!m.isMesh) return
@@ -100,12 +100,70 @@ export function mountAssembly(container, { dark = false } = {}) {
       meshes.push({ m, edges })
     })
     // Small pieces settle slightly after the big ones of the same part
-    const lag = Math.random() * 0.18
-    return { obj, part, home, offset, spin, homeRot, meshes, lag }
-  })
+    pieces.push({ obj, part, home, offset, spin, homeRot, meshes, lag: Math.random() * 0.18 })
+  }
+
+  // The code-built drone, used only if the CAD model can't be loaded
+  const useProcedural = () => {
+    const { drone, props: pr, gimbalYaw } = buildDrone()
+    rig.add(drone)
+    const propSet = new Set(pr.map((x) => x.group))
+    drone.children.slice().forEach((obj) => addPiece(obj, classify(obj, propSet, gimbalYaw)))
+    props.push(...pr)
+  }
+
+  // The quadcopter CAD model (converted from STEP): its nodes come grouped as
+  // airframe / arms / motors / props / camera, in metres.
+  const SPAN = 2.5 // world units across the propeller tips
+  const useModel = (gltf) => {
+    const root = gltf.scene
+    const box = new THREE.Box3().setFromObject(root)
+    const size = box.getSize(new THREE.Vector3())
+    const unit = SPAN / Math.max(size.x, size.z)
+    const model = new THREE.Group()
+    model.scale.setScalar(unit)
+    model.rotation.y = Math.PI / 2 // gimbal camera towards the viewer
+    const centre = box.getCenter(new THREE.Vector3())
+    root.position.sub(centre)
+    model.add(root)
+    rig.add(model)
+    // Light restyle: white arms to match the site, darker props
+    root.traverse((m) => {
+      if (!m.isMesh || !m.material?.color) return
+      const c = m.material.color
+      if (Math.abs(c.r - 0.31) < 0.06 && Math.abs(c.g - 0.4) < 0.06) c.set(0xe9ecef)
+    })
+    const keys = new Set(PARTS.map((x) => x.key))
+    root.children.forEach((group) => {
+      if (!keys.has(group.name)) return
+      group.children.slice().forEach((obj) => {
+        addPiece(obj, group.name, unit)
+        if (group.name === 'props') props.push({ group: obj, dir: props.length % 2 ? -1 : 1 })
+      })
+    })
+  }
+
+  const loader = new GLTFLoader()
+  loader.setMeshoptDecoder(MeshoptDecoder)
+  loader.load(
+    modelUrl,
+    (gltf) => {
+      if (disposed) return
+      useModel(gltf)
+      setTheme(currentDark)
+    },
+    undefined,
+    () => {
+      if (disposed) return
+      useProcedural()
+      setTheme(currentDark)
+    }
+  )
   const range = Object.fromEntries(PARTS.map((p) => [p.key, p]))
 
+  let currentDark = dark
   const setTheme = (isDark) => {
+    currentDark = isDark
     blueprint.set(isDark ? 0x6fb6ff : 0x2563b8)
     pieces.forEach((pc) => pc.meshes.forEach(({ edges }) => edges.material.color.copy(blueprint)))
     renderer.toneMappingExposure = isDark ? 1.25 : 1.05
@@ -189,7 +247,7 @@ export function mountAssembly(container, { dark = false } = {}) {
     const el = 0.42 - p * 0.18 + lift * 0.05 - look.y * 0.06
     const dist = (wide ? 12 : 15.5) - p * 1.8 - lift * 0.6
     camera.position.set(Math.sin(az) * Math.cos(el) * dist, Math.sin(el) * dist, Math.cos(az) * Math.cos(el) * dist)
-    const lx = wide ? -0.45 : 0
+    const lx = wide ? -1.05 : 0
     camera.lookAt(lx * Math.cos(az), 0.1 + lift * 0.5, -lx * Math.sin(az))
     rig.position.y = lift * 0.7 + hover
     rig.rotation.set(lift * 0.06, lift * 0.5, -lift * 0.08)
@@ -204,6 +262,7 @@ export function mountAssembly(container, { dark = false } = {}) {
     },
     setTheme,
     dispose: () => {
+      disposed = true
       cancelAnimationFrame(raf)
       window.removeEventListener('pointermove', onMove)
       ro.disconnect()
