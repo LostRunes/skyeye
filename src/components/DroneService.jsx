@@ -20,6 +20,7 @@ const STEPS = [
 const OFFERINGS = [
   {
     id: 'skyvertising',
+    alt: 'Drone flying an LED banner with the Sky Eye logo over a night skyline',
     title: 'Skyvertising',
     tag: 'Aerial advertising',
     desc: 'Banners and LED displays flown above events, launches and public gatherings.',
@@ -28,6 +29,7 @@ const OFFERINGS = [
   },
   {
     id: 'agriculture',
+    alt: 'Spraying drone flying low over a wheat field',
     title: 'Agricultural spraying',
     tag: 'Agriculture',
     desc: 'Even, fast spraying over crops, without anyone walking the field with a tank.',
@@ -35,6 +37,7 @@ const OFFERINGS = [
   },
   {
     id: 'mapping',
+    alt: 'Aerial survey map with a colour overlay',
     title: 'Mapping & surveying',
     tag: 'Survey',
     desc: 'Aerial maps, measurements and 3D models of land, sites and infrastructure.',
@@ -42,6 +45,7 @@ const OFFERINGS = [
   },
   {
     id: 'inspection',
+    alt: 'Thermal image of a rooftop solar array',
     title: 'Thermal & solar inspection',
     tag: 'Inspection',
     desc: 'Spot faults in solar panels, roofs and equipment without shutting anything down.',
@@ -49,13 +53,15 @@ const OFFERINGS = [
   },
   {
     id: 'construction',
-    title: 'Construction monitoring',
+    alt: 'Building under construction beside a highway, seen from a drone',
+    title: 'Infrastructure & construction inspection',
     tag: 'Infrastructure',
-    desc: 'Regular flights over sites and corridors to track progress and record conditions.',
+    desc: 'Crack detection, thermal imaging and progress monitoring for real estate, construction sites and infrastructure, day or night.',
     img: photo('aerial', 648, 'w-760,h-520,fo-auto,q-75'),
   },
   {
     id: 'media',
+    alt: 'Decorated wedding stage at night, filmed from a drone',
     title: 'Aerial photography & video',
     tag: 'Events & media',
     desc: 'Weddings, events, venues and tourism — shots a crane or phone cannot get.',
@@ -63,6 +69,7 @@ const OFFERINGS = [
   },
   {
     id: 'fpv',
+    alt: 'FPV drone shot diving over a resort pool',
     title: 'FPV cinematography',
     tag: 'Events & media',
     desc: 'Fast, close, flowing first-person shots through venues and landscapes.',
@@ -70,6 +77,7 @@ const OFFERINGS = [
   },
   {
     id: 'safety',
+    alt: 'Drone in the air during a police demonstration',
     title: 'Surveillance support',
     tag: 'Public safety',
     desc: 'Eyes in the air for crowd monitoring, security and public-safety teams.',
@@ -77,6 +85,7 @@ const OFFERINGS = [
   },
   {
     id: 'delivery',
+    alt: 'Heavy-lift drone carrying an orange life buoy',
     title: 'Payload drop & delivery',
     tag: 'Emergency',
     desc: 'Getting light equipment — like a life buoy — to a spot before a team can reach it.',
@@ -90,7 +99,7 @@ export default function DroneService() {
       <div className="container py-2xl">
         <div className="daas-lead">
           <div>
-            <span className="section-label">SERVICES / 03 · DRONE AS A SERVICE</span>
+            <span className="section-label">SERVICES / 02 · DRONE AS A SERVICE</span>
             <h2 className="section-h2">
               ALL THE DRONE.
               <br />
@@ -132,7 +141,7 @@ export default function DroneService() {
             {OFFERINGS.map((o, i) => (
               <article key={o.id} id={`daas-${o.id}`} className="daas-card">
                 <div className="daas-card-img">
-                  <img src={o.img} alt="" loading="lazy" />
+                  <img src={o.img} alt={o.alt} loading="lazy" />
                   <span className="daas-card-num">{String(i + 1).padStart(2, '0')}</span>
                 </div>
                 <div className="daas-card-body">

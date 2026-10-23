@@ -131,7 +131,7 @@ export default function TrainingEnquiry() {
               <div className="te-row te-row--3">
                 <label className="field">
                   <span>Participants</span>
-                  <input inputMode="numeric" value={form.size} onChange={set('size')} placeholder="e.g. 40" />
+                  <input type="number" min="1" inputMode="numeric" value={form.size} onChange={set('size')} placeholder="e.g. 40" />
                 </label>
                 <label className="field">
                   <span>Preferred dates</span>

@@ -26,6 +26,7 @@ import Gallery from './components/Gallery'
 import Contact from './components/Contact'
 import RequestBand from './components/RequestBand'
 import Footer from './components/Footer'
+import EventPopup from './components/EventPopup'
 
 // Separate pages behind one navbar: Home · About Us · Our Services
 // (Skyvertising, Drone as a Service) · Training · Gallery · Contact Us.
@@ -121,6 +122,22 @@ const PAGES = {
     title: 'Contact Us — Sky Eye Technology',
     render: () => <Contact />,
   },
+  '/404': {
+    title: 'Page not found — Sky Eye Technology',
+    render: () => (
+      <section className="not-found">
+        <div className="container py-2xl">
+          <span className="not-found-code">ERROR 404</span>
+          <h1 className="section-h2">THIS PAGE FLEW OFF.</h1>
+          <p className="section-desc">The link may be old or mistyped. Try one of these instead.</p>
+          <div className="hs-actions">
+            <a className="btn-request btn-request--sm" href="#/">Go to home</a>
+            <a className="hs-more" href="#/contact">Contact us →</a>
+          </div>
+        </div>
+      </section>
+    ),
+  },
 }
 
 export default function App() {
@@ -141,6 +158,7 @@ export default function App() {
         {page.render()}
       </main>
       <Footer />
+      <EventPopup />
     </ThemeProvider>
   )
 }

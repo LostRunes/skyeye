@@ -20,7 +20,7 @@ export default function Footer() {
               </p>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
-              <p className="footer-address">Bhubaneswar, Odisha • India</p>
+              <p className="footer-address">{CONTACTS.address} • India</p>
               <p className="footer-cert">{CONTACTS.email}</p>
             </div>
           </div>

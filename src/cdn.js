@@ -30,6 +30,7 @@ export const poster = (name) => ik(`stills/${name}.jpg`, 'q-80')
 export const brochureCrop = (name, tr = 'w-900,q-80') => ik(`skyvertising/${name}.jpg`, tr)
 
 export const CONTACTS = {
+  address: 'Qtr No. SE 3/7, Satyanagar, Bhubaneswar, Odisha',
   email: 'skyeyetechnology111@gmail.com',
   people: [
     { name: 'Jagannath Tripathy', phone: '+91 84550 41474', tel: '+918455041474' },
