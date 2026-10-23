@@ -22,6 +22,21 @@ export const newPhoto = (name, tr = 'w-1200,q-78') => ik(`photos/new/${name}.png
  */
 export const clip = (name) => ik(`video/${name}.mp4`, 'orig-true')
 
+/**
+ * Footage hosted on Cloudinary, resized and compressed on delivery
+ * (the 4K originals are 15–68 MB; at 1600px wide they are ~1–3 MB).
+ */
+const CLD = 'https://res.cloudinary.com/mnwkyinw/video/upload'
+export const cloudVideo = (path, tr = 'q_auto:eco,w_1600') => `${CLD}/${tr}/${path}.mp4`
+/** A still frame from a Cloudinary video, at `sec` seconds. */
+export const cloudFrame = (path, sec = 1, w = 1600) => `${CLD}/so_${sec},w_${w},q_auto/${path}.jpg`
+
+export const FOOTAGE = {
+  hero: 'v1792770318/16853015_3840_2160_30fps',
+  road: 'v1792770358/13623219_3840_2160_30fps',
+  skyline: 'v1792770457/15891923_3840_2160_50fps',
+}
+
 /** Poster still for a clip — a plain image under /skyeye/stills. */
 export const poster = (name) => ik(`stills/${name}.jpg`, 'q-80')
 

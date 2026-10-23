@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { ik } from '../cdn'
+import { cloudVideo, FOOTAGE, ik } from '../cdn'
 import useIsMobile from '../hooks/useIsMobile'
 
 const heroPoster = ik('site/hero-video-poster.jpg', 'w-1600')
-const VIDEO_SRC = 'https://ik.imagekit.io/tm5te9cjl/skyeye/16853015_3840_2160_30fps.mp4'
+const VIDEO_SRC = cloudVideo(FOOTAGE.hero, 'q_auto:eco,w_1920')
 
 const wantsReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches

@@ -22,6 +22,7 @@ import Courses from './components/Courses'
 import TrainingEnquiry from './components/TrainingEnquiry'
 import DroneService from './components/DroneService'
 import VideoStrip from './components/VideoStrip'
+import { SKYLINE } from './data/footage'
 import Gallery from './components/Gallery'
 import Contact from './components/Contact'
 import RequestBand from './components/RequestBand'
@@ -56,6 +57,7 @@ const PAGES = {
     render: () => (
       <>
         <DroneAssembly />
+        <VideoStrip clip={SKYLINE} />
         <Engineering />
         <RnD />
         <Recognition />

@@ -1,15 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { ik } from '../cdn'
+import { ROAD } from '../data/footage'
 import useIsMobile from '../hooks/useIsMobile'
-
-// Abinash's original strip footage, hosted on his ImageKit account.
-const VIDEO_SRC = 'https://ik.imagekit.io/tm5te9cjl/skyeye/13623219_3840_2160_30fps.mp4'
-const videoPoster = ik('site/video-poster.jpg', 'w-1600')
 
 const wantsReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-export default function VideoStrip() {
+export default function VideoStrip({ clip = ROAD }) {
+  const VIDEO_SRC = clip.src
+  const videoPoster = clip.poster
   const isMobile = useIsMobile()
   const videoRef = useRef(null)
   const pausedByUser = useRef(false)
@@ -64,7 +62,7 @@ export default function VideoStrip() {
           {/* Main cinematic flight footage */}
           <div className="video-strip-canvas">
             {isMobile ? (
-              <img src={videoPoster} alt="Monochrome aerial drone footage over a main road through a residential area" />
+              <img src={videoPoster} alt={clip.alt} />
             ) : (
             <video
               ref={videoRef}
@@ -77,15 +75,15 @@ export default function VideoStrip() {
               preload="metadata"
               onPlay={() => setPlaying(true)}
               onPause={() => setPlaying(false)}
-              aria-label="Monochrome aerial drone footage tracking traffic along a main road through a residential area"
+              aria-label={clip.alt}
             />
             )}
             <div className="video-strip-gradient" />
 
             <div className="video-strip-overlay">
               <div>
-                <span className="vs-badge">FLIGHT CAM 04 // ACTIVE RUN</span>
-                <p className="vs-title">HIGH-ENDURANCE FIELD RECONNAISSANCE</p>
+                <span className="vs-badge">{clip.badge}</span>
+                <p className="vs-title">{clip.title}</p>
               </div>
               {!isMobile && (
               <button
@@ -106,14 +104,14 @@ export default function VideoStrip() {
           {/* Telemetry Bar */}
           <div className="video-strip-telemetry">
             <div className="vst-col-1">
-              <span className="vst-h">01 — AERIAL SYSTEMS</span>
-              <span className="vst-v">Professional UAV platforms for practical deployment.</span>
+              <span className="vst-h">{clip.head}</span>
+              <span className="vst-v">{clip.sub}</span>
             </div>
             <div className="vst-col-2">
-              FLIGHT DURATION: 01:42:19 · AUTONOMY: LVL 4
+              {clip.meta}
             </div>
             <div className="vst-col-3">
-              <span className="vst-sec">▪ ALT: 120M</span> · VEL: 14.2 M/S · SENSORS: ACTIVE
+              <span className="vst-sec">{clip.meta2[0]}</span>{clip.meta2[1]}
             </div>
           </div>
         </div>
