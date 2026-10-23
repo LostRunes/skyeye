@@ -9,7 +9,8 @@ import { buildDrone } from './droneScene.js'
 // It starts as an exploded blueprint (wireframe parts spread out), then each
 // part flies into place in build order, turning solid as it seats:
 // airframe → arms → motors & landing gear → propellers → gimbal camera.
-// Fully built, the propellers spin up and it lifts off.
+// Fully built, the propellers spin up, it lifts off and hovers, then flies
+// out of frame. Once fitted, the gimbal camera turns to follow the cursor.
 
 const clamp01 = (v) => Math.min(Math.max(v, 0), 1)
 const smooth = (t) => t * t * (3 - 2 * t)
@@ -25,6 +26,7 @@ export const PARTS = [
   { key: 'camera', from: 0.68, to: 0.8 },
 ]
 const LIFT_FROM = 0.84
+const OUT_FROM = 0.92
 
 function classify(obj, propSet, gimbal) {
   if (propSet.has(obj)) return 'props'
@@ -78,6 +80,7 @@ export function mountAssembly(container, { dark = false, modelUrl = '/models/qua
   const blueprint = new THREE.Color()
   const pieces = []
   const props = []
+  let gimbal = null // { pivot, rest } — the camera head, aimed at the cursor
 
   // Each movable piece: home position, where it waits when exploded, and a
   // blueprint-edge overlay that fades as it turns solid.
@@ -140,6 +143,19 @@ export function mountAssembly(container, { dark = false, modelUrl = '/models/qua
         addPiece(obj, group.name, unit)
         if (group.name === 'props') props.push({ group: obj, dir: props.length % 2 ? -1 : 1 })
       })
+      // Hang the gimbal head (everything below the fixed mount) on a pivot
+      // so it can pan and tilt; the camera looks out along the model's -x.
+      if (group.name === 'camera') {
+        const pivot = new THREE.Group()
+        pivot.position.set(-0.08, -0.02, 0)
+        group.add(pivot)
+        for (const pc of pieces) {
+          if (pc.part !== 'camera' || !/Zenmuse|GoPro/i.test(pc.obj.name)) continue
+          pivot.add(pc.obj)
+          pc.home.sub(pivot.position)
+        }
+        gimbal = { pivot, yaw: 0, pitch: 0 }
+      }
     })
   }
 
@@ -200,6 +216,10 @@ export function mountAssembly(container, { dark = false, modelUrl = '/models/qua
   let p = 0
   const look = { x: 0, y: 0 }
   let spinSpeed = 0
+  const flyRight = new THREE.Vector3()
+  const flyBack = new THREE.Vector3()
+  const aim = new THREE.Vector3()
+  const aimDir = new THREE.Vector3()
   const clock = new THREE.Clock()
   let raf = 0
 
@@ -234,9 +254,12 @@ export function mountAssembly(container, { dark = false, modelUrl = '/models/qua
       }
     }
 
-    // Built: props spin up, the drone lifts and banks into a turn
-    const lift = smooth(clamp01((p - LIFT_FROM) / (1 - LIFT_FROM)))
-    spinSpeed = damp(spinSpeed, (p > 0.7 ? 6 : 0) + lift * 34, 3, dt)
+    // Built: props spin up, the drone lifts and banks into a turn, hovers,
+    // then noses down and accelerates out of frame (up and to the right)
+    const lift = smooth(clamp01((p - LIFT_FROM) / (OUT_FROM - LIFT_FROM)))
+    const outT = clamp01((p - OUT_FROM) / (1 - OUT_FROM))
+    const out = outT * outT
+    spinSpeed = damp(spinSpeed, (p > 0.7 ? 6 : 0) + lift * 34 + outT * 16, 3, dt)
     if (!reduced) for (const pr of props) pr.group.rotation.y += spinSpeed * dt * pr.dir
     const hover = lift * Math.sin(t * 1.4) * 0.06
 
@@ -249,8 +272,41 @@ export function mountAssembly(container, { dark = false, modelUrl = '/models/qua
     camera.position.set(Math.sin(az) * Math.cos(el) * dist, Math.sin(el) * dist, Math.cos(az) * Math.cos(el) * dist)
     const lx = wide ? -1.05 : 0
     camera.lookAt(lx * Math.cos(az), 0.1 + lift * 0.5, -lx * Math.sin(az))
-    rig.position.y = lift * 0.7 + hover
+    rig.position.set(0, lift * 0.7 + hover, 0)
     rig.rotation.set(lift * 0.06, lift * 0.5, -lift * 0.08)
+    if (out > 0) {
+      // Fly-out direction in screen terms: right, up and away from the camera
+      camera.updateMatrixWorld()
+      const right = flyRight.setFromMatrixColumn(camera.matrixWorld, 0)
+      const back = flyBack.setFromMatrixColumn(camera.matrixWorld, 2)
+      rig.position.addScaledVector(right, out * (wide ? 9 : 6)).addScaledVector(back, -out * 6)
+      rig.position.y += out * 7
+      // Pitch into the direction of travel, banking as it goes
+      rig.rotation.x += Math.min(outT * 2, 1) * 0.32
+      rig.rotation.z -= Math.min(outT * 2, 1) * 0.28
+    }
+
+    // Gimbal camera follows the cursor: aim at a point between the viewer
+    // and the drone along the cursor's ray, so it seems to look at you.
+    if (gimbal) {
+      const seated = clamp01((p - range.camera.to) / 0.03)
+      let yaw = 0
+      let pitch = 0
+      if (seated > 0) {
+        camera.updateMatrixWorld()
+        rig.updateMatrixWorld()
+        const pivotWorld = gimbal.pivot.getWorldPosition(aim)
+        const d = camera.position.distanceTo(pivotWorld)
+        aimDir.set(pointer.x, -pointer.y, 0.5).unproject(camera).sub(camera.position).normalize()
+        aim.copy(camera.position).addScaledVector(aimDir, d * 0.55)
+        gimbal.pivot.parent.worldToLocal(aim).sub(gimbal.pivot.position)
+        yaw = Math.max(-1.3, Math.min(1.3, Math.atan2(aim.z, -aim.x))) * seated
+        pitch = Math.max(-0.9, Math.min(0.45, -Math.atan2(aim.y, Math.hypot(aim.x, aim.z)))) * seated
+      }
+      gimbal.yaw = damp(gimbal.yaw, yaw, 5, dt)
+      gimbal.pitch = damp(gimbal.pitch, pitch, 5, dt)
+      gimbal.pivot.rotation.set(0, gimbal.yaw, gimbal.pitch, 'YZX')
+    }
 
     renderer.render(scene, camera)
   }

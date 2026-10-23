@@ -3952,7 +3952,7 @@ html.lenis.rec-snapping {
    ============================================ */
 .assembly {
   position: relative;
-  height: 520vh;
+  height: 580vh;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-surface-container-highest);
 }
