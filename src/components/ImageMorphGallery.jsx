@@ -136,7 +136,9 @@ const GALLERY_IMAGES = [
 const TOTAL_CARDS = 24
 const CARDS = Array.from({ length: TOTAL_CARDS }, (_, i) => i % GALLERY_IMAGES.length)
 
-export default function ImageMorphGallery() {
+// Used as the Gallery page opener, and on the home page with its own label
+// and a link through to the full gallery (`more`).
+export default function ImageMorphGallery({ label = '01 / GALLERY', more }) {
   const containerRef = useRef(null)
   const visualColRef = useRef(null)
   const cardsWrapRef = useRef(null)
@@ -336,7 +338,7 @@ export default function ImageMorphGallery() {
       <div className="morph-viewport">
         <div className="morph-text-col">
           <div ref={introRef} className="morph-text-overlay">
-            <span className="section-label">01 / GALLERY</span>
+            <span className="section-label">{label}</span>
             <h2>ONE PLATFORM. EVERY ENVIRONMENT.</h2>
             {canHover && <p>Hover any frame to preview</p>}
           </div>
@@ -345,6 +347,11 @@ export default function ImageMorphGallery() {
             <span className="section-label">SKY EYE TECHNOLOGY</span>
             <h2>LABS. CLASSROOMS. FIELD DEPLOYMENTS.</h2>
             <p>From bench assembly to live flight operations</p>
+            {more && (
+              <a className="hs-more morph-more" href={more}>
+                Open the gallery →
+              </a>
+            )}
           </div>
 
           <div className={`morph-preview${isPreviewing ? ' is-active' : ''}`} aria-hidden="true">

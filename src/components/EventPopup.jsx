@@ -71,19 +71,34 @@ export default function EventPopup() {
     let cancelled = false
     let raf = 0
 
-    if (!reduced) {
-      import('../three/popupDrones.js')
-        .then(({ mountPopupDrones }) => {
-          if (!cancelled && layerRef.current) dronesRef.current = mountPopupDrones(layerRef.current)
-        })
-        .catch(() => {})
-    }
-
-    // Short pause so the page paints first, then the drones fly in
-    const start = window.setTimeout(() => {
+    // The fly-in waits until the page has finished loading and the drones
+    // are fully set up (lighting, shaders), so none of that heavy one-off
+    // work lands in the middle of the animation and makes it stutter.
+    const dronesReady = reduced
+      ? Promise.resolve()
+      : import('../three/popupDrones.js')
+          .then(({ mountPopupDrones }) => {
+            if (cancelled || !layerRef.current) return
+            dronesRef.current = mountPopupDrones(layerRef.current)
+            return dronesRef.current.ready
+          })
+          .catch(() => {})
+    const pageLoaded = new Promise((res) =>
+      document.readyState === 'complete' ? res() : window.addEventListener('load', res, { once: true })
+    )
+    const idle = () =>
+      new Promise((res) => (window.requestIdleCallback ? requestIdleCallback(res, { timeout: 1200 }) : setTimeout(res, 300)))
+    const minDelay = new Promise((res) => setTimeout(res, reduced ? 0 : 700))
+    let started = false
+    const begin = () => {
+      if (started || cancelled) return
+      started = true
       phase.current = { name: 'enter', t0: performance.now() }
       cardRef.current?.focus({ preventScroll: true })
-    }, reduced ? 0 : 900)
+    }
+    Promise.all([dronesReady, pageLoaded.then(idle), minDelay]).then(begin)
+    // Never keep visitors waiting on a slow load
+    const fallback = window.setTimeout(begin, 5000)
 
     const tick = (now) => {
       raf = requestAnimationFrame(tick)
@@ -141,7 +156,7 @@ export default function EventPopup() {
 
     return () => {
       cancelled = true
-      window.clearTimeout(start)
+      window.clearTimeout(fallback)
       cancelAnimationFrame(raf)
       dronesRef.current?.dispose()
       dronesRef.current = null
@@ -188,12 +203,6 @@ export default function EventPopup() {
         </div>
 
         <p className="event-about">{e.about}</p>
-
-        <div className="event-fee">
-          <span className="event-fee-label">Delegate fee</span>
-          <span className="event-fee-amount">{e.fee}</span>
-          <span className="event-fee-note">{e.feeNote}</span>
-        </div>
 
         <div className="event-stall">
           <span className="material-symbols-outlined event-stall-icon" aria-hidden="true">casino</span>
