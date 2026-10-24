@@ -47,7 +47,8 @@ export function parseHash(hash = window.location.hash) {
   if (p.replace(/\/$/, '') === '/services/courses') {
     return { path: '/training', to: new URLSearchParams(q).get('to'), legacy: true }
   }
-  const path = PAGES.includes(p.replace(/\/$/, '') || '/') ? p.replace(/\/$/, '') || '/' : '/'
+  // Unknown pages get a proper 'page not found' instead of silently showing home
+  const path = PAGES.includes(p.replace(/\/$/, '') || '/') ? p.replace(/\/$/, '') || '/' : '/404'
   const to = new URLSearchParams(q).get('to')
   return { path, to }
 }
@@ -69,6 +70,9 @@ export const scrollToTop = (smooth) => {
   else window.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'instant' })
 }
 
+// Height of the fixed navbar, so sections land just below it
+const navOffset = () => document.querySelector('.nav-bar')?.offsetHeight || 64
+
 export const scrollToSection = (id) => {
   // Wait two frames so the new page has laid out before measuring.
   requestAnimationFrame(() =>
@@ -76,7 +80,7 @@ export const scrollToSection = (id) => {
       const go = (smooth) => {
         const el = document.getElementById(id)
         if (!el) return
-        const y = el.getBoundingClientRect().top + window.scrollY - 64
+        const y = el.getBoundingClientRect().top + window.scrollY - navOffset()
         if (window.__lenis) {
           // The page may have just changed height; let Lenis re-measure first
           window.__lenis.resize()
@@ -87,7 +91,7 @@ export const scrollToSection = (id) => {
       // Images above the target can still be loading — re-aim once they settle
       setTimeout(() => {
         const el = document.getElementById(id)
-        if (el && Math.abs(el.getBoundingClientRect().top - 64) > 40) go(true)
+        if (el && Math.abs(el.getBoundingClientRect().top - navOffset()) > 40) go(true)
       }, 1200)
     })
   )

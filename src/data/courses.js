@@ -4,6 +4,18 @@ import { ik, photo } from '../cdn'
 // Module lists are draft outlines built from the course briefs; replace them
 // with the team's confirmed syllabus when it arrives. Add an instructor as
 // { name, role, img } to show their photo on the course.
+// Generative AI instructor. Add `name` once confirmed.
+const AI_INSTRUCTOR = {
+  img: ik('photos/new/instructor-full.jpg', 'w-600,q-85'),
+  role: 'Course instructor',
+  quals: [
+    'B.Tech in CSE, IIIT Ranchi',
+    'M.Tech in CSE, NIT Raipur (pursuing)',
+    'Ex-Data Scientist at wiZe',
+    'Ex-AI Engineer at Gistr',
+  ],
+}
+
 export const GROUPS = [
   { key: 'ai', label: 'AI & Data' },
   { key: 'drone', label: 'Drones' },
@@ -29,7 +41,7 @@ export const COURSES = [
     format: ['Live workshop', 'Bring a laptop', 'Hands-on'],
     img: ik('photos/new/genai-course.jpg', 'q-88'),
     imgFit: 'contain', // a projected slide: show it whole rather than cropping it
-    instructor: null,
+    instructor: AI_INSTRUCTOR,
   },
   {
     id: 'data',
@@ -48,7 +60,7 @@ export const COURSES = [
     ],
     format: ['Live sessions', 'Bring a laptop', 'Project-based'],
     img: ik('photos/new/data-course.jpg', 'q-90'),
-    imgPos: 'center 18%', // portrait shot: keep the instructor's face in frame
+    imgFit: 'contain', // small portrait shot: show it whole over a blurred backdrop
     instructor: null,
   },
   {

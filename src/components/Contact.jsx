@@ -28,7 +28,8 @@ export default function Contact() {
     window.location.href = `mailto:${CONTACTS.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body())}`
   }
 
-  const sendWhatsApp = () => {
+  const sendWhatsApp = (e) => {
+    if (!e.currentTarget.form?.reportValidity()) return
     window.open(`${CONTACTS.whatsapp}&text=${encodeURIComponent(body())}`, '_blank', 'noopener')
   }
 
@@ -87,7 +88,7 @@ export default function Contact() {
                 </label>
                 <label className="field">
                   <span>Phone or email</span>
-                  <input required value={form.reach} onChange={set('reach')} autoComplete="email" />
+                  <input required value={form.reach} onChange={set('reach')} autoComplete="on" />
                 </label>
                 <label className="field">
                   <span>Service</span>
@@ -99,7 +100,7 @@ export default function Contact() {
                 </label>
                 <label className="field">
                   <span>Message</span>
-                  <textarea rows={4} value={form.message} onChange={set('message')} placeholder="Event date, location, group size…" />
+                  <textarea required rows={4} value={form.message} onChange={set('message')} placeholder="Event date, location, group size…" />
                 </label>
                 <div className="contact-form-actions">
                   <button type="submit" className="btn-request">Send request by email</button>

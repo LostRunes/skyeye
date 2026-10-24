@@ -90,47 +90,62 @@ export default function Courses() {
                 className={course.imgFit === 'contain' ? 'is-contain' : undefined}
               />
               <span className="course-media-badge">● LIVE · {course.level.toUpperCase()}</span>
-              {course.instructor && (
-                <div className="course-instructor">
-                  <img src={course.instructor.img} alt="" />
-                  <span>
-                    <strong>{course.instructor.name}</strong>
-                    {course.instructor.role}
-                  </span>
-                </div>
-              )}
+
             </div>
             <div className="course-body">
-              <span className="course-audience">FOR · {course.audience.toUpperCase()}</span>
-              <h3 className="course-title">{course.title}</h3>
-              {course.program && <p className="course-program">{course.program}</p>}
-              <p className="course-desc">{course.desc}</p>
+              <header className="course-head">
+                <span className="course-audience">FOR · {course.audience.toUpperCase()}</span>
+                <h3 className="course-title">{course.title}</h3>
+                {course.program && <p className="course-program">{course.program}</p>}
+              </header>
 
-              <div className="course-modules">
-                <span className="course-modules-label">WHAT YOU WILL LEARN</span>
-                <ol>
-                  {course.modules.map(([t, d], i) => (
-                    <li key={t}>
-                      <span className="course-module-num">{String(i + 1).padStart(2, '0')}</span>
-                      <span>
-                        <strong>{t}</strong>
-                        {d}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
+              <div className="course-cols">
+                <div className="course-main">
+                  <p className="course-desc">{course.desc}</p>
+                  <ul className="course-meta">
+                    {course.format.map((m) => (
+                      <li key={m}>{m}</li>
+                    ))}
+                  </ul>
 
-              <ul className="course-meta">
-                {course.format.map((m) => (
-                  <li key={m}>{m}</li>
-                ))}
-              </ul>
-              <div className="course-foot">
-                <a className="btn-request" href="#/training?to=training-enquiry" data-service={`Course: ${course.title}`}>
-                  Enquire about this course
-                  <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
-                </a>
+                  {course.instructor && (
+                    <div className="course-teacher">
+                      <img src={course.instructor.img} alt={course.instructor.name || 'Course instructor'} loading="lazy" />
+                      <div className="course-teacher-body">
+                        <span className="course-modules-label">
+                          {course.instructor.name ? `${course.instructor.role.toUpperCase()} · ${course.instructor.name.toUpperCase()}` : 'YOUR INSTRUCTOR'}
+                        </span>
+                        <ul>
+                          {course.instructor.quals.map((q) => (
+                            <li key={q}>{q}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="course-foot">
+                    <a className="btn-request" href="#/training?to=training-enquiry" data-service={`Course: ${course.title}`}>
+                      Enquire about this course
+                      <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                    </a>
+                  </div>
+                </div>
+
+                <div className="course-modules">
+                  <span className="course-modules-label">WHAT YOU WILL LEARN</span>
+                  <ol>
+                    {course.modules.map(([t, d], i) => (
+                      <li key={t}>
+                        <span className="course-module-num">{String(i + 1).padStart(2, '0')}</span>
+                        <span>
+                          <strong>{t}</strong>
+                          {d}
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
               </div>
             </div>
           </div>

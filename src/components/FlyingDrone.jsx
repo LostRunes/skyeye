@@ -4,8 +4,8 @@ import { useTheme } from '../hooks/useTheme'
 
 // The home page's drone, after drone.riotters.com: one aircraft in a fixed
 // layer over the page that flies down with you. It enters as you leave the
-// hero, settles beside the About copy and turns while that section is pinned,
-// lifts away over the services, then descends to hover over the mountain.
+// hero, climbs out of frame while the About section assembles its own drone,
+// then descends to hover over the mountain.
 // Positions are waypoints tied to page sections; the scene eases between them
 // and banks/pitches from its own velocity, so it reads as flight.
 
@@ -19,9 +19,7 @@ function waypoints(wide) {
   return [
     { at: () => 0, pose: { x: W(0.6, 0.3), y: 1.6, scale: 0.7, yaw: -0.7 } },
     { el: '#overview', at: 'center', pose: { x: W(0.72, 0.4), y: W(0.62, 0.7), scale: W(0.55, 0.5), yaw: -0.5 } },
-    { el: '#home-about', at: 'pin-start', pose: { x: W(0.42, 0), y: W(-0.04, 0.34), scale: W(1, 0.55), yaw: -0.55 } },
-    { el: '#home-about', at: 'pin-mid', pose: { x: W(0.36, 0), y: W(0.02, 0.36), scale: W(1.05, 0.58), yaw: 0.05 } },
-    { el: '#home-about', at: 'pin-end', pose: { x: W(0.42, 0), y: W(-0.02, 0.34), scale: W(1, 0.55), yaw: 0.6 } },
+    { el: '#home-about', at: 'pin-start', pose: { x: W(0.9, 0.5), y: 1.7, scale: 0.6, yaw: 0.4 } },
     { el: '#home-services', at: 'top-center', pose: { x: W(1.1, 0.6), y: 1.55, scale: 0.6, yaw: 0.9 } },
     { el: '.terrain3d', at: 'top', pose: { x: W(-0.2, 0), y: 1.55, scale: 0.55, yaw: -0.3 } },
     { el: '.terrain3d-stage', at: 'center', pose: { x: W(0.6, 0.25), y: W(-0.3, -0.42), scale: W(0.5, 0.38), yaw: -0.2 } },

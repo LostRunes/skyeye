@@ -446,13 +446,13 @@ export default function Navbar({ path = '/' }) {
                       onClick={() => setServicesOpen((o) => !o)}
                       tabIndex={menuOpen ? 0 : -1}
                     >
-                      <span className="nav-sheet-num">0{i + 1}</span>
+                      <span className="nav-sheet-num">{String(i + 1).padStart(2, '0')}</span>
                       <Scramble text={p.label} replay={menuCount} duration={560} />
                       <span className={`nav-sheet-plus${servicesOpen ? ' is-open' : ''}`} aria-hidden="true" />
                     </button>
                     <div className={`nav-sheet-sub${servicesOpen ? ' is-open' : ''}`}>
                       <div>
-                        {p.links.slice(0, 3).map((c) => (
+                        {p.links.map((c) => (
                           <a key={c.href} href={c.href} onClick={closeAll} tabIndex={menuOpen && servicesOpen ? 0 : -1}>
                             <span>+</span>
                             {c.label}
@@ -471,7 +471,7 @@ export default function Navbar({ path = '/' }) {
                     }}
                     tabIndex={menuOpen ? 0 : -1}
                   >
-                    <span className="nav-sheet-num">0{i + 1}</span>
+                    <span className="nav-sheet-num">{String(i + 1).padStart(2, '0')}</span>
                     <Scramble text={p.label} replay={menuCount} duration={560} />
                   </a>
                 )}

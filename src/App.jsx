@@ -6,7 +6,7 @@ import { scrambleOnView } from './utils/scramble'
 import Navbar from './components/Navbar'
 import HomeHero from './components/HomeHero'
 import Hero from './components/Hero'
-import Drone3D from './components/Drone3D'
+import DroneAssembly from './components/DroneAssembly'
 import Terrain3D from './components/Terrain3D'
 import FlyingDrone from './components/FlyingDrone'
 import Engineering from './components/Engineering'
@@ -21,10 +21,12 @@ import Courses from './components/Courses'
 import TrainingEnquiry from './components/TrainingEnquiry'
 import DroneService from './components/DroneService'
 import VideoStrip from './components/VideoStrip'
+import { SKYLINE } from './data/footage'
 import Gallery from './components/Gallery'
 import Contact from './components/Contact'
 import RequestBand from './components/RequestBand'
 import Footer from './components/Footer'
+import EventPopup from './components/EventPopup'
 
 // Separate pages behind one navbar: Home · About Us · Our Services
 // (Skyvertising, Drone as a Service) · Training · Gallery · Contact Us.
@@ -37,7 +39,7 @@ const PAGES = {
         <HomeHero />
         <Hero />
         <div id="home-about" className="anchor-block">
-          <Drone3D more="#/about" bare />
+          <DroneAssembly more="#/about" />
         </div>
         <HomeServices />
         <HomeTraining />
@@ -53,7 +55,8 @@ const PAGES = {
     title: 'About Us — Sky Eye Technology',
     render: () => (
       <>
-        <Drone3D />
+        <DroneAssembly />
+        <VideoStrip clip={SKYLINE} />
         <Engineering />
         <RnD />
         <Recognition />
@@ -120,6 +123,22 @@ const PAGES = {
     title: 'Contact Us — Sky Eye Technology',
     render: () => <Contact />,
   },
+  '/404': {
+    title: 'Page not found — Sky Eye Technology',
+    render: () => (
+      <section className="not-found">
+        <div className="container py-2xl">
+          <span className="not-found-code">ERROR 404</span>
+          <h1 className="section-h2">THIS PAGE FLEW OFF.</h1>
+          <p className="section-desc">The link may be old or mistyped. Try one of these instead.</p>
+          <div className="hs-actions">
+            <a className="btn-request btn-request--sm" href="#/">Go to home</a>
+            <a className="hs-more" href="#/contact">Contact us →</a>
+          </div>
+        </div>
+      </section>
+    ),
+  },
 }
 
 export default function App() {
@@ -140,6 +159,7 @@ export default function App() {
         {page.render()}
       </main>
       <Footer />
+      <EventPopup />
     </ThemeProvider>
   )
 }

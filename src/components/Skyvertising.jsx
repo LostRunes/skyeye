@@ -270,7 +270,7 @@ export default function Skyvertising() {
           <div className="sky-uses">
             {USES.map((u) => (
               <figure key={u.img} className="sky-use">
-                <img src={brochureCrop(u.img, 'w-700,q-78')} alt="" loading="lazy" />
+                <img src={brochureCrop(u.img, 'w-700,q-78')} alt={u.title} loading="lazy" />
                 <figcaption>
                   <h4>{u.title}</h4>
                   <p>{u.desc}</p>
