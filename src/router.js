@@ -11,6 +11,7 @@ export const PAGES = [
   '/services/skyvertising',
   '/training',
   '/services/drone-as-a-service',
+  '/events',
   '/gallery',
   '/contact',
 ]
@@ -23,6 +24,9 @@ const LEGACY = {
   engineering: ['/about', 'engineering'],
   rnd: ['/about', 'rnd'],
   'track-record': ['/about', 'track-record'],
+  clients: ['/about', 'clients'],
+  events: ['/events'],
+  mun: ['/events'],
   services: ['/services'],
   skyvertising: ['/services/skyvertising'],
   courses: ['/training'],
