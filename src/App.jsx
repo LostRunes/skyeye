@@ -23,6 +23,7 @@ import DroneService from './components/DroneService'
 import VideoStrip from './components/VideoStrip'
 import { SKYLINE } from './data/footage'
 import Gallery from './components/Gallery'
+import ImageMorphGallery from './components/ImageMorphGallery'
 import Contact from './components/Contact'
 import RequestBand from './components/RequestBand'
 import Footer from './components/Footer'
@@ -43,6 +44,9 @@ const PAGES = {
         </div>
         <HomeServices />
         <HomeTraining />
+        <div id="home-gallery" className="anchor-block">
+          <ImageMorphGallery label="GALLERY" more="#/gallery" />
+        </div>
         <VideoStrip />
         <Terrain3D />
         <div id="home-contact" className="anchor-block">

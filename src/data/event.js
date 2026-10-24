@@ -12,8 +12,6 @@ export const EVENT = {
   endsOn: '2026-10-28', // last day; the pop-up hides after this date
   about:
     'Three days of debate and diplomacy. Delegates represent countries across UN committees, negotiate with each other and draft resolutions on real global issues.',
-  fee: '₹2,000',
-  feeNote: 'per delegate · all 3 days',
   stall: {
     title: 'Visit the Sky Eye stall',
     where: 'Campus 6 · all three days',

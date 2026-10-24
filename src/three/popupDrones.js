@@ -11,7 +11,7 @@ const damp = (c, t, l, dt) => c + (t - c) * (1 - Math.exp(-l * dt))
 export function mountPopupDrones(container) {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75))
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5))
   renderer.outputColorSpace = THREE.SRGBColorSpace
   renderer.toneMapping = THREE.ACESFilmicToneMapping
   renderer.toneMappingExposure = 1.1
@@ -115,7 +115,15 @@ export function mountPopupDrones(container) {
   }
   tick()
 
+  // Compile every shader up front (in the background where supported) and
+  // render once, so the first frames of the fly-in have nothing left to do.
+  const ready = renderer
+    .compileAsync(scene, camera)
+    .catch(() => {})
+    .then(() => renderer.render(scene, camera))
+
   return {
+    ready,
     setCorners: (c, l = 1) => {
       corners = c
       lift = l
