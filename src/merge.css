@@ -4925,23 +4925,6 @@ html.lenis.rec-snapping {
   color: var(--color-outline);
 }
 
-.client-tile--placeholder span {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  color: var(--color-outline);
-  opacity: 0.6;
-}
-
-.clients-soon {
-  margin-top: 0.9rem;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-outline);
-}
-
 .clients-more {
   display: inline-block;
   margin-top: 1.5rem;
@@ -6254,4 +6237,96 @@ html.lenis.rec-snapping {
 
 .arcade-wheel {
   justify-content: space-between;
+}
+
+/* Clients: groups on About, scrolling strips on home */
+.clients-group {
+  margin-top: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+.clients-group .clients-grid {
+  margin-top: 0.9rem;
+}
+
+.clients-group-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+
+@media (min-width: 1100px) {
+  .clients-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.client-tile img {
+  max-width: 78%;
+  max-height: 58px;
+}
+
+.client-tile--name .client-name {
+  font-size: 14.5px;
+  line-height: 1.25;
+}
+
+.client-tile .client-sector {
+  font-size: 9.5px;
+}
+
+/* Dark mode: logos sit on a light plate so their own colours still read */
+:root[data-theme='dark'] .client-tile img {
+  padding: 8px 12px;
+  background: #f2f0eb;
+  border-radius: 2px;
+}
+
+.clients-strip {
+  margin-top: 1rem;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.clients--strip .clients-head + .clients-strip {
+  margin-top: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+.clients-strip-track {
+  display: flex;
+  gap: 1rem;
+  width: max-content;
+  list-style: none;
+  padding: 0;
+  animation: clients-scroll 60s linear infinite;
+}
+
+.clients-strip.is-reverse .clients-strip-track {
+  animation-direction: reverse;
+}
+
+.clients-strip:hover .clients-strip-track {
+  animation-play-state: paused;
+}
+
+.clients-strip .client-tile {
+  width: 200px;
+  min-height: 112px;
+  border: 1px solid var(--color-surface-container-highest);
+}
+
+@keyframes clients-scroll {
+  to {
+    transform: translateX(calc(-50% - 0.5rem));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clients-strip-track {
+    animation: none;
+    flex-wrap: wrap;
+    width: auto;
+  }
 }
