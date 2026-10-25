@@ -460,6 +460,7 @@ export function mountBanner(container, { dark = false, mode = 'inline', logoUrl 
       texBack.dispose()
       pmrem.dispose()
       renderer.dispose()
+      renderer.forceContextLoss() // free the GPU context now, not at GC
       renderer.domElement.remove()
     },
   }

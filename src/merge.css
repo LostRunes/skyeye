@@ -5008,7 +5008,7 @@ html.lenis.rec-snapping {
 .cad-hero-title {
   margin-top: var(--space-md);
   max-width: 11ch;
-  font-size: clamp(40px, 7.4vw, 104px);
+  font-size: clamp(34px, 4.6vw, 68px);
   font-weight: 600;
   line-height: 0.92;
   letter-spacing: -0.035em;
@@ -5016,10 +5016,10 @@ html.lenis.rec-snapping {
 }
 
 .cad-hero-desc {
-  margin-top: var(--space-lg);
-  max-width: 30rem;
-  font-size: 17px;
-  line-height: 28px;
+  margin-top: var(--space-md);
+  max-width: 26rem;
+  font-size: 15px;
+  line-height: 24px;
   color: var(--color-on-surface-variant);
 }
 
@@ -5109,6 +5109,7 @@ html.lenis.rec-snapping {
 .cad-callout-label {
   left: 54px;
   top: -52px;
+  transform: translateY(var(--dy, 0px)); /* nudged clear of other labels */
 }
 
 .cad-callout[data-dir='rd'] .cad-callout-line {

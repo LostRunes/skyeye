@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { EVENT } from '../data/event'
+import { importScene, resilient } from '../three/resilient'
 
 // Announcement pop-up shown once per visit (per browser session). Two drones
 // carry the square card down by its top corners; it settles with a gentle
@@ -73,10 +74,10 @@ export default function EventPopup() {
     // work lands in the middle of the animation and makes it stutter.
     const dronesReady = reduced
       ? Promise.resolve()
-      : import('../three/popupDrones.js')
+      : importScene(() => import('../three/popupDrones.js'))
           .then(({ mountPopupDrones }) => {
             if (cancelled || !layerRef.current) return
-            dronesRef.current = mountPopupDrones(layerRef.current)
+            dronesRef.current = resilient(mountPopupDrones, layerRef.current)
             return dronesRef.current.ready
           })
           .catch(() => {})
