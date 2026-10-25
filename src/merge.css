@@ -1014,14 +1014,17 @@ html.menu-locked body {
   background: #05060a;
 }
 
-.sky-lead-img img {
+.sky-lead-img img,
+.sky-lead-img video {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 1.2s var(--ease);
 }
 
-.sky-lead-frame:hover .sky-lead-img img {
+.sky-lead-frame:hover .sky-lead-img img,
+.sky-lead-frame:hover .sky-lead-img video {
   transform: scale(1.03);
 }
 

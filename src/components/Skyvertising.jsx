@@ -2,6 +2,26 @@ import { useEffect, useRef } from 'react'
 import { brochureCrop, clip, poster } from '../cdn'
 import useIsMobile from '../hooks/useIsMobile'
 
+// The lead banner photo as a looping "living photo": slow push-in, the drone
+// bobbing, the LEDs breathing and the city lights twinkling. Plays only while
+// on screen; reduced-motion visitors get the still.
+const LEAD_VIDEO = clip('led-net-city-live')
+const LEAD_POSTER = poster('led-net-city-live')
+const LEAD_ALT = 'Heavy-lift drone flying an LED net banner with the Sky Eye Technology logo over a night skyline'
+
+function LeadVideo() {
+  const ref = useRef(null)
+  useEffect(() => {
+    const v = ref.current
+    if (!v) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const io = new IntersectionObserver(([e]) => (e.isIntersecting ? v.play().catch(() => {}) : v.pause()), { threshold: 0.15 })
+    io.observe(v)
+    return () => io.disconnect()
+  }, [])
+  return <video ref={ref} src={LEAD_VIDEO} poster={LEAD_POSTER} muted loop playsInline preload="metadata" aria-label={LEAD_ALT} />
+}
+
 // Content from the Sky Eye Skyvertising brochure.
 const CREATE = [
   { icon: 'flight', title: 'Drone formations', desc: 'Logos, symbols, patterns and visual formations in the sky.' },
@@ -115,7 +135,7 @@ export default function Skyvertising() {
           </div>
           <figure className="sky-lead-frame">
             <div className="sky-lead-img">
-              <img src={brochureCrop('led-net-city', 'w-1200,q-80')} alt="Heavy-lift drone flying an LED net banner with the Sky Eye Technology logo over a night skyline" />
+              <LeadVideo />
               <span className="sky-badge">DRONE ADVERTISEMENT SHOW</span>
             </div>
             <figcaption className="sky-lead-bar">
