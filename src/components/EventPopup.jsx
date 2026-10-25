@@ -4,9 +4,10 @@ import { EVENT } from '../data/event'
 
 // Announcement pop-up shown once per visit (per browser session). Two drones
 // carry the square card down by its top corners; it settles with a gentle
-// sway, and on close they lift it back up and away. Content: src/data/event.js.
+// sway, and on close they lift it back up and away. Content: src/data/event.js
+// (the current event marked `popup`; nothing shows once it has ended).
 
-const STORE = `skyeye-popup-${EVENT.id}`
+const STORE = `skyeye-popup-${EVENT?.id}`
 const ENTER = 2.3 // seconds
 const EXIT = 1.15
 
@@ -24,10 +25,6 @@ const markSeen = () => {
     /* private mode — it may show again next visit */
   }
 }
-const isOver = () => {
-  const end = new Date(`${EVENT.endsOn}T23:59:59`)
-  return Number.isFinite(end.getTime()) && Date.now() > end.getTime()
-}
 
 const easeOutBack = (t) => {
   const c1 = 1.25
@@ -37,7 +34,7 @@ const easeOutBack = (t) => {
 const easeInCubic = (t) => t * t * t
 
 export default function EventPopup() {
-  const [open, setOpen] = useState(() => EVENT.enabled && !seen() && !isOver())
+  const [open, setOpen] = useState(() => !!EVENT && !seen())
   const [closing, setClosing] = useState(false)
   const cardRef = useRef(null)
   const layerRef = useRef(null)
@@ -214,12 +211,12 @@ export default function EventPopup() {
         </div>
 
         <div className="event-actions">
-          <a className="btn-request btn-request--sm" href={e.cta.href} data-service={e.cta.service} onClick={close}>
-            {e.cta.label}
+          <a className="btn-request btn-request--sm" href="#/events?to=stall-register" onClick={close}>
+            Register for the games
           </a>
-          <button type="button" className="event-later" onClick={close}>
-            Maybe later
-          </button>
+          <a className="event-later" href="#/events" onClick={close}>
+            Event details
+          </a>
         </div>
       </div>
     </div>,

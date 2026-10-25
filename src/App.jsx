@@ -23,6 +23,8 @@ import DroneService from './components/DroneService'
 import VideoStrip from './components/VideoStrip'
 import { SKYLINE } from './data/footage'
 import Gallery from './components/Gallery'
+import Events from './components/Events'
+import Clients from './components/Clients'
 import ImageMorphGallery from './components/ImageMorphGallery'
 import Contact from './components/Contact'
 import RequestBand from './components/RequestBand'
@@ -30,7 +32,7 @@ import Footer from './components/Footer'
 import EventPopup from './components/EventPopup'
 
 // Separate pages behind one navbar: Home · About Us · Our Services
-// (Skyvertising, Drone as a Service) · Training · Gallery · Contact Us.
+// (Skyvertising, Drone as a Service) · Training · Events · Gallery · Contact Us.
 const PAGES = {
   '/': {
     title: 'Sky Eye Technology — Unfolding The Unfiltered',
@@ -43,6 +45,9 @@ const PAGES = {
           <DroneAssembly more="#/about" />
         </div>
         <HomeServices />
+        <div id="home-clients" className="anchor-block">
+          <Clients id="home-clients-list" label="OUR CLIENTS" more="#/about?to=clients" />
+        </div>
         <HomeTraining />
         <div id="home-gallery" className="anchor-block">
           <ImageMorphGallery label="GALLERY" more="#/gallery" />
@@ -64,6 +69,7 @@ const PAGES = {
         <Engineering />
         <RnD />
         <Recognition />
+        <Clients />
         <RequestBand />
       </>
     ),
@@ -111,6 +117,15 @@ const PAGES = {
           title="Need a drone on the job?"
           text="Tell us what needs doing, where and when. We bring the aircraft, the crew and the permissions."
         />
+      </>
+    ),
+  },
+  '/events': {
+    title: 'Events — Sky Eye Technology',
+    render: () => (
+      <>
+        <Events />
+        <RequestBand />
       </>
     ),
   },

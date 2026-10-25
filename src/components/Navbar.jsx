@@ -3,6 +3,7 @@ import { brochureCrop, CONTACTS, ik, newPhoto, photo } from '../cdn'
 import { useTheme } from '../hooks/useTheme'
 import Scramble from './Scramble'
 import { COURSES } from '../data/courses'
+import { EVENTS } from '../data/event'
 import { scrollToSection, scrollToTop } from '../router'
 
 // Modelled on anduril.com: hovering any item drops one translucent sheet out
@@ -49,6 +50,7 @@ const PANELS = [
       { href: '#/about?to=engineering', label: 'Engineering' },
       { href: '#/about?to=rnd', label: 'Research & development' },
       { href: '#/about?to=track-record', label: 'Track record' },
+      { href: '#/about?to=clients', label: 'Our clients' },
     ],
     cardsLabel: 'Inside',
     cards: [
@@ -92,6 +94,24 @@ const PANELS = [
     extra: { label: 'Drone courses', links: courseLinks('drone') },
     cardsLabel: 'In session',
     cards: [{ href: '#/training', label: 'Live training', img: newPhoto('genai-speaker', 'w-560,h-350,fo-auto') }],
+  },
+  {
+    key: 'events',
+    path: '/events',
+    href: '#/events',
+    label: 'Events',
+    kicker: 'Events',
+    desc: 'Campus events and fests Sky Eye is part of — and the stall games you can sign up for.',
+    listLabel: 'Events',
+    links: [
+      ...EVENTS.map((e) => ({
+        href: '#/events',
+        label: `${e.short || e.title} · ${e.days[0]}–${e.days[e.days.length - 1]} ${e.month.split(' ')[0]}`,
+      })),
+      { href: '#/events?to=stall-register', label: 'Stall games sign-up' },
+    ],
+    cardsLabel: 'Upcoming',
+    cards: [{ href: '#/events', label: 'All events', img: photo('edu', 344, 'w-560,h-350,fo-auto') }],
   },
   {
     key: 'gallery',
