@@ -12,6 +12,7 @@ export const EVENTS = [
     days: ['26', '27', '28'],
     month: 'October 2026', // TODO: confirm the month with the client
     endsOn: '2026-10-28', // last day
+    startsAt: '2026-10-26T09:00:00+05:30', // TODO: confirm the start time (drives the countdown)
     venue: 'Campus 6',
     about:
       'Three days of debate and diplomacy. Delegates represent countries across UN committees, negotiate with each other and draft resolutions on real global issues.',
