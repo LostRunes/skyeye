@@ -1,4 +1,5 @@
-import { brochureCrop, photo } from '../cdn'
+import { brochureCrop, CLIPS, photo } from '../cdn'
+import HoverVideo from './HoverVideo'
 
 // Home-page summary of the two services (training has its own section). Each block gives the gist and
 // links through to its full page.
@@ -11,6 +12,7 @@ const BLOCKS = [
     chips: ['Banner Towing', 'Skywriting', 'Aerial Advertising', 'Drone Advertising', 'Sky Displays'],
     img: brochureCrop('led-net-city', 'w-1100,h-760,fo-auto,q-78'),
     alt: 'Drone flying an LED net with the Sky Eye logo over a night skyline',
+    video: CLIPS.skyvertising,
     page: '#/services/skyvertising',
     service: 'Skyvertising',
   },
@@ -22,6 +24,7 @@ const BLOCKS = [
     chips: ['Agricultural spraying', 'Mapping & survey', 'Thermal inspection', 'Construction monitoring', 'Aerial photo & video', 'Surveillance support'],
     img: photo('agri', 141, 'w-1100,h-760,fo-auto,q-78'),
     alt: 'Spraying drone flying low over a wheat field',
+    video: CLIPS.mapping, // no usable spraying clip yet: shows the AI road survey
     page: '#/services/drone-as-a-service',
     service: 'Drone as a Service',
   },
@@ -45,7 +48,7 @@ export default function HomeServices() {
           {BLOCKS.map((b, i) => (
             <article key={b.num} className={`hs-block${i % 2 ? ' hs-block--flip' : ''}`}>
               <a className="hs-media" href={b.page} aria-label={`${b.kicker} — full page`}>
-                <img src={b.img} alt={b.alt} loading="lazy" />
+                <HoverVideo img={b.img} video={b.video} alt={b.alt} trigger=".hs-block" />
                 <span className="hs-num">{b.num}</span>
               </a>
               <div className="hs-body">

@@ -31,6 +31,17 @@ export const cloudVideo = (path, tr = 'q_auto:eco,w_1600') => `${CLD}/${tr}/${pa
 /** A still frame from a Cloudinary video, at `sec` seconds. */
 export const cloudFrame = (path, sec = 1, w = 1600) => `${CLD}/so_${sec},w_${w},q_auto/${path}.jpg`
 
+/** Short, compressed hover preview of a clip in Cloudinary's skyeye/video folder. */
+export const previewClip = (name, w = 720) => cloudVideo(`skyeye/video/${name}`, `q_auto:eco,w_${w},du_12,ac_none`)
+
+/** Clips that the matching card images were taken from (hover to play). */
+export const CLIPS = {
+  skyvertising: clip('led-net-city-live'),
+  media: previewClip('wedding-aerial'),
+  fpv: previewClip('fpv-resort'),
+  mapping: previewClip('survey-pothole-ai'),
+}
+
 export const FOOTAGE = {
   hero: 'v1792770318/16853015_3840_2160_30fps',
   road: 'v1792770358/13623219_3840_2160_30fps',

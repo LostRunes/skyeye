@@ -6349,3 +6349,37 @@ html.lenis.rec-snapping {
     width: auto;
   }
 }
+
+/* Card images that play their source clip on hover (HoverVideo) */
+.hover-video {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.hover-video > img,
+.hover-video > video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hover-video > video {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  pointer-events: none;
+}
+
+.hover-video.is-playing > video {
+  opacity: 1;
+}
+
+/* The services list shows its stills in greyscale; the clip plays in colour */
+.cat-img-box .hover-video > video {
+  filter: none;
+}
