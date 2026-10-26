@@ -4496,7 +4496,7 @@ html.lenis.rec-snapping {
 }
 
 .event-short {
-  font-size: clamp(44px, 7.5vh, 72px);
+  font-size: clamp(40px, 6.5vh, 64px);
   font-weight: 800;
   line-height: 0.9;
   letter-spacing: -0.05em;
@@ -5124,22 +5124,35 @@ html.lenis.rec-snapping {
   top: 26px;
 }
 
-/* Phones: the drone sits above the copy; callouts would crowd it */
+/* Phones: the drone gets its own box at the top and the copy flows below
+   it, so the two never overlap whatever the screen height. Callouts would
+   crowd the small drone, so they are hidden. */
 @media (max-width: 760px) {
   .cad-hero {
-    justify-content: flex-end;
-    min-height: calc(100svh - 4rem);
+    justify-content: flex-start;
+    min-height: 0;
+  }
+  .cad-hero-canvas {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: min(36svh, 82vw);
+    flex-shrink: 0;
   }
   .cad-hero-grid {
-    -webkit-mask-image: radial-gradient(90% 45% at 50% 30%, #000 25%, transparent 80%);
-    mask-image: radial-gradient(90% 45% at 50% 30%, #000 25%, transparent 80%);
+    -webkit-mask-image: radial-gradient(90% 40% at 50% 22%, #000 25%, transparent 80%);
+    mask-image: radial-gradient(90% 40% at 50% 22%, #000 25%, transparent 80%);
   }
   .cad-hero-callouts,
   .cad-hero-hint {
     display: none;
   }
   .cad-hero-content {
-    padding-bottom: calc(var(--space-2xl) + 1rem);
+    padding-top: 0;
+    padding-bottom: calc(var(--space-2xl) + 1.5rem);
+  }
+  .cad-hero-title {
+    font-size: clamp(32px, 10vw, 44px);
   }
 }
 
@@ -5310,7 +5323,9 @@ html.lenis.rec-snapping {
 
 .evx-letters {
   display: flex;
-  font-size: clamp(96px, 20vw, 260px);
+  flex-wrap: wrap;
+  /* --len is the name's letter count, so longer names still fit */
+  font-size: clamp(56px, calc(64vw / var(--len, 3)), 260px);
   font-weight: 800;
   line-height: 0.82;
   letter-spacing: -0.06em;
@@ -5318,6 +5333,7 @@ html.lenis.rec-snapping {
 
 .evx-letters span {
   display: inline-block;
+  white-space: pre;
   background: linear-gradient(180deg, #fff 30%, #ffd3bf 70%, var(--hot) 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -5618,9 +5634,7 @@ html.lenis.rec-snapping {
   display: grid;
   gap: 1px;
   list-style: none;
-  padding: 0;
-  background: var(--color-surface-container-highest);
-  border: 1px solid var(--color-surface-container-highest);
+  padding: 1px;
 }
 
 @media (min-width: 560px) {
@@ -5636,8 +5650,10 @@ html.lenis.rec-snapping {
   gap: 0.4rem;
   padding: 1.5rem 1.4rem 1.6rem;
   background: var(--color-surface-container-lowest);
+  /* hairline borders drawn by each card, so nothing shows before they reveal */
+  box-shadow: 0 0 0 1px var(--color-surface-container-highest);
   overflow: hidden;
-  transition: background-color 0.3s ease;
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s ease;
 }
 
 .evx-steps li::after {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { CONTACTS } from '../cdn'
-import { EVENTS, isPast } from '../data/event'
+import { EVENTS, isPast, statusLabel } from '../data/event'
 import Countdown from './events/Countdown'
 import SpinWheel from './events/SpinWheel'
 import CatchGame from './events/CatchGame'
@@ -180,10 +180,10 @@ function EventShowcase({ event }) {
         <div className="container evx-hero-inner">
           <span className={`ev-status evx-status${past ? ' is-past' : ''}`}>
             <span className="event-dot" aria-hidden="true" />
-            {past ? 'Past event' : event.kicker}
+            {past ? 'Past event' : statusLabel(event)}
           </span>
           <h2 className="evx-title" id={`ev-${event.id}`}>
-            <span className="evx-letters" aria-hidden="true">
+            <span className="evx-letters" aria-hidden="true" style={{ '--len': name.length }}>
               {[...name].map((ch, i) => (
                 <span key={i} style={{ animationDelay: `${0.1 + i * 0.12}s` }}>
                   {ch}
@@ -249,7 +249,7 @@ function EventShowcase({ event }) {
       <div className="container evx-about">
         <div className="evx-about-copy" data-reveal>
           <span className="section-label">THE EVENT</span>
-          <h3 className="evx-h3">What is {name}?</h3>
+          <h3 className="evx-h3">What is {event.kind ? `a ${event.kind}` : name}?</h3>
           {event.whatIs.map((p) => (
             <p key={p.slice(0, 24)} className="ev-p">
               {p}

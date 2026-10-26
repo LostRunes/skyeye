@@ -8,7 +8,8 @@ export const EVENTS = [
     popup: true,
     kicker: 'Upcoming event',
     title: 'Model United Nations',
-    short: 'MUN',
+    short: 'KIIT MUN',
+    kind: 'MUN', // what the event is, for 'What is a MUN?'
     days: ['26', '27', '28'],
     month: 'October 2026', // TODO: confirm the month with the client
     endsOn: '2026-10-28', // last day
@@ -42,6 +43,9 @@ const ended = (e) => {
   return Number.isFinite(end.getTime()) && Date.now() > end.getTime()
 }
 export const isPast = ended
+
+/** 'Happening now' while it runs, else the event's own kicker. */
+export const statusLabel = (e) => (e.startsAt && Date.now() >= new Date(e.startsAt).getTime() && !ended(e) ? 'Happening now' : e.kicker)
 
 /** The event the announcement pop-up shows, or null. */
 export const EVENT = EVENTS.find((e) => e.popup && !ended(e)) || null

@@ -242,7 +242,8 @@ export function mountHero(container, { dark = false, labels = [], modelUrl = '/m
     renderer.setSize(W, H, false)
     camera.aspect = W / H
     camera.updateProjectionMatrix()
-    wide = W / H > 1.15
+    // Same breakpoint as the CSS: below it the canvas is a box above the copy
+    wide = window.innerWidth > 760
   }
   const ro = new ResizeObserver(resize)
   ro.observe(container)
@@ -271,9 +272,10 @@ export function mountHero(container, { dark = false, labels = [], modelUrl = '/m
     const since = loadedAt < 0 ? -1 : reduced ? 99 : t - loadedAt
 
     // Framing: drone to the right of the copy on wide screens, above it on tall ones
-    const dist = wide ? 6.3 : 11.5
-    camera.position.set(0, wide ? 1.35 : 1.9, dist)
-    camera.lookAt(wide ? -1.35 : 0, wide ? 0.05 : -1.55, 0)
+    // Phones: fit the drone's span to the box width, centred
+    const dist = wide ? 6.3 : Math.min(Math.max(3.9 / (0.536 * camera.aspect), 5), 13)
+    camera.position.set(0, wide ? 1.35 : 1.15, dist)
+    camera.lookAt(wide ? -1.35 : 0, wide ? 0.05 : 0.12, 0)
 
     // 1. Edges draw in, part by part
     const drawK = (part) => {

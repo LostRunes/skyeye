@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { EVENT } from '../data/event'
+import { EVENT, statusLabel } from '../data/event'
 import { importScene, resilient } from '../three/resilient'
 
 // Announcement pop-up shown once per visit (per browser session). Two drones
@@ -185,7 +185,7 @@ export default function EventPopup() {
         <div className="event-top">
           <span className="event-kicker">
             <span className="event-dot" aria-hidden="true" />
-            {e.kicker}
+            {statusLabel(e)}
           </span>
           <h2 className="event-title" id="event-card-title">
             <span className="event-short">{e.short}</span>
