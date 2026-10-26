@@ -3,10 +3,10 @@ import { CLIENT_GROUPS, CLIENTS } from '../data/clients'
 // Our clients. On the About page (#clients): a grid per group. On the home
 // page (`strip`): two rows scrolling in opposite directions. Names and logos
 // live in src/data/clients.js; a client without a logo is set in type.
-function Tile({ c }) {
+function Tile({ c, eager }) {
   return (
     <li className={`client-tile${c.logo ? '' : ' client-tile--name'}`}>
-      {c.logo ? <img src={c.logo} alt={c.name} loading="lazy" /> : <span className="client-name">{c.name}</span>}
+      {c.logo ? <img src={c.logo} alt={c.name} loading={eager ? 'eager' : 'lazy'} decoding="async" /> : <span className="client-name">{c.name}</span>}
       <span className="client-sector">{c.logo ? c.name : c.sector}</span>
     </li>
   )
@@ -17,7 +17,8 @@ function Strip({ items, reverse }) {
     <div className={`clients-strip${reverse ? ' is-reverse' : ''}`} aria-hidden="true">
       <ul className="clients-strip-track">
         {[...items, ...items].map((c, i) => (
-          <Tile key={`${c.name}-${i}`} c={c} />
+          // Eager: lazy images in a moving strip pop in blank as they slide on screen
+          <Tile key={`${c.name}-${i}`} c={c} eager />
         ))}
       </ul>
     </div>

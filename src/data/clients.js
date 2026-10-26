@@ -3,7 +3,8 @@
 // — `logo` is an image URL; without one the name is set in type instead.
 // Logos with the State Emblem of India or military/police insignia are left
 // out on purpose (their use by companies is restricted).
-const logo = (slug) => `https://ik.imagekit.io/hiesc7f4v/skyeye/clients/${slug}.png?tr=h-160`
+// Logos are hosted on Cloudinary (folder skyeye/clients), resized on delivery
+const logo = (slug) => `https://res.cloudinary.com/mnwkyinw/image/upload/h_160,f_auto,q_auto/skyeye/clients/${slug}.png`
 
 export const CLIENTS = [
   { group: 'org', name: 'Drone Mandi', sector: 'Drone services', logo: logo('drone-mandi') },
