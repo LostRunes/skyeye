@@ -13,9 +13,8 @@ const readStored = () => {
 }
 
 /**
- * Light is the default (Abinash's design). Dark swaps the colour tokens and
- * replaces the home hero with the Yogisha "future of flight" hero, so turning
- * it on also takes the reader back up to that hero.
+ * Light is the default (Abinash's design); dark swaps the colour tokens.
+ * Switching theme never moves the reader: same page, same scroll position.
  */
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(readStored)
@@ -29,21 +28,7 @@ export function ThemeProvider({ children }) {
     }
   }, [theme])
 
-  const toggle = useCallback(() => {
-    const next = theme === 'dark' ? 'light' : 'dark'
-    setTheme(next)
-    // Dark mode shows off the Yogisha hero, so switching to it goes home.
-    if (next === 'dark') {
-      requestAnimationFrame(() => {
-        if (window.location.hash.replace(/^#/, '') && window.location.hash !== '#/') {
-          window.location.hash = '#/'
-        } else {
-          if (window.__lenis) window.__lenis.scrollTo(0)
-          else window.scrollTo({ top: 0, behavior: 'smooth' })
-        }
-      })
-    }
-  }, [theme])
+  const toggle = useCallback(() => setTheme((t) => (t === 'dark' ? 'light' : 'dark')), [])
 
   return createElement(ThemeContext.Provider, { value: { theme, toggle } }, children)
 }
