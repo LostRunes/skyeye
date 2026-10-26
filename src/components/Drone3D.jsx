@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTheme } from '../hooks/useTheme'
+import { importScene, resilient } from '../three/resilient'
 
 // About-page opener: the live 3D drone. The stage is pinned while the section
 // scrolls; scroll turns the aircraft and swaps the copy beside it, and the
@@ -50,10 +51,10 @@ export default function Drone3D({ more, bare = false, beats: BEATS = DEFAULT_BEA
       ([e]) => {
         if (!e.isIntersecting || sceneRef.current) return
         io.disconnect()
-        import('../three/droneScene.js')
+        importScene(() => import('../three/droneScene.js'))
           .then(({ mountDrone }) => {
             if (cancelled || !canvasRef.current) return
-            sceneRef.current = mountDrone(canvasRef.current, {
+            sceneRef.current = resilient(mountDrone, canvasRef.current, {
               dark: document.documentElement.dataset.theme === 'dark',
             })
           })

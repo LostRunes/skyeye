@@ -3,13 +3,16 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
 import { buildDrone } from './droneScene.js'
+import { loadWithRetry } from './resilient.js'
 
 // Home hero: the quadcopter CAD model, live. It arrives as a blueprint —
 // edges drawing in part by part — then a scanner frame sweeps down through
 // it and everything above the scan line turns solid. Built, the props spin
 // up and it lifts into a hover. It banks towards the pointer, its gimbal
 // camera follows the cursor, and it can be dragged round. Scrolling away
-// lifts it out of frame. Callout labels (DOM, passed in) track 3D anchors.
+// lifts it out of frame. Every few seconds it is re-scanned: it dissolves
+// back into blueprint from the top down, hangs as wireframe, then turns solid
+// again. Callout labels (DOM, passed in) track 3D anchors.
 
 const clamp01 = (v) => Math.min(Math.max(v, 0), 1)
 const smooth = (t) => t * t * (3 - 2 * t)
@@ -22,6 +25,12 @@ const DRAW = [0.1, 1.1] // edges draw in, staggered by part
 const SCAN = [1.0, 2.6] // scanner sweeps top → bottom
 const SPIN = [2.4, 3.4] // props spin up, drone lifts
 const CALLOUTS_AT = 3.0
+// Re-scan cycle, after the intro: dissolve to blueprint, hold, rebuild
+const CYCLE_FROM = 9 // first re-scan this long after load
+const CYCLE = 12
+const OUT = 1.3 // sweep: solid → blueprint
+const HOLD = 0.8
+const BACK = 1.4 // sweep: blueprint → solid
 
 export function mountHero(container, { dark = false, labels = [], modelUrl = '/models/quad-assembly.glb' } = {}) {
   let disposed = false
@@ -58,7 +67,7 @@ export function mountHero(container, { dark = false, labels = [], modelUrl = '/m
 
   // Scanner frame: a square outline and faint fill riding the scan line
   const scanner = new THREE.Group()
-  const sq = SPAN * 0.5
+  const sq = SPAN * 0.4
   const outline = new THREE.LineLoop(
     new THREE.BufferGeometry().setFromPoints([
       new THREE.Vector3(-sq, 0, -sq),
@@ -171,14 +180,14 @@ export function mountHero(container, { dark = false, labels = [], modelUrl = '/m
 
   const loader = new GLTFLoader()
   loader.setMeshoptDecoder(MeshoptDecoder)
-  loader.load(
+  loadWithRetry(
+    loader,
     modelUrl,
     (gltf) => {
       if (disposed) return
       useModel(gltf)
       setTheme(currentDark)
     },
-    undefined,
     () => {
       if (disposed) return
       useProcedural()
@@ -233,7 +242,8 @@ export function mountHero(container, { dark = false, labels = [], modelUrl = '/m
     renderer.setSize(W, H, false)
     camera.aspect = W / H
     camera.updateProjectionMatrix()
-    wide = W / H > 1.15
+    // Same breakpoint as the CSS: below it the canvas is a box above the copy
+    wide = window.innerWidth > 760
   }
   const ro = new ResizeObserver(resize)
   ro.observe(container)
@@ -262,9 +272,10 @@ export function mountHero(container, { dark = false, labels = [], modelUrl = '/m
     const since = loadedAt < 0 ? -1 : reduced ? 99 : t - loadedAt
 
     // Framing: drone to the right of the copy on wide screens, above it on tall ones
-    const dist = wide ? 8.4 : 14
-    camera.position.set(0, wide ? 1.8 : 2.4, dist)
-    camera.lookAt(wide ? -2.05 : 0, wide ? 0.05 : -2.1, 0)
+    // Phones: fit the drone's span to the box width, centred
+    const dist = wide ? 6.3 : Math.min(Math.max(3.9 / (0.536 * camera.aspect), 5), 13)
+    camera.position.set(0, wide ? 1.35 : 1.15, dist)
+    camera.lookAt(wide ? -1.35 : 0, wide ? 0.05 : 0.12, 0)
 
     // 1. Edges draw in, part by part
     const drawK = (part) => {
@@ -272,9 +283,40 @@ export function mountHero(container, { dark = false, labels = [], modelUrl = '/m
       const span = (DRAW[1] - DRAW[0]) / ORDER.length
       return smooth(clamp01((since - DRAW[0] - i * span * 0.7) / (span * 1.6)))
     }
-    // 2. Scan: solid above the line; edges fade to a hairline once scanned
-    const scanK = smooth(clamp01((since - SCAN[0]) / (SCAN[1] - SCAN[0])))
-    const scanY = since < 0 ? 99 : bounds.top + (bounds.bottom - bounds.top) * scanK
+    // 2. Scan line. `keepAbove`: solid above the line (building) or below it
+    // (dissolving); `wire` is how much of the model is blueprint (edge weight);
+    // `sweep` is the scanner's progress while one is running, else -1.
+    const lineAt = (k) => bounds.top + (bounds.bottom - bounds.top) * k
+    let scanY = 99
+    let keepAbove = true
+    let wire = 1
+    let sweep = -1
+    if (since >= 0 && since < SCAN[1] + 0.1) {
+      const k = smooth(clamp01((since - SCAN[0]) / (SCAN[1] - SCAN[0])))
+      scanY = lineAt(k)
+      wire = 1 - k
+      if (since >= SCAN[0] && k < 1) sweep = k
+    } else if (since >= 0) {
+      scanY = lineAt(1)
+      wire = 0
+      const c = reduced ? -1 : (since - CYCLE_FROM) % CYCLE
+      if (since >= CYCLE_FROM && c < OUT) {
+        const k = smooth(c / OUT)
+        keepAbove = false
+        scanY = lineAt(k)
+        wire = k
+        sweep = k
+      } else if (since >= CYCLE_FROM && c < OUT + HOLD) {
+        keepAbove = false
+        scanY = lineAt(1)
+        wire = 1
+      } else if (since >= CYCLE_FROM && c < OUT + HOLD + BACK) {
+        const k = smooth((c - OUT - HOLD) / BACK)
+        scanY = lineAt(k)
+        wire = 1 - k
+        sweep = k
+      }
+    }
     const lift = smooth(clamp01((since - SPIN[0]) / (SPIN[1] - SPIN[0])))
 
     // Rig motion: hover, idle sway, drag, pointer bank, scroll exit
@@ -299,22 +341,21 @@ export function mountHero(container, { dark = false, labels = [], modelUrl = '/m
     // The scan plane rides in the rig's frame so it cuts straight across the model
     p.set(0, scanY, 0)
     rig.localToWorld(p)
-    // and keeps what is above it (rig-up), i.e. what has already been scanned
-    scanPlane.normal.set(0, 1, 0).applyQuaternion(rig.quaternion)
+    // and keeps the solid side of it
+    scanPlane.normal.set(0, keepAbove ? 1 : -1, 0).applyQuaternion(rig.quaternion)
     scanPlane.constant = -scanPlane.normal.dot(p)
 
     for (const e of edges) {
       const drawn = drawK(e.part)
       const base = 0.85 * drawn
-      e.line.material.opacity = since < 0 ? 0 : base * (1 - scanK * 0.9) + 0.05 * scanK
+      e.line.material.opacity = since < 0 ? 0 : 0.05 + (base - 0.05) * wire
     }
 
-    const scanning = since >= SCAN[0] && scanK < 1
-    scanner.visible = scanning
-    if (scanning) {
+    scanner.visible = sweep >= 0
+    if (sweep >= 0) {
       scanner.position.copy(p)
       scanner.quaternion.copy(rig.quaternion)
-      const fade = Math.sin(scanK * Math.PI)
+      const fade = Math.sin(sweep * Math.PI)
       outline.material.opacity = 0.9 * fade
       fill.material.opacity = 0.07 * fade
     }
@@ -347,6 +388,7 @@ export function mountHero(container, { dark = false, labels = [], modelUrl = '/m
     p.setFromMatrixPosition(rig.matrixWorld).project(camera)
     const cx = (p.x * 0.5 + 0.5) * W
     const cy = (-p.y * 0.5 + 0.5) * H
+    const placed = [] // label boxes so far, to stack any that would overlap
     labels.forEach((el, i) => {
       const a = anchors[el.dataset.anchor]
       if (!a) {
@@ -361,10 +403,23 @@ export function mountHero(container, { dark = false, labels = [], modelUrl = '/m
       // (the left ~55% on wide screens)
       const lw = (el.lastChild.offsetWidth || 160) + 58
       let side = x < cx - 8 ? 'l' : x > cx + 8 ? 'r' : el.dataset.dir?.[0] || 'r'
-      if (side === 'l' && x - lw < (wide ? W * 0.56 : 8)) side = 'r'
+      if (side === 'l' && x - lw < (wide ? W * 0.45 : 8)) side = 'r'
       else if (side === 'r' && x + lw > W - 8) side = 'l'
-      const dir = `${side}${y < cy ? 'u' : 'd'}`
+      const up = y < cy
+      const dir = `${side}${up ? 'u' : 'd'}`
       if (el.dataset.dir !== dir) el.dataset.dir = dir
+      const left = side === 'r' ? x + 54 : x - lw
+      let top = y + (up ? -52 : 26)
+      let dy = 0
+      for (let guard = 0; guard < 4; guard++) {
+        const hit = placed.find((b) => left < b.r && left + lw > b.l && top < b.b && top + 30 > b.t)
+        if (!hit) break
+        const step = up ? hit.t - 34 - top : hit.b + 4 - top
+        dy += step
+        top += step
+      }
+      placed.push({ l: left, r: left + lw, t: top, b: top + 30 })
+      el.style.setProperty('--dy', `${dy}px`)
       el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`
       el.style.opacity = show.toFixed(3)
     })
@@ -393,6 +448,7 @@ export function mountHero(container, { dark = false, labels = [], modelUrl = '/m
       })
       pmrem.dispose()
       renderer.dispose()
+      renderer.forceContextLoss() // free the GPU context now, not at GC
       renderer.domElement.remove()
     },
   }

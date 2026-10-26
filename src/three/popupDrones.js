@@ -137,6 +137,7 @@ export function mountPopupDrones(container) {
       })
       pmrem.dispose()
       renderer.dispose()
+      renderer.forceContextLoss() // free the GPU context now, not at GC
       renderer.domElement.remove()
     },
   }

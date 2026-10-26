@@ -3,6 +3,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
 import { buildDrone } from './droneScene.js'
+import { loadWithRetry } from './resilient.js'
 
 // About Us: the Sky Eye drone assembling itself as you scroll — built from
 // the same code model as the rest of the site, so no video frames.
@@ -161,14 +162,14 @@ export function mountAssembly(container, { dark = false, modelUrl = '/models/qua
 
   const loader = new GLTFLoader()
   loader.setMeshoptDecoder(MeshoptDecoder)
-  loader.load(
+  loadWithRetry(
+    loader,
     modelUrl,
     (gltf) => {
       if (disposed) return
       useModel(gltf)
       setTheme(currentDark)
     },
-    undefined,
     () => {
       if (disposed) return
       useProcedural()
@@ -329,6 +330,7 @@ export function mountAssembly(container, { dark = false, modelUrl = '/models/qua
       })
       pmrem.dispose()
       renderer.dispose()
+      renderer.forceContextLoss() // free the GPU context now, not at GC
       renderer.domElement.remove()
     },
   }

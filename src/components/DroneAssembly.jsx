@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTheme } from '../hooks/useTheme'
+import { importScene, resilient } from '../three/resilient'
 
 // About Us opener: the drone assembles itself as you scroll — exploded
 // blueprint first, then each part flies into place with a spec callout,
@@ -80,10 +81,10 @@ export default function DroneAssembly({ more }) {
       ([e]) => {
         if (!e.isIntersecting || sceneRef.current) return
         io.disconnect()
-        import('../three/assemblyScene.js')
+        importScene(() => import('../three/assemblyScene.js'))
           .then(({ mountAssembly }) => {
             if (cancelled || !canvasRef.current) return
-            sceneRef.current = mountAssembly(canvasRef.current, { dark: document.documentElement.dataset.theme === 'dark' })
+            sceneRef.current = resilient(mountAssembly, canvasRef.current, { dark: document.documentElement.dataset.theme === 'dark' })
           })
           .catch(() => setFailed(true))
       },

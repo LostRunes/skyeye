@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTheme } from '../hooks/useTheme'
+import { importScene, resilient } from '../three/resilient'
 
 // Home hero (both themes): the quadcopter CAD model assembling from a
 // blueprint scan, then hovering live beside the headline — rendered in
@@ -23,10 +24,10 @@ export default function CadHero() {
 
   useEffect(() => {
     let cancelled = false
-    import('../three/heroScene.js')
+    importScene(() => import('../three/heroScene.js'))
       .then(({ mountHero }) => {
         if (cancelled || !canvasRef.current) return
-        sceneRef.current = mountHero(canvasRef.current, {
+        sceneRef.current = resilient(mountHero, canvasRef.current, {
           dark: document.documentElement.dataset.theme === 'dark',
           labels: labelRefs.current.filter(Boolean),
         })

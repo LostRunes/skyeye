@@ -21,6 +21,8 @@
         if (localStorage.getItem('skyeye-theme') === 'dark') document.documentElement.dataset.theme = 'dark'
       } catch (e) {}
     </script>
+    <!-- The hero's 3D drone: start fetching it before the JS asks for it -->
+    <link rel="preload" href="/models/quad-assembly.glb" as="fetch" type="model/gltf-binary" crossorigin />
     <link rel="preconnect" href="https://ik.imagekit.io" crossorigin />
     <link rel="preconnect" href="https://res.cloudinary.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />

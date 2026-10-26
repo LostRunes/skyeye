@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useTheme } from '../hooks/useTheme'
+import { importScene, resilient } from '../three/resilient'
 
 // The home page's drone, after drone.riotters.com: one aircraft in a fixed
 // layer over the page that flies down with you. It enters as you leave the
@@ -100,9 +101,9 @@ export default function FlyingDrone() {
       onScroll()
     }
 
-    import('../three/droneScene.js').then(({ mountDrone }) => {
+    importScene(() => import('../three/droneScene.js')).then(({ mountDrone }) => {
       if (cancelled || !layerRef.current) return
-      sceneRef.current = mountDrone(layerRef.current, {
+      sceneRef.current = resilient(mountDrone, layerRef.current, {
         dark: document.documentElement.dataset.theme === 'dark',
         flight: true,
       })

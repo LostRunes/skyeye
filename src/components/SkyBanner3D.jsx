@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ik } from '../cdn'
 import { useTheme } from '../hooks/useTheme'
+import { importScene, resilient } from '../three/resilient'
 
 // Skyvertising: the Sky Eye drone towing a vertical logo banner.
 // Laptops and up — it flies around the Skyvertising info itself: a fixed,
@@ -60,9 +61,9 @@ function useBannerScene(hostRef, mode, theme) {
   const sceneRef = useRef(null)
   useEffect(() => {
     let cancelled = false
-    import('../three/bannerScene.js').then(({ mountBanner }) => {
+    importScene(() => import('../three/bannerScene.js')).then(({ mountBanner }) => {
       if (cancelled || !hostRef.current) return
-      sceneRef.current = mountBanner(hostRef.current, {
+      sceneRef.current = resilient(mountBanner, hostRef.current, {
         dark: document.documentElement.dataset.theme === 'dark',
         mode,
         logoUrl: LOGO,

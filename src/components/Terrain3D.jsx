@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTheme } from '../hooks/useTheme'
+import { importScene, resilient } from '../three/resilient'
 
 // Closing piece of the home page: a generated mountain range with glowing
 // contour lines, a scanning sweep and service pins — "mapped from the air".
@@ -41,10 +42,10 @@ export default function Terrain3D() {
       ([e]) => {
         if (!e.isIntersecting || sceneRef.current) return
         io.disconnect()
-        import('../three/terrainScene.js')
+        importScene(() => import('../three/terrainScene.js'))
           .then(({ mountTerrain }) => {
             if (cancelled || !canvasRef.current) return
-            const s = mountTerrain(canvasRef.current, {
+            const s = resilient(mountTerrain, canvasRef.current, {
               dark: document.documentElement.dataset.theme === 'dark',
               pins: PINS,
             })

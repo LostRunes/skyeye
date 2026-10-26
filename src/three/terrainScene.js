@@ -193,6 +193,7 @@ export function mountTerrain(container, { dark = false, pins = [] } = {}) {
       geo.dispose()
       mat.dispose()
       renderer.dispose()
+      renderer.forceContextLoss() // free the GPU context now, not at GC
       renderer.domElement.remove()
     },
   }

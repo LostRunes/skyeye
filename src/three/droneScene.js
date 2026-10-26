@@ -363,6 +363,7 @@ export function mountDrone(container, { dark = false, flight = false } = {}) {
       })
       pmrem.dispose()
       renderer.dispose()
+      renderer.forceContextLoss() // free the GPU context now, not at GC
       renderer.domElement.remove()
     },
   }

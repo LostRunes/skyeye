@@ -46,7 +46,7 @@ const PAGES = {
         </div>
         <HomeServices />
         <div id="home-clients" className="anchor-block">
-          <Clients id="home-clients-list" label="OUR CLIENTS" more="#/about?to=clients" />
+          <Clients id="home-clients-list" label="OUR CLIENTS" more="#/about?to=clients" strip />
         </div>
         <HomeTraining />
         <div id="home-gallery" className="anchor-block">
