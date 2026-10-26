@@ -1,4 +1,5 @@
-import { brochureCrop, photo } from '../cdn'
+import { brochureCrop, CLIPS, photo } from '../cdn'
+import HoverVideo from './HoverVideo'
 
 const services = [
   {
@@ -8,6 +9,7 @@ const services = [
     desc: 'Advertising in the sky — banner towing, skywriting, drone advertising and illuminated sky displays for events, launches and campaigns.',
     img: brochureCrop('led-net-city', 'w-480,h-300,fo-auto'),
     alt: 'Heavy-lift drone carrying an LED net banner over a city skyline at night',
+    video: CLIPS.skyvertising,
   },
   {
     num: '02',
@@ -16,6 +18,7 @@ const services = [
     desc: 'The outcome without owning a drone — spraying, mapping, inspection, filming, surveillance support and more, flown by our crew.',
     img: photo('agri', 141, 'w-480,h-300,fo-auto'),
     alt: 'Spraying drone flying low over a wheat field',
+    video: CLIPS.mapping,
   },
 ]
 
@@ -45,7 +48,7 @@ export default function ServicesIntro() {
                 </div>
                 <div className="cat-img-wrap">
                   <div className="cat-img-box">
-                    <img src={s.img} alt={s.alt} loading="lazy" />
+                    <HoverVideo img={s.img} video={s.video} alt={s.alt} trigger=".category-item" />
                   </div>
                 </div>
                 <div className="cat-arrow">

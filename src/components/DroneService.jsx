@@ -1,4 +1,5 @@
-import { brochureCrop, photo, poster } from '../cdn'
+import { CLIPS, brochureCrop, photo, poster } from '../cdn'
+import HoverVideo from './HoverVideo'
 
 // Drone as a Service — deliberately generic: what a client gets and which jobs
 // we fly, with no aircraft models or manufacturing detail.
@@ -20,6 +21,7 @@ const STEPS = [
 const OFFERINGS = [
   {
     id: 'skyvertising',
+    video: CLIPS.skyvertising,
     alt: 'Drone flying an LED banner with the Sky Eye logo over a night skyline',
     title: 'Skyvertising',
     tag: 'Aerial advertising',
@@ -37,6 +39,7 @@ const OFFERINGS = [
   },
   {
     id: 'mapping',
+    video: CLIPS.mapping,
     alt: 'Aerial survey map with a colour overlay',
     title: 'Mapping & surveying',
     tag: 'Survey',
@@ -61,6 +64,7 @@ const OFFERINGS = [
   },
   {
     id: 'media',
+    video: CLIPS.media,
     alt: 'Decorated wedding stage at night, filmed from a drone',
     title: 'Aerial photography & video',
     tag: 'Events & media',
@@ -69,6 +73,7 @@ const OFFERINGS = [
   },
   {
     id: 'fpv',
+    video: CLIPS.fpv,
     alt: 'FPV drone shot diving over a resort pool',
     title: 'FPV cinematography',
     tag: 'Events & media',
@@ -141,7 +146,7 @@ export default function DroneService() {
             {OFFERINGS.map((o, i) => (
               <article key={o.id} id={`daas-${o.id}`} className="daas-card">
                 <div className="daas-card-img">
-                  <img src={o.img} alt={o.alt} loading="lazy" />
+                  <HoverVideo img={o.img} video={o.video} alt={o.alt} trigger=".daas-card" />
                   <span className="daas-card-num">{String(i + 1).padStart(2, '0')}</span>
                 </div>
                 <div className="daas-card-body">
