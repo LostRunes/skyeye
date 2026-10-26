@@ -269,10 +269,17 @@ export function mountAssembly(container, { dark = false, modelUrl = '/models/qua
     look.y = damp(look.y, pointer.y, 3, dt)
     const az = 0.95 - p * 1.25 + look.x * 0.12
     const el = 0.42 - p * 0.18 + lift * 0.05 - look.y * 0.06
-    const dist = (wide ? 12 : 15.5) - p * 1.8 - lift * 0.6
+    // Phones: fit the frame to the box width — wide enough for the exploded
+    // parts at the start, closing in on the drone as it comes together
+    const fitW = 0.536 * camera.aspect // visible width per unit of distance
+    const built = smooth(clamp01(p / 0.8))
+    const dist = wide
+      ? 12 - p * 1.8 - lift * 0.6
+      : Math.max(5.2 / fitW + (3.4 / fitW - 5.2 / fitW) * built - lift * 0.3, 4.5)
     camera.position.set(Math.sin(az) * Math.cos(el) * dist, Math.sin(el) * dist, Math.cos(az) * Math.cos(el) * dist)
     const lx = wide ? -1.05 : 0
-    camera.lookAt(lx * Math.cos(az), 0.1 + lift * 0.5, -lx * Math.sin(az))
+    // (aimed a little low on phones so the drone sits higher, clear of the copy)
+    camera.lookAt(lx * Math.cos(az), (wide ? 0.1 : -0.12) + lift * 0.5, -lx * Math.sin(az))
     rig.position.set(0, lift * 0.7 + hover, 0)
     rig.rotation.set(lift * 0.06, lift * 0.5, -lift * 0.08)
     if (out > 0) {
