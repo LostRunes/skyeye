@@ -10,10 +10,10 @@ export const EVENTS = [
     title: 'Model United Nations',
     short: 'KIIT MUN',
     kind: 'MUN', // what the event is, for 'What is a MUN?'
-    days: ['26', '27', '28'],
-    month: 'October 2026', // TODO: confirm the month with the client
-    endsOn: '2026-10-28', // last day
-    startsAt: '2026-10-26T09:00:00+05:30', // TODO: confirm the start time (drives the countdown)
+    days: ['27', '28', '29'],
+    month: 'November 2026', // TODO: confirm the month with the client
+    endsOn: '2026-11-29', // last day
+    startsAt: '2026-11-27T09:00:00+05:30', // TODO: confirm the start time (drives the countdown)
     venue: 'Campus 6',
     about:
       'Three days of debate and diplomacy. Delegates represent countries across UN committees, negotiate with each other and draft resolutions on real global issues.',
