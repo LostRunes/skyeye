@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { CONTACTS, ik } from '../cdn'
 import { COURSES, GROUPS } from '../data/courses'
 import useSmoothScroll from '../hooks/useSmoothScroll'
+import CourseDroneJourney from './CourseDroneJourney'
 import './courses.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -19,7 +20,7 @@ gsap.registerPlugin(ScrollTrigger)
 // connected (see ENROL below).
 
 const MAIN_SITE = 'https://skyeyetechnology.in'
-const logoLight = ik('site/logo-mark-light.png', 'h-96')
+const logo = ik('site/logo-mark.png', 'h-96')
 
 // Flip `online` to true and set `url` once the Zoho form with payment exists;
 // the Enrol buttons then open it instead of the interim form.
@@ -114,7 +115,7 @@ function Header() {
   return (
     <header className={`cs-header${scrolled ? ' is-scrolled' : ''}`}>
       <a className="cs-brand" href={MAIN_SITE} aria-label="Sky Eye Technology main website">
-        <img src={logoLight} alt="" />
+        <img src={logo} alt="" />
         <span>
           SKY EYE
           <em>COURSES</em>
@@ -518,7 +519,7 @@ function Footer() {
       <div className="cs-wrap cs-footer-inner">
         <div>
           <a className="cs-brand" href={MAIN_SITE}>
-            <img src={logoLight} alt="" />
+            <img src={logo} alt="" />
             <span>
               SKY EYE
               <em>COURSES</em>
@@ -586,6 +587,7 @@ export default function CoursesSite() {
       <Header />
       <main>
         <Hero />
+        <CourseDroneJourney />
         <Catalogue filter={filter} setFilter={setFilter} />
         {ordered.map((c, i) => (
           <CourseSection key={c.id} c={c} i={i} onEnrol={enrolIn} />

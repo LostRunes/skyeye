@@ -5,6 +5,8 @@ import Countdown from './events/Countdown'
 import SpinWheel from './events/SpinWheel'
 import CatchGame from './events/CatchGame'
 import DroneQuiz from './events/DroneQuiz'
+import GoodiesShowcase from './events/GoodiesShowcase'
+import '../goodies.css'
 
 // Events page: every event Sky Eye takes part in (src/data/event.js). Each
 // gets a showcase — animated banner with a live countdown, a ticker, what
@@ -297,17 +299,7 @@ function EventShowcase({ event }) {
             {event.stall.prizes && (
               <div className="evx-prizes" data-reveal>
                 <span className="section-label">WHAT YOU CAN WIN</span>
-                <ul className="evx-prize-shelf">
-                  {event.stall.prizes.map((p, i) => (
-                    <li key={p.name} style={{ animationDelay: `${i * -0.6}s` }}>
-                      <span className="material-symbols-outlined" aria-hidden="true">
-                        {p.icon}
-                      </span>
-                      <strong>{p.name}</strong>
-                      {p.note && <span>{p.note}</span>}
-                    </li>
-                  ))}
-                </ul>
+                <GoodiesShowcase />
               </div>
             )}
 
