@@ -6383,3 +6383,116 @@ html.lenis.rec-snapping {
 .cat-img-box .hover-video > video {
   filter: none;
 }
+
+/* MUN stall: prize shelf and the drone shop card */
+.evx-prizes {
+  margin-top: clamp(2rem, 4vw, 2.75rem);
+}
+
+.evx-prize-shelf {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-top: 1rem;
+  list-style: none;
+  padding: 0;
+}
+
+@media (min-width: 720px) {
+  .evx-prize-shelf {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.evx-prize-shelf li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1.1rem 0.75rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: border-color 0.3s ease, transform 0.3s ease;
+}
+
+.evx-prize-shelf li:hover {
+  border-color: #ffb020;
+  transform: translateY(-4px);
+}
+
+.evx-prize-shelf .material-symbols-outlined {
+  font-size: 34px;
+  color: #ffb020;
+  animation: evx-float 3.6s ease-in-out infinite;
+  animation-delay: inherit;
+}
+
+@keyframes evx-float {
+  50% {
+    transform: translateY(-6px) rotate(-6deg);
+  }
+}
+
+.evx-prize-shelf strong {
+  font-size: 15px;
+}
+
+.evx-prize-shelf li > span:last-child:not(.material-symbols-outlined) {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: rgba(242, 240, 235, 0.6);
+}
+
+.evx-shop {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-top: 1rem;
+  padding: clamp(1.1rem, 2.5vw, 1.5rem);
+  background: linear-gradient(90deg, rgba(255, 90, 31, 0.16), rgba(255, 176, 32, 0.06));
+  border: 1px solid rgba(255, 90, 31, 0.45);
+}
+
+.evx-shop .material-symbols-outlined {
+  font-size: 30px;
+  color: #ff5a1f;
+}
+
+.evx-shop h4 {
+  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 700;
+}
+
+.evx-shop p {
+  margin-top: 0.3rem;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(242, 240, 235, 0.72);
+}
+
+/* Gallery ring on phones: bigger cards, ring fills the width, less dead scroll */
+@media (max-width: 767px) {
+  .morph-page-container {
+    min-height: 170vh;
+  }
+  .morph-viewport {
+    justify-content: flex-start;
+    padding-top: calc(var(--nav-h, 64px) + 1.5rem);
+    padding-bottom: 1.5rem;
+  }
+  .morph-text-overlay h2 {
+    font-size: clamp(26px, 7.6vw, 34px);
+  }
+  .morph-card-wrap {
+    width: clamp(70px, 21vw, 92px);
+    height: clamp(96px, 29vw, 126px);
+  }
+  .morph-visual-col {
+    min-height: min(100vw, 62svh);
+  }
+  .morph-ring-logo img {
+    width: 74px;
+  }
+}

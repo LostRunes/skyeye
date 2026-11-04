@@ -1,8 +1,8 @@
 // Organisations Sky Eye has worked with, shown on the About page (grid) and
 // the home page (scrolling strip). Each entry: { name, group, logo?, sector? }
 // — `logo` is an image URL; without one the name is set in type instead.
-// Logos with the State Emblem of India or military/police insignia are left
-// out on purpose (their use by companies is restricted).
+// Government, defence and police logos are shown with the clients' permission
+// (per the founder).
 // Logos are hosted on Cloudinary (folder skyeye/clients), resized on delivery
 const logo = (slug) => `https://res.cloudinary.com/mnwkyinw/image/upload/h_160,f_auto,q_auto/skyeye/clients/${slug}.png`
 
@@ -10,7 +10,7 @@ export const CLIENTS = [
   { group: 'org', name: 'Drone Mandi', sector: 'Drone services', logo: logo('drone-mandi') },
   { group: 'org', name: 'Lakir Technologies', sector: 'Drone tech' },
   { group: 'org', name: 'BHEL', sector: 'Public sector', logo: logo('bhel') },
-  { group: 'org', name: 'Jems & Jewellers', sector: 'Jewellery' },
+  { group: 'org', name: 'Malabar Gold & Diamonds', sector: 'Jewellery', logo: logo('malabar') },
   { group: 'org', name: 'Aerovania Pvt. Ltd.', sector: 'Drone tech' },
   { group: 'org', name: 'QIK Techsoft Solution', sector: 'Software' },
   { group: 'org', name: 'Theta Foundation for Development', sector: 'Non-profit' },
@@ -21,13 +21,13 @@ export const CLIENTS = [
   { group: 'org', name: 'DKM Consult Pvt. Ltd.', sector: 'Engineering consultancy', logo: logo('dkm-consult') },
   { group: 'org', name: 'IFFCO', sector: 'Fertiliser co-op', logo: logo('iffco') },
   { group: 'org', name: 'RaSpect AI', sector: 'AI inspection', logo: logo('raspect-ai') },
-  { group: 'org', name: 'Survey of India', sector: 'Mapping' },
+  { group: 'org', name: 'Survey of India', sector: 'Mapping', logo: logo('survey-of-india') },
   { group: 'org', name: 'Fly Wings Simulators (FWSTC)', sector: 'Aviation training', logo: logo('fwstc') },
   { group: 'org', name: 'Bridge & Roof Co.', sector: 'Public sector', logo: logo('bridge-and-roof') },
   { group: 'org', name: 'Swosti Premium', sector: 'Hospitality', logo: logo('swosti-premium') },
-  { group: 'org', name: 'Indian Army', sector: 'Defence' },
-  { group: 'org', name: 'Rashtriya Rifles', sector: 'Defence' },
-  { group: 'org', name: 'Raipur Police', sector: 'Law enforcement' },
+  { group: 'org', name: 'Indian Army', sector: 'Defence', logo: logo('indian-army') },
+  { group: 'org', name: 'Rashtriya Rifles', sector: 'Defence', logo: logo('rashtriya-rifles') },
+  { group: 'org', name: 'Raipur Police', sector: 'Law enforcement', logo: logo('raipur-police') },
   { group: 'org', name: 'NAWAH', sector: 'Real estate', logo: logo('nawah') },
   { group: 'org', name: 'WBIDC', sector: 'West Bengal Industrial Development Corp.', logo: logo('wbidc') },
   { group: 'org', name: 'AviaSafe Aviation Services Pvt. Ltd.', sector: 'Aviation', logo: logo('aviasafe') },

@@ -3,15 +3,16 @@ import { confetti } from './confetti'
 
 // Demo prize wheel — a taste of the real one at the stall. Purely for fun:
 // nothing is won online, the result just celebrates.
+// The real stall prizes, plus a couple of near-misses
 const SEGMENTS = [
-  { label: 'Goodie', win: true },
+  { label: 'Pilot card', win: true },
   { label: 'Spin again', win: false },
-  { label: 'Mystery', win: true },
+  { label: 'Keychain', win: true },
+  { label: 'Mug', win: true },
+  { label: 'Stickers', win: true },
   { label: 'So close!', win: false },
-  { label: 'Goodie', win: true },
-  { label: 'Bonus game', win: true },
-  { label: 'High five', win: false },
-  { label: 'Jackpot', win: true },
+  { label: 'Bottle', win: true },
+  { label: 'Toffees', win: true },
 ]
 const N = SEGMENTS.length
 const SEG = 360 / N

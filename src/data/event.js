@@ -27,13 +27,26 @@ export const EVENTS = [
     stall: {
       title: 'Visit the Sky Eye stall',
       where: 'Campus 6 · all three days',
-      text: 'Spin the wheel, play games and win goodies, and find out about drone training and opportunities with Sky Eye.',
+      text: 'Spin the wheel, play the stall games and win Sky Eye goodies, see real drones up close, and find out about drone training and opportunities with Sky Eye.',
       games: [
         { icon: 'casino', title: 'Spin the wheel', text: 'Spin the Sky Eye wheel and win goodies.' },
         { icon: 'sports_esports', title: 'Stall games', text: 'Quick games at the stall, with goodies for the winners.' },
-        { icon: 'redeem', title: 'Goodies', text: 'Sky Eye goodies to take home from the stall.' },
+        { icon: 'flight', title: 'Drone display', text: 'Real drones on show — and some you can buy at the stall.' },
         { icon: 'flight_takeoff', title: 'Opportunities', text: 'Find out about drone training, courses and openings at Sky Eye.' },
       ],
+      // What players can win at the stall (also the segments of the demo wheel)
+      prizes: [
+        { icon: 'badge', name: 'Pilot card', note: 'PVC Sky Eye pilot card' },
+        { icon: 'key', name: 'Keychain' },
+        { icon: 'coffee', name: 'Mug' },
+        { icon: 'water_bottle', name: 'Bottle' },
+        { icon: 'sell', name: 'Stickers' },
+        { icon: 'cookie', name: 'Toffees', note: 'free for everyone who stops by' },
+      ],
+      shop: {
+        title: 'Drones on display — and for sale',
+        text: 'See working drones up close at the stall, ask the team anything, and take one home: selected drones will be available to buy right there.',
+      },
     },
   },
 ]

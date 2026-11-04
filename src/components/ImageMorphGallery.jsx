@@ -133,8 +133,8 @@ const GALLERY_IMAGES = [
   },
 ]
 
-const TOTAL_CARDS = 24
-const CARDS = Array.from({ length: TOTAL_CARDS }, (_, i) => i % GALLERY_IMAGES.length)
+// Phones get fewer, larger cards so the ring reads at a glance
+const narrowScreen = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
 
 // Used as the Gallery page opener, and on the home page with its own label
 // and a link through to the full gallery (`more`).
@@ -149,6 +149,8 @@ export default function ImageMorphGallery({ label = '01 / GALLERY', more }) {
   // `index` is kept on mouse-out and only replaced on the next mouse-in, so the
   // panel fades out with its content intact instead of blanking halfway
   // through the transition.
+  const [TOTAL_CARDS] = useState(() => (narrowScreen() ? 12 : 24))
+  const CARDS = Array.from({ length: TOTAL_CARDS }, (_, i) => i % GALLERY_IMAGES.length)
   const [preview, setPreview] = useState({ index: 0, active: false })
   const [canHover, setCanHover] = useState(false)
 
@@ -195,6 +197,11 @@ export default function ImageMorphGallery({ label = '01 / GALLERY', more }) {
       const sampleCard = cardsWrap.querySelector('.morph-card-wrap')
       const cardH = sampleCard ? sampleCard.getBoundingClientRect().height : 150
       const maxByHeight = h / 2 - cardH / 2 - 16
+      if (TOTAL_CARDS < 24) {
+        // Phones: as wide as the column allows
+        const cardW = sampleCard ? sampleCard.getBoundingClientRect().width : 80
+        return Math.max(90, Math.min((w - cardW) / 2 - 6, maxByHeight))
+      }
       return Math.max(110, Math.min(260, w * 0.3, maxByHeight))
     }
 
@@ -224,7 +231,7 @@ export default function ImageMorphGallery({ label = '01 / GALLERY', more }) {
         cards,
         {
           x: (i) => {
-            const spacing = getVisualSize().w < 420 ? 13 : 24
+            const spacing = TOTAL_CARDS < 24 ? 22 : getVisualSize().w < 420 ? 13 : 24
             return (i - (TOTAL_CARDS - 1) / 2) * spacing
           },
           y: 0,
@@ -281,7 +288,9 @@ export default function ImageMorphGallery({ label = '01 / GALLERY', more }) {
       })
 
       scrollTimeline.to(intro, { opacity: 0, y: -30, duration: 0.35 }, 0)
-      scrollTimeline.to(explore, { opacity: 1, y: 0, duration: 0.45 }, 0.15)
+      // The second headline only comes in once the first has gone, so the
+      // two never sit on top of each other
+      scrollTimeline.to(explore, { opacity: 1, y: 0, duration: 0.4 }, 0.42)
 
       scrollTimeline.to(cardsWrap, { rotation: 180, ease: 'none', duration: 2.0 }, 0)
 
@@ -328,7 +337,7 @@ export default function ImageMorphGallery({ label = '01 / GALLERY', more }) {
     }, containerRef)
 
     return () => ctx.revert()
-  }, [])
+  }, [TOTAL_CARDS])
 
   const shown = GALLERY_IMAGES[preview.index]
   const isPreviewing = canHover && preview.active
