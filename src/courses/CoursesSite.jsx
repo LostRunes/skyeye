@@ -6,6 +6,7 @@ import { COURSES, GROUPS } from '../data/courses'
 import useSmoothScroll from '../hooks/useSmoothScroll'
 import CourseDroneJourney from './CourseDroneJourney'
 import CourseCarousel from './CourseCarousel'
+import FlyingButton from '../components/reactbits/FlyingButton'
 import CoursePoster from './CoursePoster'
 import './courses.css'
 
@@ -210,6 +211,17 @@ const towards = (prev, i) => {
   return { i, dir: Math.sign(d) || 1 }
 }
 
+// The flying enrol buttons, in the site's soft orange
+const FLY = {
+  theme: 'dark',
+  size: 'large',
+  hoverTime: 2.2,
+  buttonColor: '#e08a5c',
+  textColor: '#1a1412',
+  thrustColor: '#f2b48a',
+  smokeColor: '#efe4d8',
+}
+
 const scrollToId = (id, offset = -70) => {
   const el = document.getElementById(id)
   if (!el) return
@@ -338,10 +350,11 @@ function CourseDetail({ c, i, dir, onEnrol, onStep }) {
             </div>
           )}
 
-          <div className="cs-course-ctas">
-            <button type="button" className="cs-btn cs-btn--hot" onClick={() => onEnrol(c.id)}>
+          {/* Hover and it lifts off on its thrusters; click to go and enrol */}
+          <div className="cs-launch">
+            <FlyingButton {...FLY} altitude={150} onClick={() => onEnrol(c.id)}>
               Enrol in {c.short || c.title} →
-            </button>
+            </FlyingButton>
           </div>
 
           <nav className="cs-detail-nav" aria-label="Other courses">
@@ -450,6 +463,7 @@ function Faq() {
 function Enrol({ course, setCourse }) {
   const [form, setForm] = useState({ name: '', phone: '', email: '', org: '', city: '', note: '' })
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+  const formRef = useRef(null)
   const picked = COURSES.find((c) => c.id === course) || COURSES[0]
 
   const body = () =>
@@ -499,7 +513,7 @@ function Enrol({ course, setCourse }) {
           )}
         </div>
 
-        <form className="cs-form" onSubmit={submit} data-cs-reveal>
+        <form className="cs-form" ref={formRef} onSubmit={submit} data-cs-reveal>
           <label className="cs-field cs-field--full">
             <span>Course</span>
             <select value={picked.id} onChange={(e) => setCourse(e.target.value)}>
@@ -538,9 +552,11 @@ function Enrol({ course, setCourse }) {
             <span>Anything we should know?</span>
             <textarea rows={3} value={form.note} onChange={set('note')} placeholder="Experience, preferred dates, questions…" />
           </label>
-          <button type="submit" className="cs-btn cs-btn--hot cs-field--full">
-            {ENROL.online ? 'Continue to payment →' : 'Send enrolment request →'}
-          </button>
+          <div className="cs-launch cs-launch--form cs-field--full">
+            <FlyingButton {...FLY} altitude={130} onClick={() => formRef.current?.requestSubmit()}>
+              {ENROL.online ? 'Continue to payment →' : 'Send enrolment request →'}
+            </FlyingButton>
+          </div>
         </form>
       </div>
     </section>
