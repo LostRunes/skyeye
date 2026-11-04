@@ -1,17 +1,20 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { CONTACTS, ik } from '../cdn'
 import { COURSES, GROUPS } from '../data/courses'
 import useSmoothScroll from '../hooks/useSmoothScroll'
 import CourseDroneJourney from './CourseDroneJourney'
+import CourseCarousel from './CourseCarousel'
+import CoursePoster from './CoursePoster'
 import './courses.css'
 
 gsap.registerPlugin(ScrollTrigger)
 
 // courses.skyeyetechnology.in — a standalone site for the training courses:
-// an animated hero, a filterable course grid, a full section per course
-// (curriculum, format, who it's for, instructor), how enrolment works, FAQs
+// an animated hero, the scroll-scrubbed drone, a 3D course carousel with
+// the chosen course's full detail below it (curriculum, format, who it's
+// for, instructor), how enrolment works, FAQs
 // and the enrolment form. Course content lives in src/data/courses.js, the
 // same file the main site's Training page uses.
 //
@@ -20,7 +23,7 @@ gsap.registerPlugin(ScrollTrigger)
 // connected (see ENROL below).
 
 const MAIN_SITE = 'https://skyeyetechnology.in'
-const logo = ik('site/logo-mark.png', 'h-96')
+const logo = ik('site/logo-mark-light.png', 'h-96')
 
 // Flip `online` to true and set `url` once the Zoho form with payment exists;
 // the Enrol buttons then open it instead of the interim form.
@@ -63,45 +66,19 @@ const FAQS = [
 const trackLabel = (key) => GROUPS.find((g) => g.key === key)?.label || key
 
 // Section-level scroll animations; everything respects reduced motion
-function useCourseAnimations(rootRef, filter) {
+function useCourseAnimations(rootRef) {
   useEffect(() => {
     const root = rootRef.current
     if (!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const ctx = gsap.context(() => {
       gsap.from('.cs-hero-word', { yPercent: 110, opacity: 0, duration: 1, stagger: 0.08, ease: 'expo.out', delay: 0.15 })
       gsap.from('.cs-hero-sub, .cs-hero-ctas, .cs-hero-stats li', { y: 24, opacity: 0, duration: 0.8, stagger: 0.08, ease: 'power3.out', delay: 0.6 })
-
       gsap.utils.toArray('[data-cs-reveal]').forEach((el) =>
         gsap.from(el, { y: 40, opacity: 0, duration: 0.9, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 86%' } })
       )
-
-      // Each course: the photo drifts against the scroll, the curriculum line draws in
-      gsap.utils.toArray('.cs-course').forEach((sec) => {
-        const img = sec.querySelector('.cs-course-media img')
-        if (img) gsap.fromTo(img, { yPercent: -8 }, { yPercent: 8, ease: 'none', scrollTrigger: { trigger: sec, scrub: true } })
-        const line = sec.querySelector('.cs-curriculum-line')
-        if (line)
-          gsap.fromTo(line, { scaleY: 0 }, { scaleY: 1, ease: 'none', scrollTrigger: { trigger: sec.querySelector('.cs-curriculum'), start: 'top 75%', end: 'bottom 60%', scrub: true } })
-        gsap.from(sec.querySelectorAll('.cs-module'), {
-          x: 30,
-          opacity: 0,
-          duration: 0.6,
-          stagger: 0.07,
-          ease: 'power2.out',
-          scrollTrigger: { trigger: sec.querySelector('.cs-curriculum'), start: 'top 78%' },
-        })
-      })
     }, root)
     return () => ctx.revert()
   }, [rootRef])
-
-  // Re-run the card entrance whenever the track filter changes
-  useEffect(() => {
-    const root = rootRef.current
-    if (!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const cards = root.querySelectorAll('.cs-card')
-    gsap.fromTo(cards, { y: 30, opacity: 0, rotateX: -12 }, { y: 0, opacity: 1, rotateX: 0, duration: 0.7, stagger: 0.07, ease: 'power3.out' })
-  }, [rootRef, filter])
 }
 
 function Header() {
@@ -140,13 +117,31 @@ function Hero() {
       <div className="cs-hero-grid" aria-hidden="true" />
       <div className="cs-hero-glow" aria-hidden="true" />
       {/* A drone's flight path loops across the hero */}
-      <svg className="cs-hero-path" viewBox="0 0 1200 600" preserveAspectRatio="none" aria-hidden="true">
+      <svg className="cs-hero-path" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
         <path id="cs-flight" d="M-40 470 C 220 250, 380 560, 620 330 S 980 80, 1240 210" />
-        <circle r="7" className="cs-hero-dot">
-          <animateMotion dur="9s" repeatCount="indefinite" rotate="auto">
+        {/* A quadcopter, seen from above, flying the dotted path */}
+        <g className="cs-hero-drone">
+          <animateMotion dur="11s" repeatCount="indefinite" rotate="auto">
             <mpath href="#cs-flight" />
           </animateMotion>
-        </circle>
+          <g className="cs-drone-arms">
+            <line x1="-12" y1="-12" x2="12" y2="12" />
+            <line x1="-12" y1="12" x2="12" y2="-12" />
+          </g>
+          {[
+            [-12, -12],
+            [12, -12],
+            [-12, 12],
+            [12, 12],
+          ].map(([x, y]) => (
+            <g key={`${x}${y}`} transform={`translate(${x} ${y})`}>
+              <circle r="8" className="cs-drone-rotor" />
+              <circle r="2" className="cs-drone-motor" />
+            </g>
+          ))}
+          <rect x="-6" y="-5" width="12" height="10" rx="3" className="cs-drone-body" />
+          <circle cx="5" cy="0" r="1.4" className="cs-drone-led" />
+        </g>
       </svg>
       <div className="cs-wrap cs-hero-inner">
         <span className="cs-kicker">
@@ -201,97 +196,97 @@ function Hero() {
   )
 }
 
-function Card({ c }) {
+const pad = (n) => String(n).padStart(2, '0')
+
+// Courses shown with an illustrated poster instead of a photo
+const hasPoster = (id) => id === 'genai' || id === 'data'
+
+// Moving from course `prev.i` to `i`: remember which way, for the detail's entrance
+const towards = (prev, i) => {
+  if (prev.i === i) return prev
+  let d = i - prev.i
+  if (d > COURSES.length / 2) d -= COURSES.length
+  if (d < -COURSES.length / 2) d += COURSES.length
+  return { i, dir: Math.sign(d) || 1 }
+}
+
+const scrollToId = (id, offset = -70) => {
+  const el = document.getElementById(id)
+  if (!el) return
+  if (window.__lenis) window.__lenis.scrollTo(el, { offset })
+  else el.scrollIntoView({ behavior: 'smooth' })
+}
+
+// The chosen course: poster or photo held in place while the learning path
+// beside it fills in on scroll. Remounted per course, entering from the side
+// the carousel turned towards.
+function CourseDetail({ c, i, dir, onEnrol, onStep }) {
   const ref = useRef(null)
-  // Gentle 3D tilt that follows the pointer
-  const onMove = (e) => {
-    const el = ref.current
-    if (!el || window.matchMedia('(hover: none)').matches) return
+  const n = COURSES.length
+  const prev = COURSES[(i - 1 + n) % n]
+  const next = COURSES[(i + 1) % n]
+
+  useEffect(() => {
+    const root = ref.current
+    if (!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const ctx = gsap.context(() => {
+      gsap.from('.cs-detail-in', { x: dir * 70, opacity: 0, duration: 0.75, stagger: 0.07, ease: 'power3.out' })
+      gsap.fromTo(
+        '.cs-curriculum-line',
+        { scaleY: 0 },
+        { scaleY: 1, ease: 'none', scrollTrigger: { trigger: '.cs-curriculum', start: 'top 72%', end: 'bottom 62%', scrub: true } }
+      )
+      // Each stop on the path lights up as the line reaches it
+      gsap.utils.toArray('.cs-module').forEach((m) =>
+        ScrollTrigger.create({
+          trigger: m,
+          start: 'top 68%',
+          onEnter: () => m.classList.add('is-on'),
+          onLeaveBack: () => m.classList.remove('is-on'),
+        })
+      )
+    }, root)
+    const raf = requestAnimationFrame(() => ScrollTrigger.refresh())
+    return () => {
+      cancelAnimationFrame(raf)
+      ctx.revert()
+    }
+  }, [dir])
+
+  // The poster leans towards the pointer
+  const tilt = (e) => {
+    const el = e.currentTarget
     const r = el.getBoundingClientRect()
-    const x = (e.clientX - r.left) / r.width - 0.5
-    const y = (e.clientY - r.top) / r.height - 0.5
-    el.style.setProperty('--rx', `${(-y * 8).toFixed(2)}deg`)
-    el.style.setProperty('--ry', `${(x * 10).toFixed(2)}deg`)
-    el.style.setProperty('--mx', `${(x + 0.5) * 100}%`)
-    el.style.setProperty('--my', `${(y + 0.5) * 100}%`)
+    el.style.setProperty('--px', (((e.clientX - r.left) / r.width) * 2 - 1).toFixed(3))
+    el.style.setProperty('--py', (((e.clientY - r.top) / r.height) * 2 - 1).toFixed(3))
   }
-  const onLeave = () => {
-    const el = ref.current
-    if (!el) return
-    el.style.setProperty('--rx', '0deg')
-    el.style.setProperty('--ry', '0deg')
+  const untilt = (e) => {
+    e.currentTarget.style.setProperty('--px', '0')
+    e.currentTarget.style.setProperty('--py', '0')
   }
-  return (
-    <a ref={ref} className="cs-card" href={`#course-${c.id}`} onPointerMove={onMove} onPointerLeave={onLeave}>
-      <span className="cs-card-media">
-        <img src={c.img} alt="" loading="lazy" style={{ objectFit: c.imgFit === 'contain' ? 'cover' : undefined }} />
-        <span className="cs-card-level">{c.level}</span>
-      </span>
-      <span className="cs-card-body">
-        <span className="cs-card-track">{trackLabel(c.group)}</span>
-        <strong className="cs-card-title">{c.short || c.title}</strong>
-        <span className="cs-card-aud">{c.audience}</span>
-        <span className="cs-card-desc">{c.desc}</span>
-        <span className="cs-card-more">Explore course →</span>
-      </span>
-      <span className="cs-card-shine" aria-hidden="true" />
-    </a>
-  )
-}
 
-function Catalogue({ filter, setFilter }) {
-  const tabs = [{ key: 'all', label: 'All courses' }, ...GROUPS]
-  const shown = filter === 'all' ? COURSES : COURSES.filter((c) => c.group === filter)
   return (
-    <section className="cs-catalogue" id="courses">
-      <div className="cs-wrap">
-        <div className="cs-section-head" data-cs-reveal>
-          <span className="cs-kicker">THE COURSES</span>
-          <h2 className="cs-h2">Pick your path.</h2>
-          <p className="cs-lead">Two tracks, five courses. Every one of them live, practical and built around doing, not watching.</p>
-        </div>
-        <div className="cs-tabs" role="tablist" aria-label="Filter courses">
-          {tabs.map((t) => (
-            <button
-              key={t.key}
-              type="button"
-              role="tab"
-              aria-selected={filter === t.key}
-              className={`cs-tab${filter === t.key ? ' is-on' : ''}`}
-              onClick={() => setFilter(t.key)}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-        <div className="cs-grid">
-          {shown.map((c) => (
-            <Card key={c.id} c={c} />
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function CourseSection({ c, i, onEnrol }) {
-  return (
-    <section className={`cs-course${i % 2 ? ' is-flip' : ''}`} id={`course-${c.id}`} aria-labelledby={`cs-t-${c.id}`}>
+    <section className="cs-course cs-detail" id="course" ref={ref} aria-labelledby="cs-detail-title">
       <div className="cs-wrap cs-course-inner">
-        <div className="cs-course-media" data-cs-reveal>
-          <div className={`cs-course-frame${c.imgFit === 'contain' ? ' is-contain' : ''}`}>
-            {c.imgFit === 'contain' && <img className="cs-course-blur" src={c.img} alt="" aria-hidden="true" />}
-            <img src={c.img} alt={c.title} loading="lazy" />
-          </div>
-          <span className="cs-course-num">{String(i + 1).padStart(2, '0')}</span>
+        <div className="cs-course-media cs-detail-in">
+          {hasPoster(c.id) ? (
+            <div className="cs-course-frame is-poster" onPointerMove={tilt} onPointerLeave={untilt}>
+              <CoursePoster c={c} i={i} total={n} />
+            </div>
+          ) : (
+            <div className="cs-course-frame">
+              <img src={c.img} alt={c.title} />
+            </div>
+          )}
+          <span className="cs-course-num">{pad(i + 1)}</span>
         </div>
 
         <div className="cs-course-body">
-          <div data-cs-reveal>
+          <div className="cs-detail-in">
             <span className="cs-kicker">
               {trackLabel(c.group)} · {c.level}
             </span>
-            <h2 className="cs-course-title" id={`cs-t-${c.id}`}>
+            <h2 className="cs-course-title" id="cs-detail-title">
               {c.title}
             </h2>
             {c.program && <p className="cs-course-program">{c.program}</p>}
@@ -313,12 +308,12 @@ function CourseSection({ c, i, onEnrol }) {
           </div>
 
           <div className="cs-curriculum">
-            <h3 className="cs-h3">What you’ll learn</h3>
+            <h3 className="cs-h3">Your learning path</h3>
             <span className="cs-curriculum-line" aria-hidden="true" />
             <ol className="cs-modules">
               {c.modules.map(([t, d], k) => (
                 <li key={t} className="cs-module">
-                  <span className="cs-module-n">{String(k + 1).padStart(2, '0')}</span>
+                  <span className="cs-module-n">{pad(k + 1)}</span>
                   <div>
                     <strong>{t}</strong>
                     <span>{d}</span>
@@ -329,7 +324,7 @@ function CourseSection({ c, i, onEnrol }) {
           </div>
 
           {c.instructor && (
-            <div className="cs-teacher" data-cs-reveal>
+            <div className="cs-teacher">
               <img src={c.instructor.img} alt={c.instructor.name || 'Course instructor'} loading="lazy" />
               <div>
                 <span className="cs-kicker">YOUR INSTRUCTOR</span>
@@ -343,17 +338,56 @@ function CourseSection({ c, i, onEnrol }) {
             </div>
           )}
 
-          <div className="cs-course-ctas" data-cs-reveal>
+          <div className="cs-course-ctas">
             <button type="button" className="cs-btn cs-btn--hot" onClick={() => onEnrol(c.id)}>
               Enrol in {c.short || c.title} →
             </button>
-            <a className="cs-link" href="#courses">
-              ← All courses
-            </a>
           </div>
+
+          <nav className="cs-detail-nav" aria-label="Other courses">
+            <button type="button" onClick={() => onStep(-1)}>
+              <small>← Previous course</small>
+              <strong>{prev.short || prev.title}</strong>
+            </button>
+            <button type="button" onClick={() => onStep(1)}>
+              <small>Next course →</small>
+              <strong>{next.short || next.title}</strong>
+            </button>
+          </nav>
         </div>
       </div>
     </section>
+  )
+}
+
+function Explorer({ sel, setSel, onEnrol }) {
+  const c = COURSES[sel.i]
+  const step = (delta) => {
+    setSel((p) => towards(p, (p.i + delta + COURSES.length) % COURSES.length))
+    scrollToId('courses', -40)
+  }
+  return (
+    <>
+      <section className="cs-explorer" id="courses">
+        <div className="cs-wrap">
+          <div className="cs-section-head" data-cs-reveal>
+            <span className="cs-kicker">THE COURSES</span>
+            <h2 className="cs-h2">Pick your path.</h2>
+            <p className="cs-lead">
+              Two tracks, five courses. Spin through them, pick one, and scroll down for everything it covers.
+            </p>
+          </div>
+        </div>
+        <CourseCarousel
+          courses={COURSES}
+          active={sel.i}
+          onChange={(i) => setSel((p) => towards(p, i))}
+          onOpen={() => scrollToId('course')}
+          trackLabel={trackLabel}
+        />
+      </section>
+      <CourseDetail key={c.id} c={c} i={sel.i} dir={sel.dir} onEnrol={onEnrol} onStep={step} />
+    </>
   )
 }
 
@@ -550,9 +584,19 @@ function Footer() {
 export default function CoursesSite() {
   useSmoothScroll()
   const rootRef = useRef(null)
-  const [filter, setFilter] = useState('all')
+  // The chosen course; a #course-<id> link (e.g. from the main site) opens it
+  const [sel, setSel] = useState(() => {
+    const m = /^#course-(.+)$/.exec(window.location.hash)
+    return { i: Math.max(m ? COURSES.findIndex((c) => c.id === m[1]) : 0, 0), dir: 1 }
+  })
   const [course, setCourse] = useState(COURSES[0].id)
-  useCourseAnimations(rootRef, filter)
+  useCourseAnimations(rootRef)
+
+  useEffect(() => {
+    if (!/^#course-/.test(window.location.hash)) return
+    const t = setTimeout(() => scrollToId('courses', -40), 500)
+    return () => clearTimeout(t)
+  }, [])
 
   useEffect(() => {
     document.title = 'Courses — Sky Eye Technology'
@@ -563,7 +607,17 @@ export default function CoursesSite() {
     const onClick = (e) => {
       const a = e.target.closest?.('a[href^="#"]')
       if (!a) return
-      const el = document.getElementById(a.getAttribute('href').slice(1))
+      const href = a.getAttribute('href')
+      const m = /^#course-(.+)$/.exec(href)
+      if (m) {
+        const idx = COURSES.findIndex((c) => c.id === m[1])
+        if (idx < 0) return
+        e.preventDefault()
+        setSel((p) => towards(p, idx))
+        scrollToId('courses', -40)
+        return
+      }
+      const el = document.getElementById(href.slice(1))
       if (!el) return
       e.preventDefault()
       if (window.__lenis) window.__lenis.scrollTo(el, { offset: -70 })
@@ -580,18 +634,13 @@ export default function CoursesSite() {
     else el?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const ordered = useMemo(() => GROUPS.flatMap((g) => COURSES.filter((c) => c.group === g.key)), [])
-
   return (
     <div className="cs-root" ref={rootRef}>
       <Header />
       <main>
         <Hero />
         <CourseDroneJourney />
-        <Catalogue filter={filter} setFilter={setFilter} />
-        {ordered.map((c, i) => (
-          <CourseSection key={c.id} c={c} i={i} onEnrol={enrolIn} />
-        ))}
+        <Explorer sel={sel} setSel={setSel} onEnrol={enrolIn} />
         <HowItWorks />
         <Faq />
         <Enrol course={course} setCourse={setCourse} />
