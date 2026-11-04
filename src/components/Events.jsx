@@ -293,6 +293,36 @@ function EventShowcase({ event }) {
                 ))}
               </ul>
             </div>
+
+            {event.stall.prizes && (
+              <div className="evx-prizes" data-reveal>
+                <span className="section-label">WHAT YOU CAN WIN</span>
+                <ul className="evx-prize-shelf">
+                  {event.stall.prizes.map((p, i) => (
+                    <li key={p.name} style={{ animationDelay: `${i * -0.6}s` }}>
+                      <span className="material-symbols-outlined" aria-hidden="true">
+                        {p.icon}
+                      </span>
+                      <strong>{p.name}</strong>
+                      {p.note && <span>{p.note}</span>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {event.stall.shop && (
+              <div className="evx-shop" data-reveal>
+                <span className="material-symbols-outlined" aria-hidden="true">
+                  shopping_bag
+                </span>
+                <div>
+                  <h4>{event.stall.shop.title}</h4>
+                  <p>{event.stall.shop.text}</p>
+                </div>
+              </div>
+            )}
+
             <div className="arcade-grid">
               <div data-reveal>
                 <SpinWheel />
