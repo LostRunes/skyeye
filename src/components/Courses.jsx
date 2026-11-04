@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { parseHash } from '../router'
 import { COURSES, GROUPS } from '../data/courses'
-import { photo } from '../cdn'
+import { COURSES_SITE, photo } from '../cdn'
 
 
 const STRIP = [
@@ -128,6 +128,9 @@ export default function Courses() {
                     <a className="btn-request" href="#/training?to=training-enquiry" data-service={`Course: ${course.title}`}>
                       Enquire about this course
                       <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                    </a>
+                    <a className="hs-more" href={`${COURSES_SITE}/#course-${course.id}`}>
+                      Full course details & enrolment →
                     </a>
                   </div>
                 </div>
