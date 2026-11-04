@@ -55,6 +55,9 @@ export const poster = (name) => ik(`stills/${name}.jpg`, 'q-80')
 // (the PDF itself is not published).
 export const brochureCrop = (name, tr = 'w-900,q-80') => ik(`skyvertising/${name}.jpg`, tr)
 
+/** The standalone courses site (see main.jsx). */
+export const COURSES_SITE = 'https://courses.skyeyetechnology.in'
+
 export const CONTACTS = {
   address: 'Qtr No. SE 3/7, Satyanagar, Bhubaneswar, Odisha',
   email: 'skyeyetechnology111@gmail.com',
