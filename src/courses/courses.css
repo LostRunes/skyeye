@@ -1860,3 +1860,30 @@
 .cs-course-frame.is-poster ~ .cs-course-num {
   display: none;
 }
+
+/* Launch pads for the flying enrol buttons (React Bits FlyingButton) */
+.cs-launch {
+  height: 280px;
+  margin-top: 1.25rem;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  background:
+    linear-gradient(var(--line) 1px, transparent 1px) 0 100% / 100% 1px no-repeat,
+    var(--ink-2);
+  overflow: hidden;
+}
+
+.cs-launch--form {
+  height: 240px;
+  margin-top: 0.25rem;
+  background: var(--ink);
+}
+
+.cs-launch .flying-button {
+  min-height: 0;
+}
+
+.cs-footer ul {
+  list-style: none;
+  padding: 0;
+}

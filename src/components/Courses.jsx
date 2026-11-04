@@ -129,8 +129,13 @@ export default function Courses() {
                       Enquire about this course
                       <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
                     </a>
-                    <a className="hs-more" href={`${COURSES_SITE}/#course-${course.id}`}>
-                      Full course details & enrolment →
+                    <a className="course-full-link" href={`${COURSES_SITE}/#course-${course.id}`}>
+                      <span className="material-symbols-outlined" aria-hidden="true">school</span>
+                      <span>
+                        <strong>Full course details & enrolment</strong>
+                        <small>Curriculum, learning path and online enrolment</small>
+                      </span>
+                      <span className="material-symbols-outlined course-full-arrow" aria-hidden="true">arrow_outward</span>
                     </a>
                   </div>
                 </div>
