@@ -16,10 +16,13 @@
     <meta property="og:image" content="https://ik.imagekit.io/hiesc7f4v/skyeye/skyvertising/led-net-city.jpg?tr=w-1200,h-630,fo-auto" />
     <meta name="twitter:card" content="summary_large_image" />
     <script>
-      // Apply the saved theme before first paint so dark mode never flashes light.
+      // Dark is the default; apply it (or the visitor's saved choice) before
+      // first paint so the page never flashes the other theme.
+      var theme = 'dark'
       try {
-        if (localStorage.getItem('skyeye-theme') === 'dark') document.documentElement.dataset.theme = 'dark'
+        if (localStorage.getItem('skyeye-theme-choice') === 'light') theme = 'light'
       } catch (e) {}
+      document.documentElement.dataset.theme = theme
     </script>
     <!-- The hero's 3D drone: start fetching it before the JS asks for it -->
     <link rel="preload" href="/models/quad-assembly.glb" as="fetch" type="model/gltf-binary" crossorigin />

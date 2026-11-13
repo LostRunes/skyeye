@@ -51,7 +51,7 @@
 .cute-drone .cd-banner-text {
   font: 800 21px/1 'Geist', system-ui, sans-serif;
   letter-spacing: 0.06em;
-  fill: #ff4f00;
+  fill: #0f1b27;
 }
 
 /* flies in from above, then hovers */
@@ -98,7 +98,7 @@
 }
 
 .cute-drone .cd-eyes {
-  transform-origin: 160px 84px;
+  transform-origin: 160px 102px;
   animation: cd-blink 4s ease-in-out 1.2s infinite;
 }
 @keyframes cd-blink {
@@ -113,7 +113,7 @@
 }
 
 .cute-drone .cd-banner {
-  transform-origin: 160px 132px;
+  transform-origin: 160px 150px;
   animation: cd-sway 2.6s ease-in-out 0.9s infinite;
 }
 @keyframes cd-sway {
@@ -131,7 +131,7 @@
 }
 @keyframes cd-light {
   50% {
-    fill: #ff4f00;
+    fill: #0f1b27;
   }
 }
 
@@ -147,6 +147,26 @@
   }
 }
 
+.cute-drone .cd-blink-light--b {
+  animation-delay: -0.6s;
+}
+
+/* thruster glow flickers */
+.cute-drone .cd-thrust {
+  transform-origin: 160px 160px;
+  animation: cd-thrust 0.5s ease-in-out infinite alternate;
+}
+@keyframes cd-thrust {
+  from {
+    opacity: 0.55;
+    transform: scale(0.85, 0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.1, 1.2);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cute-drone *,
   .lead-sent > * {
@@ -159,11 +179,4 @@
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.12);
-}
-/* lighter arms, legs and antenna so they show on the dark background */
-.cs-lead-sent .cute-drone [fill='#2b2b2b']:not(ellipse) {
-  fill: #9a948c;
-}
-.cs-lead-sent .cute-drone [stroke='#2b2b2b']:not(path[fill='none']) {
-  stroke: #9a948c;
 }

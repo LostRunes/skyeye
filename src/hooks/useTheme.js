@@ -1,34 +1,44 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useState } from 'react'
 
-const STORAGE_KEY = 'skyeye-theme'
-const ThemeContext = createContext({ theme: 'light', toggle: () => {} })
+// Only a visitor's own choice from the toggle is saved. (The old key,
+// 'skyeye-theme', was written on every visit, so it can't tell a real choice
+// from the old light default; it is ignored.)
+const STORAGE_KEY = 'skyeye-theme-choice'
+const DEFAULT = 'dark'
+const ThemeContext = createContext({ theme: DEFAULT, toggle: () => {} })
 
 const readStored = () => {
   try {
     const v = localStorage.getItem(STORAGE_KEY)
-    return v === 'dark' || v === 'light' ? v : 'light'
+    return v === 'dark' || v === 'light' ? v : DEFAULT
   } catch {
-    return 'light'
+    return DEFAULT
   }
 }
 
 /**
- * Light is the default (Abinash's design); dark swaps the colour tokens.
- * Switching theme never moves the reader: same page, same scroll position.
+ * Dark is the default; light swaps the colour tokens back to the original
+ * light design. Switching theme never moves the reader: same page, same
+ * scroll position.
  */
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(readStored)
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
-    try {
-      localStorage.setItem(STORAGE_KEY, theme)
-    } catch {
-      /* private mode — the toggle still works for this visit */
-    }
   }, [theme])
 
-  const toggle = useCallback(() => setTheme((t) => (t === 'dark' ? 'light' : 'dark')), [])
+  const toggle = useCallback(() => {
+    setTheme((t) => {
+      const next = t === 'dark' ? 'light' : 'dark'
+      try {
+        localStorage.setItem(STORAGE_KEY, next)
+      } catch {
+        /* private mode — the toggle still works for this visit */
+      }
+      return next
+    })
+  }, [])
 
   return createElement(ThemeContext.Provider, { value: { theme, toggle } }, children)
 }
