@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { CONTACTS, brochureCrop } from '../cdn'
 import { takePendingService } from '../router'
+import { SOURCE, reachFields, useLeadForm } from '../lib/zohoLead'
+import { LeadError, LeadSent } from './LeadStatus'
 
 const SERVICES = ['Skyvertising', 'Drone as a Service', 'Something else']
 
-// There is no backend, so the form composes the enquiry and hands it to the
-// visitor's mail app or WhatsApp — either way it lands with the team.
+// Service requests go to Zoho CRM as Leads (Lead Source "Website - Service").
+// WhatsApp stays as a second way to send the same enquiry.
 export default function Contact() {
+  const lead = useLeadForm()
   // "Request this service" buttons across the site carry a data-service, so
   // the form arrives with the right service already picked.
   const [form, setForm] = useState(() => ({
@@ -22,10 +25,14 @@ export default function Contact() {
   const body = () =>
     `Name: ${form.name}\nContact: ${form.reach}\nService: ${form.service}\n\n${form.message}`
 
-  const sendMail = (e) => {
+  const submit = (e) => {
     e.preventDefault()
-    const subject = `Enquiry — ${form.service}`
-    window.location.href = `mailto:${CONTACTS.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body())}`
+    lead.send({
+      name: form.name,
+      ...reachFields(form.reach),
+      description: `SERVICE REQUEST — ${form.service}\n\n${form.message}`,
+      source: SOURCE.service,
+    })
   }
 
   const sendWhatsApp = (e) => {
@@ -76,10 +83,20 @@ export default function Contact() {
           </div>
 
           <div className="cta-right">
-            <form className="contact-form" onSubmit={sendMail}>
+            <form className="contact-form" onSubmit={submit}>
               <div className="contact-form-media" aria-hidden="true">
                 <img src={brochureCrop('led-net-city', 'w-900,h-360,fo-auto,q-75')} alt="" loading="lazy" />
               </div>
+              {lead.status === 'sent' ? (
+                <LeadSent
+                  className="contact-form-body"
+                  text={`We’ve got your ${form.service} request. The Sky Eye team will call or email you within a day.`}
+                  onReset={() => {
+                    setForm((f) => ({ ...f, message: '' }))
+                    lead.reset()
+                  }}
+                />
+              ) : (
               <div className="contact-form-body">
                 <span className="contact-form-title">SEND AN ENQUIRY</span>
                 <label className="field">
@@ -102,13 +119,17 @@ export default function Contact() {
                   <span>Message</span>
                   <textarea required rows={4} value={form.message} onChange={set('message')} placeholder="Event date, location, group size…" />
                 </label>
+                {lead.status === 'error' && <LeadError whatsappHref={`${CONTACTS.whatsapp}&text=${encodeURIComponent(body())}`} />}
                 <div className="contact-form-actions">
-                  <button type="submit" className="btn-request">Send request by email</button>
+                  <button type="submit" className="btn-request" disabled={lead.status === 'sending'}>
+                    {lead.status === 'sending' ? 'Sending…' : 'Send request'}
+                  </button>
                   <button type="button" className="btn-outline" onClick={sendWhatsApp}>
                     [ Send on WhatsApp ]
                   </button>
                 </div>
               </div>
+              )}
             </form>
           </div>
         </div>

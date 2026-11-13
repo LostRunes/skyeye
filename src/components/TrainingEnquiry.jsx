@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { CONTACTS, newPhoto } from '../cdn'
 import { COURSES } from '../data/courses'
 import { takePendingService } from '../router'
+import { SOURCE, reachFields, useLeadForm } from '../lib/zohoLead'
+import { LeadError, LeadSent } from './LeadStatus'
 
 // A training-only enquiry form, kept separate from service requests so course
-// and institution enquiries reach the team with the details they need.
-// Like the main contact form there is no backend: the enquiry is composed and
-// handed to the visitor's mail app or WhatsApp.
+// and institution enquiries reach the team with the details they need. It goes
+// to Zoho CRM as a Lead (Lead Source "Website - Training"); WhatsApp stays as
+// a second way to send it.
 const NOT_SURE = 'Not sure yet — please advise'
 const COURSE_OPTIONS = [...COURSES.map((c) => c.title), NOT_SURE]
 const FOR_OPTIONS = ['School', 'College / University', 'Company / Professionals', 'Police / Defence / Govt', 'Individual']
@@ -19,6 +21,7 @@ const courseFrom = (service) => {
 }
 
 export default function TrainingEnquiry() {
+  const lead = useLeadForm()
   const [form, setForm] = useState(() => ({
     name: '',
     reach: '',
@@ -61,10 +64,16 @@ export default function TrainingEnquiry() {
       form.message,
     ].join('\n')
 
-  const sendMail = (e) => {
+  const submit = (e) => {
     e.preventDefault()
-    const subject = `Training enquiry — ${form.course}${form.org ? ` (${form.org})` : ''}`
-    window.location.href = `mailto:${CONTACTS.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body())}`
+    lead.send({
+      name: form.name,
+      ...reachFields(form.reach),
+      company: form.org,
+      city: form.city,
+      description: body(),
+      source: SOURCE.training,
+    })
   }
 
   const sendWhatsApp = (e) => {
@@ -93,7 +102,14 @@ export default function TrainingEnquiry() {
             </p>
           </div>
 
-          <form className="contact-form te-form" onSubmit={sendMail}>
+          <form className="contact-form te-form" onSubmit={submit}>
+            {lead.status === 'sent' ? (
+              <LeadSent
+                className="contact-form-body"
+                text={`We’ve got your enquiry about ${form.course === NOT_SURE ? 'training' : form.course}. The team will get back to you with a plan within a day.`}
+                onReset={lead.reset}
+              />
+            ) : (
             <div className="contact-form-body">
               <span className="contact-form-title">TRAINING ENQUIRY</span>
               <div className="te-row">
@@ -146,13 +162,17 @@ export default function TrainingEnquiry() {
                 <span>Anything else</span>
                 <textarea rows={3} value={form.message} onChange={set('message')} placeholder="Age group, prior experience, venue…" />
               </label>
+              {lead.status === 'error' && <LeadError whatsappHref={`${CONTACTS.whatsapp}&text=${encodeURIComponent(body())}`} />}
               <div className="contact-form-actions">
-                <button type="submit" className="btn-request">Send enquiry by email</button>
+                <button type="submit" className="btn-request" disabled={lead.status === 'sending'}>
+                  {lead.status === 'sending' ? 'Sending…' : 'Send enquiry'}
+                </button>
                 <button type="button" className="btn-outline" onClick={sendWhatsApp}>
                   [ Send on WhatsApp ]
                 </button>
               </div>
             </div>
+            )}
           </form>
         </div>
       </div>

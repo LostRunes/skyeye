@@ -26,3 +26,6 @@ dist-ssr
 # Source repos and raw brochure kept out of the merged site
 _src
 *.pdf
+
+# launch-video project (large media)
+brag-output*/

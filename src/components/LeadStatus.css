@@ -1,0 +1,169 @@
+/* Thank-you state of the lead forms (LeadStatus.jsx), on the main site and the
+   courses site. Colours inherit from the surrounding form where possible. */
+.lead-sent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.6rem;
+  padding: 1.5rem 1.25rem 2rem;
+}
+.lead-sent-title {
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+.lead-sent-text {
+  margin: 0;
+  max-width: 34ch;
+  opacity: 0.8;
+  line-height: 1.5;
+}
+.lead-sent-again {
+  margin-top: 0.4rem;
+  background: none;
+  border: 0;
+  padding: 0.3rem;
+  font: inherit;
+  font-size: 0.85rem;
+  color: #ff4f00;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.lead-error {
+  margin: 0.25rem 0 0;
+  font-size: 0.88rem;
+  color: #c62828;
+}
+.lead-error a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* The drone */
+.cute-drone {
+  width: min(300px, 80%);
+  height: auto;
+  overflow: visible;
+}
+.cute-drone .cd-banner-text {
+  font: 800 21px/1 'Geist', system-ui, sans-serif;
+  letter-spacing: 0.06em;
+  fill: #ff4f00;
+}
+
+/* flies in from above, then hovers */
+.cute-drone .cd-fly {
+  animation: cd-arrive 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.2) both, cd-hover 2.6s ease-in-out 0.9s infinite;
+}
+@keyframes cd-arrive {
+  from {
+    transform: translate(40px, -120px) rotate(10deg);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes cd-hover {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-7px) rotate(-1.5deg);
+  }
+  75% {
+    transform: translateY(4px) rotate(1.5deg);
+  }
+}
+
+.cute-drone .cd-rotor {
+  animation: cd-spin 0.18s linear infinite;
+}
+.cute-drone .cd-rotor--b {
+  animation-delay: -0.09s;
+}
+@keyframes cd-spin {
+  0%,
+  100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(0.15);
+  }
+}
+
+.cute-drone .cd-eyes {
+  transform-origin: 160px 84px;
+  animation: cd-blink 4s ease-in-out 1.2s infinite;
+}
+@keyframes cd-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
+.cute-drone .cd-banner {
+  transform-origin: 160px 132px;
+  animation: cd-sway 2.6s ease-in-out 0.9s infinite;
+}
+@keyframes cd-sway {
+  0%,
+  100% {
+    transform: rotate(-2.5deg);
+  }
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+
+.cute-drone .cd-blink-light {
+  animation: cd-light 1.2s steps(2, jump-none) infinite;
+}
+@keyframes cd-light {
+  50% {
+    fill: #ff4f00;
+  }
+}
+
+.lead-sent-title,
+.lead-sent-text,
+.lead-sent-again {
+  animation: cd-fade 0.5s ease 0.5s both;
+}
+@keyframes cd-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cute-drone *,
+  .lead-sent > * {
+    animation: none !important;
+  }
+}
+
+/* Courses site: sits in place of the dark enrolment form */
+.cs-lead-sent {
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+/* lighter arms, legs and antenna so they show on the dark background */
+.cs-lead-sent .cute-drone [fill='#2b2b2b']:not(ellipse) {
+  fill: #9a948c;
+}
+.cs-lead-sent .cute-drone [stroke='#2b2b2b']:not(path[fill='none']) {
+  stroke: #9a948c;
+}
