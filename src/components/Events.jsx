@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { CONTACTS } from '../cdn'
+import { SOURCE, useLeadForm } from '../lib/zohoLead'
+import { LeadError, LeadSent } from './LeadStatus'
 import { EVENTS, isPast, statusLabel } from '../data/event'
 import Countdown from './events/Countdown'
 import SpinWheel from './events/SpinWheel'
@@ -11,18 +13,20 @@ import '../goodies.css'
 // Events page: every event Sky Eye takes part in (src/data/event.js). Each
 // gets a showcase — animated banner with a live countdown, a ticker, what
 // the event is, and (where Sky Eye runs a stall) the "Sky Eye Arcade": demo
-// versions of the stall games, then the sign-up for the real ones. Like the
-// other forms there is no backend: the registration is composed and handed
-// to the visitor's WhatsApp or mail app.
+// versions of the stall games, then the sign-up for the real ones. Sign-ups
+// go to Zoho CRM as Leads (Lead Source "Website - MUN stall"); WhatsApp stays
+// as a second way to register.
 
 function StallRegister({ event }) {
+  const lead = useLeadForm()
   const [form, setForm] = useState({ name: '', phone: '', email: '', college: '', day: 'Any day', message: '' })
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
   const dayOptions = ['Any day', ...event.days.map((d) => `${d} ${event.month}`)]
+  const name = event.short || event.title
 
   const body = () =>
     [
-      `STALL GAMES REGISTRATION — ${event.short || event.title}`,
+      `STALL GAMES REGISTRATION — ${name}`,
       `Name: ${form.name}`,
       `Phone: ${form.phone}`,
       `Email: ${form.email || '—'}`,
@@ -31,16 +35,22 @@ function StallRegister({ event }) {
       form.message ? `\n${form.message}` : '',
     ].join('\n')
 
-  const sendWhatsApp = (e) => {
+  const submit = (e) => {
     e.preventDefault()
-    window.open(`${CONTACTS.whatsapp}&text=${encodeURIComponent(body())}`, '_blank', 'noopener')
+    lead.send({
+      name: form.name,
+      mobile: form.phone,
+      email: form.email,
+      company: form.college,
+      description: body(),
+      source: SOURCE.stall,
+    })
   }
 
-  const sendMail = (e) => {
+  const sendWhatsApp = (e) => {
     const f = e.currentTarget.form
     if (f && !f.reportValidity()) return
-    const subject = `Stall games registration — ${form.name}`
-    window.location.href = `mailto:${CONTACTS.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body())}`
+    window.open(`${CONTACTS.whatsapp}&text=${encodeURIComponent(body())}`, '_blank', 'noopener')
   }
 
   return (
@@ -61,48 +71,63 @@ function StallRegister({ event }) {
         </ol>
       </div>
 
-      <form className="contact-form ev-form" onSubmit={sendWhatsApp}>
-        <div className="contact-form-body">
-          <span className="contact-form-title">STALL GAMES · {event.short || event.title}</span>
-          <div className="te-row">
+      <form className="contact-form ev-form" onSubmit={submit}>
+        {lead.status === 'sent' ? (
+          <LeadSent
+            className="contact-form-body"
+            title="You’re registered!"
+            text={`See you at the Sky Eye stall, ${event.stall.where}. Give your name at the stall to play.`}
+            onReset={() => {
+              setForm({ name: '', phone: '', email: '', college: '', day: 'Any day', message: '' })
+              lead.reset()
+            }}
+          />
+        ) : (
+          <div className="contact-form-body">
+            <span className="contact-form-title">STALL GAMES · {name}</span>
+            <div className="te-row">
+              <label className="field">
+                <span>Name *</span>
+                <input required value={form.name} onChange={set('name')} autoComplete="name" />
+              </label>
+              <label className="field">
+                <span>Phone *</span>
+                <input required type="tel" value={form.phone} onChange={set('phone')} autoComplete="tel" inputMode="tel" />
+              </label>
+            </div>
+            <div className="te-row">
+              <label className="field">
+                <span>Email</span>
+                <input type="email" value={form.email} onChange={set('email')} autoComplete="email" />
+              </label>
+              <label className="field">
+                <span>College / institution</span>
+                <input value={form.college} onChange={set('college')} autoComplete="organization" />
+              </label>
+            </div>
             <label className="field">
-              <span>Name *</span>
-              <input required value={form.name} onChange={set('name')} autoComplete="name" />
+              <span>Which day will you visit?</span>
+              <select value={form.day} onChange={set('day')}>
+                {dayOptions.map((o) => (
+                  <option key={o}>{o}</option>
+                ))}
+              </select>
             </label>
             <label className="field">
-              <span>Phone *</span>
-              <input required type="tel" value={form.phone} onChange={set('phone')} autoComplete="tel" inputMode="tel" />
+              <span>Anything else</span>
+              <textarea rows={2} value={form.message} onChange={set('message')} placeholder="Questions about the games or Sky Eye…" />
             </label>
+            {lead.status === 'error' && <LeadError whatsappHref={`${CONTACTS.whatsapp}&text=${encodeURIComponent(body())}`} />}
+            <div className="contact-form-actions">
+              <button type="submit" className="btn-request" disabled={lead.status === 'sending'}>
+                {lead.status === 'sending' ? 'Registering…' : 'Register'}
+              </button>
+              <button type="button" className="btn-outline" onClick={sendWhatsApp}>
+                [ Register on WhatsApp ]
+              </button>
+            </div>
           </div>
-          <div className="te-row">
-            <label className="field">
-              <span>Email</span>
-              <input type="email" value={form.email} onChange={set('email')} autoComplete="email" />
-            </label>
-            <label className="field">
-              <span>College / institution</span>
-              <input value={form.college} onChange={set('college')} autoComplete="organization" />
-            </label>
-          </div>
-          <label className="field">
-            <span>Which day will you visit?</span>
-            <select value={form.day} onChange={set('day')}>
-              {dayOptions.map((o) => (
-                <option key={o}>{o}</option>
-              ))}
-            </select>
-          </label>
-          <label className="field">
-            <span>Anything else</span>
-            <textarea rows={2} value={form.message} onChange={set('message')} placeholder="Questions about the games or Sky Eye…" />
-          </label>
-          <div className="contact-form-actions">
-            <button type="submit" className="btn-request">Register on WhatsApp</button>
-            <button type="button" className="btn-outline" onClick={sendMail}>
-              [ Register by email ]
-            </button>
-          </div>
-        </div>
+        )}
       </form>
     </div>
   )

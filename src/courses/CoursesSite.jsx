@@ -8,6 +8,8 @@ import CourseDroneJourney from './CourseDroneJourney'
 import CourseCarousel from './CourseCarousel'
 import FlyingButton from '../components/reactbits/FlyingButton'
 import CoursePoster from './CoursePoster'
+import { SOURCE, useLeadForm } from '../lib/zohoLead'
+import { LeadError, LeadSent } from '../components/LeadStatus'
 import './courses.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -19,15 +21,15 @@ gsap.registerPlugin(ScrollTrigger)
 // and the enrolment form. Course content lives in src/data/courses.js, the
 // same file the main site's Training page uses.
 //
-// Online payment is not wired up yet: the form collects details and hands
-// them to the team by WhatsApp/email until the Zoho Forms + payment step is
-// connected (see ENROL below).
+// The enrolment form sends the details to Zoho CRM as a Lead (Lead Source
+// "Website - Course") and the team calls to confirm the seat. Online payment
+// is not wired up yet (see ENROL below).
 
 const MAIN_SITE = 'https://skyeyetechnology.in'
 const logo = ik('site/logo-mark-light.png', 'h-96')
 
-// Flip `online` to true and set `url` once the Zoho form with payment exists;
-// the Enrol buttons then open it instead of the interim form.
+// Flip `online` to true and set `url` once the payment page exists; the form
+// then records the lead and continues to payment.
 const ENROL = { online: false, url: '' }
 
 const STEPS = [
@@ -478,13 +480,23 @@ function Enrol({ course, setCourse }) {
       form.note ? `\n${form.note}` : '',
     ].join('\n')
 
+  const lead = useLeadForm()
+  const whatsappHref = `${CONTACTS.whatsapp}&text=${encodeURIComponent(body())}`
+
   const submit = (e) => {
     e.preventDefault()
-    if (ENROL.online && ENROL.url) {
-      window.open(ENROL.url, '_blank', 'noopener')
-      return
-    }
-    window.open(`${CONTACTS.whatsapp}&text=${encodeURIComponent(body())}`, '_blank', 'noopener')
+    if (lead.status === 'sending') return
+    // Open the payment tab now, inside the click, so pop-up blockers allow it
+    if (ENROL.online && ENROL.url) window.open(ENROL.url, '_blank', 'noopener')
+    lead.send({
+      name: form.name,
+      mobile: form.phone,
+      email: form.email,
+      company: form.org,
+      city: form.city,
+      description: body(),
+      source: SOURCE.course,
+    })
   }
 
   return (
@@ -513,6 +525,14 @@ function Enrol({ course, setCourse }) {
           )}
         </div>
 
+        {lead.status === 'sent' ? (
+          <LeadSent
+            className="cs-lead-sent"
+            title="Enrolment request received."
+            text={`Thanks, ${form.name.split(' ')[0] || 'there'}! We’ve noted your seat request for ${picked.title}. The team will call you within a day to confirm the batch and payment.`}
+            onReset={lead.reset}
+          />
+        ) : (
         <form className="cs-form" ref={formRef} onSubmit={submit} data-cs-reveal>
           <label className="cs-field cs-field--full">
             <span>Course</span>
@@ -552,12 +572,18 @@ function Enrol({ course, setCourse }) {
             <span>Anything we should know?</span>
             <textarea rows={3} value={form.note} onChange={set('note')} placeholder="Experience, preferred dates, questions…" />
           </label>
+          {lead.status === 'error' && (
+            <div className="cs-field--full">
+              <LeadError whatsappHref={whatsappHref} />
+            </div>
+          )}
           <div className="cs-launch cs-launch--form cs-field--full">
             <FlyingButton {...FLY} altitude={130} onClick={() => formRef.current?.requestSubmit()}>
-              {ENROL.online ? 'Continue to payment →' : 'Send enrolment request →'}
+              {lead.status === 'sending' ? 'Sending…' : ENROL.online ? 'Continue to payment →' : 'Send enrolment request →'}
             </FlyingButton>
           </div>
         </form>
+        )}
       </div>
     </section>
   )

@@ -21,9 +21,9 @@ export const EVENTS = [
       'A Model United Nations is a simulation of the United Nations. Each delegate is assigned a country and a committee, researches its position, and argues for it in formal debate.',
       'Over the sessions, delegates give speeches, lobby, build alliances and work together to draft and vote on resolutions — the same way real UN bodies do.',
     ],
-    // MUN's own registration page, run by the organisers. Leave empty until the
-    // link is shared; the button then shows "link coming soon".
-    registerUrl: '',
+    // MUN's own registration page, run by the organisers. Leave empty to show
+    // "link coming soon" instead of the button.
+    registerUrl: 'https://kiitmun.org/',
     stall: {
       title: 'Visit the Sky Eye stall',
       where: 'Campus 6 · all three days',
@@ -44,7 +44,7 @@ export const EVENTS = [
         { icon: 'cookie', name: 'Toffees', note: 'free for everyone who stops by' },
       ],
       shop: {
-        title: 'Drones on display — and for sale',
+        title: 'Drones on display and for sale',
         text: 'See working drones up close at the stall, ask the team anything, and take one home: selected drones will be available to buy right there.',
       },
     },
