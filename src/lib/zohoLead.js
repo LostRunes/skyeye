@@ -31,22 +31,31 @@ export const reachFields = (reach) => {
   return v.includes('@') ? { email: v } : { mobile: v }
 }
 
+// Phone inputs: only digits, spaces and a leading "+" can be typed, and at
+// least 10 characters are needed (e.g. 9876543210 or +91 98765 43210).
+export const cleanPhone = (v) => v.replace(/[^\d+ ]/g, '').replace(/(?!^)\+/g, '')
+export const PHONE_PATTERN = '\\+?[0-9 ]{10,16}'
+export const PHONE_TITLE = 'Enter a phone number, e.g. 98765 43210'
+
+// "Phone or email" inputs: must look like one or the other
+export const REACH_PATTERN = `${PHONE_PATTERN}|[^@\\s]+@[^@\\s]+\\.[^@\\s]+`
+export const REACH_TITLE = 'Enter a phone number (e.g. 98765 43210) or an email address'
+
 /**
- * "Yogisha Rao" → First Name "Yogisha", Last Name "Rao". Zoho requires a
- * Last Name, so a one-word name goes there. (The webform must include the
- * First Name field, or Zoho silently drops it.)
+ * First and Last Name for the lead. Zoho requires a Last Name, so someone who
+ * gives only one name has it saved as the Last Name.
  */
-const splitName = (name) => {
-  const words = name.trim().split(/\s+/).filter(Boolean)
-  const last = words.pop() || ''
-  return { 'First Name': words.join(' ').slice(0, 40), 'Last Name': last.slice(0, 80) }
+const nameFields = (first = '', last = '') => {
+  const f = first.trim()
+  const l = last.trim()
+  return l ? { 'First Name': f.slice(0, 40), 'Last Name': l.slice(0, 80) } : { 'First Name': '', 'Last Name': f.slice(0, 80) }
 }
 
 /**
  * Creates a Lead. `description` carries the form's details (service, course,
  * dates…), so the team sees everything on the lead itself.
  */
-export function sendLead({ name, mobile = '', email = '', company = '', city = '', description = '', source }) {
+export function sendLead({ firstName, lastName = '', mobile = '', email = '', company = '', city = '', description = '', source }) {
   return new Promise((resolve, reject) => {
     const id = `zoho-sink-${Date.now()}`
     const frame = document.createElement('iframe')
@@ -67,7 +76,7 @@ export function sendLead({ name, mobile = '', email = '', company = '', city = '
       zc_gad: '',
       returnURL: 'null',
       aG9uZXlwb3Q: '', // Zoho's honeypot: must stay empty
-      ...splitName(name),
+      ...nameFields(firstName, lastName),
       Mobile: mobile.trim().slice(0, 30),
       Email: email.trim().slice(0, 100),
       Company: company.trim().slice(0, 200),

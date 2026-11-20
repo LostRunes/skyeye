@@ -8,7 +8,7 @@ import CourseDroneJourney from './CourseDroneJourney'
 import CourseCarousel from './CourseCarousel'
 import FlyingButton from '../components/reactbits/FlyingButton'
 import CoursePoster from './CoursePoster'
-import { SOURCE, useLeadForm } from '../lib/zohoLead'
+import { PHONE_PATTERN, PHONE_TITLE, SOURCE, cleanPhone, useLeadForm } from '../lib/zohoLead'
 import { LeadError, LeadSent } from '../components/LeadStatus'
 import './courses.css'
 
@@ -463,7 +463,7 @@ function Faq() {
 }
 
 function Enrol({ course, setCourse }) {
-  const [form, setForm] = useState({ name: '', phone: '', email: '', org: '', city: '', note: '' })
+  const [form, setForm] = useState({ first: '', last: '', phone: '', email: '', org: '', city: '', note: '' })
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
   const formRef = useRef(null)
   const picked = COURSES.find((c) => c.id === course) || COURSES[0]
@@ -472,8 +472,8 @@ function Enrol({ course, setCourse }) {
     [
       'COURSE ENROLMENT',
       `Course: ${picked.title}`,
-      `Name: ${form.name}`,
-      `Phone: ${form.phone}`,
+      `Name: ${form.first} ${form.last}`.trim(),
+      `Phone: ${form.phone || '—'}`,
       `Email: ${form.email}`,
       `School / college / company: ${form.org || '—'}`,
       `City: ${form.city || '—'}`,
@@ -489,7 +489,8 @@ function Enrol({ course, setCourse }) {
     // Open the payment tab now, inside the click, so pop-up blockers allow it
     if (ENROL.online && ENROL.url) window.open(ENROL.url, '_blank', 'noopener')
     lead.send({
-      name: form.name,
+      firstName: form.first,
+      lastName: form.last,
       mobile: form.phone,
       email: form.email,
       company: form.org,
@@ -529,7 +530,7 @@ function Enrol({ course, setCourse }) {
           <LeadSent
             className="cs-lead-sent"
             title="Enrolment request received."
-            text={`Thanks, ${form.name.split(' ')[0] || 'there'}! We’ve noted your seat request for ${picked.title}. The team will call you within a day to confirm the batch and payment.`}
+            text={`Thanks, ${form.first.trim() || 'there'}! We’ve noted your seat request for ${picked.title}. The team will call you within a day to confirm the batch and payment.`}
             onReset={lead.reset}
           />
         ) : (
@@ -549,12 +550,24 @@ function Enrol({ course, setCourse }) {
             </select>
           </label>
           <label className="cs-field">
-            <span>Full name *</span>
-            <input required value={form.name} onChange={set('name')} autoComplete="name" />
+            <span>First name *</span>
+            <input required value={form.first} onChange={set('first')} autoComplete="given-name" />
           </label>
           <label className="cs-field">
-            <span>Phone *</span>
-            <input required type="tel" inputMode="tel" value={form.phone} onChange={set('phone')} autoComplete="tel" />
+            <span>Last name</span>
+            <input value={form.last} onChange={set('last')} autoComplete="family-name" />
+          </label>
+          <label className="cs-field">
+            <span>Phone</span>
+            <input
+              type="tel"
+              inputMode="tel"
+              value={form.phone}
+              onChange={(e) => setForm((f) => ({ ...f, phone: cleanPhone(e.target.value) }))}
+              autoComplete="tel"
+              pattern={PHONE_PATTERN}
+              title={PHONE_TITLE}
+            />
           </label>
           <label className="cs-field">
             <span>Email *</span>
