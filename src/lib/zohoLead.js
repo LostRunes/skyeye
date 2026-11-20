@@ -3,16 +3,17 @@ import { useState } from 'react'
 // Sends the site's forms to Zoho CRM as Leads, through the CRM webform
 // "Website enquiry" (Zoho CRM → Setup → Webforms). The two tokens below are
 // the webform's public identifiers — Zoho puts them in every page that embeds
-// the form — not secrets. If the webform is ever recreated, copy the new
-// xnQsjsdp / xmIwtLD values from its source code.
+// the form — not secrets. Zoho issues new values each time the webform is
+// edited and saved; the old ones keep working, but copy the new xnQsjsdp /
+// xmIwtLD values from its source code when that happens.
 //
 // The form is posted into a hidden iframe so the visitor stays on the page.
 // Zoho's reply can't be read across origins, so "sent" means the post
 // completed; failure means it didn't load at all (offline, blocked).
 const ZOHO = {
   action: 'https://crm.zoho.in/crm/WebToLeadForm',
-  xnQsjsdp: '8ed5c8d64db351701a792a0d868463622c7d640e96d8b160fb3759481beba7c3',
-  xmIwtLD: '2fdc8c5343926f5b0bb17b844d358a20c3dab8a8c56c8be0fe5810661b7bbcc6447d8f60ce117290a08d45238157d0aa',
+  xnQsjsdp: '89f6de352ec09d37ba6150b579203ee45743128a3e8b92c61ac0d558a9e4eea6',
+  xmIwtLD: '2bf0d4fd43c2441c3c4bdd89227c44458dec832440ee2f65decb7d75b78c708962812c72b0a4de44c21a68621d8e937a',
   actionType: 'TGVhZHM=', // "Leads"
 }
 
@@ -28,6 +29,17 @@ export const SOURCE = {
 export const reachFields = (reach) => {
   const v = (reach || '').trim()
   return v.includes('@') ? { email: v } : { mobile: v }
+}
+
+/**
+ * "Yogisha Rao" → First Name "Yogisha", Last Name "Rao". Zoho requires a
+ * Last Name, so a one-word name goes there. (The webform must include the
+ * First Name field, or Zoho silently drops it.)
+ */
+const splitName = (name) => {
+  const words = name.trim().split(/\s+/).filter(Boolean)
+  const last = words.pop() || ''
+  return { 'First Name': words.join(' ').slice(0, 40), 'Last Name': last.slice(0, 80) }
 }
 
 /**
@@ -55,7 +67,7 @@ export function sendLead({ name, mobile = '', email = '', company = '', city = '
       zc_gad: '',
       returnURL: 'null',
       aG9uZXlwb3Q: '', // Zoho's honeypot: must stay empty
-      'Last Name': name.trim().slice(0, 80),
+      ...splitName(name),
       Mobile: mobile.trim().slice(0, 30),
       Email: email.trim().slice(0, 100),
       Company: company.trim().slice(0, 200),
