@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { CONTACTS, newPhoto } from '../cdn'
 import { COURSES } from '../data/courses'
 import { takePendingService } from '../router'
-import { SOURCE, reachFields, useLeadForm } from '../lib/zohoLead'
+import { REACH_PATTERN, REACH_TITLE, SOURCE, reachFields, useLeadForm } from '../lib/zohoLead'
 import { LeadError, LeadSent } from './LeadStatus'
 
 // A training-only enquiry form, kept separate from service requests so course
@@ -23,7 +23,8 @@ const courseFrom = (service) => {
 export default function TrainingEnquiry() {
   const lead = useLeadForm()
   const [form, setForm] = useState(() => ({
-    name: '',
+    first: '',
+    last: '',
     reach: '',
     org: '',
     audience: FOR_OPTIONS[0],
@@ -52,7 +53,7 @@ export default function TrainingEnquiry() {
   const body = () =>
     [
       'TRAINING ENQUIRY',
-      `Name: ${form.name}`,
+      `Name: ${form.first} ${form.last}`.trim(),
       `Contact: ${form.reach}`,
       `Institution / organisation: ${form.org || '—'}`,
       `Training for: ${form.audience}`,
@@ -67,7 +68,8 @@ export default function TrainingEnquiry() {
   const submit = (e) => {
     e.preventDefault()
     lead.send({
-      name: form.name,
+      firstName: form.first,
+      lastName: form.last,
       ...reachFields(form.reach),
       company: form.org,
       city: form.city,
@@ -114,14 +116,18 @@ export default function TrainingEnquiry() {
               <span className="contact-form-title">TRAINING ENQUIRY</span>
               <div className="te-row">
                 <label className="field">
-                  <span>Name *</span>
-                  <input required value={form.name} onChange={set('name')} autoComplete="name" />
+                  <span>First name *</span>
+                  <input required value={form.first} onChange={set('first')} autoComplete="given-name" />
                 </label>
                 <label className="field">
-                  <span>Phone or email *</span>
-                  <input required value={form.reach} onChange={set('reach')} autoComplete="email" />
+                  <span>Last name</span>
+                  <input value={form.last} onChange={set('last')} autoComplete="family-name" />
                 </label>
               </div>
+              <label className="field">
+                <span>Phone or email *</span>
+                <input required value={form.reach} onChange={set('reach')} autoComplete="email" pattern={REACH_PATTERN} title={REACH_TITLE} />
+              </label>
               <div className="te-row">
                 <label className="field">
                   <span>Institution / organisation</span>

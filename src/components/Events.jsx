@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { CONTACTS } from '../cdn'
-import { SOURCE, useLeadForm } from '../lib/zohoLead'
+import { PHONE_PATTERN, PHONE_TITLE, SOURCE, cleanPhone, useLeadForm } from '../lib/zohoLead'
 import { LeadError, LeadSent } from './LeadStatus'
 import { EVENTS, isPast, statusLabel } from '../data/event'
 import Countdown from './events/Countdown'
@@ -19,16 +19,17 @@ import '../goodies.css'
 
 function StallRegister({ event }) {
   const lead = useLeadForm()
-  const [form, setForm] = useState({ name: '', phone: '', email: '', college: '', day: 'Any day', message: '' })
+  const [form, setForm] = useState({ first: '', last: '', phone: '', email: '', college: '', day: 'Any day', message: '' })
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+  const setPhone = (e) => setForm((f) => ({ ...f, phone: cleanPhone(e.target.value) }))
   const dayOptions = ['Any day', ...event.days.map((d) => `${d} ${event.month}`)]
   const name = event.short || event.title
 
   const body = () =>
     [
       `STALL GAMES REGISTRATION — ${name}`,
-      `Name: ${form.name}`,
-      `Phone: ${form.phone}`,
+      `Name: ${form.first} ${form.last}`.trim(),
+      `Phone: ${form.phone || '—'}`,
       `Email: ${form.email || '—'}`,
       `College / institution: ${form.college || '—'}`,
       `Visiting: ${form.day}`,
@@ -38,7 +39,8 @@ function StallRegister({ event }) {
   const submit = (e) => {
     e.preventDefault()
     lead.send({
-      name: form.name,
+      firstName: form.first,
+      lastName: form.last,
       mobile: form.phone,
       email: form.email,
       company: form.college,
@@ -78,7 +80,7 @@ function StallRegister({ event }) {
             title="You’re registered!"
             text={`See you at the Sky Eye stall, ${event.stall.where}. Give your name at the stall to play.`}
             onReset={() => {
-              setForm({ name: '', phone: '', email: '', college: '', day: 'Any day', message: '' })
+              setForm({ first: '', last: '', phone: '', email: '', college: '', day: 'Any day', message: '' })
               lead.reset()
             }}
           />
@@ -87,32 +89,38 @@ function StallRegister({ event }) {
             <span className="contact-form-title">STALL GAMES · {name}</span>
             <div className="te-row">
               <label className="field">
-                <span>Name *</span>
-                <input required value={form.name} onChange={set('name')} autoComplete="name" />
+                <span>First name *</span>
+                <input required value={form.first} onChange={set('first')} autoComplete="given-name" />
               </label>
               <label className="field">
-                <span>Phone *</span>
-                <input required type="tel" value={form.phone} onChange={set('phone')} autoComplete="tel" inputMode="tel" />
+                <span>Last name</span>
+                <input value={form.last} onChange={set('last')} autoComplete="family-name" />
               </label>
             </div>
             <div className="te-row">
               <label className="field">
-                <span>Email</span>
-                <input type="email" value={form.email} onChange={set('email')} autoComplete="email" />
+                <span>Phone</span>
+                <input type="tel" value={form.phone} onChange={setPhone} autoComplete="tel" inputMode="tel" pattern={PHONE_PATTERN} title={PHONE_TITLE} />
               </label>
+              <label className="field">
+                <span>Email *</span>
+                <input required type="email" value={form.email} onChange={set('email')} autoComplete="email" />
+              </label>
+            </div>
+            <div className="te-row">
               <label className="field">
                 <span>College / institution</span>
                 <input value={form.college} onChange={set('college')} autoComplete="organization" />
               </label>
+              <label className="field">
+                <span>Which day will you visit?</span>
+                <select value={form.day} onChange={set('day')}>
+                  {dayOptions.map((o) => (
+                    <option key={o}>{o}</option>
+                  ))}
+                </select>
+              </label>
             </div>
-            <label className="field">
-              <span>Which day will you visit?</span>
-              <select value={form.day} onChange={set('day')}>
-                {dayOptions.map((o) => (
-                  <option key={o}>{o}</option>
-                ))}
-              </select>
-            </label>
             <label className="field">
               <span>Anything else</span>
               <textarea rows={2} value={form.message} onChange={set('message')} placeholder="Questions about the games or Sky Eye…" />
