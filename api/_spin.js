@@ -3,7 +3,8 @@
 //
 // Environment variables (Vercel → Project → Settings → Environment Variables):
 //   SUPABASE_SECRET_KEY   Supabase secret key (sb_secret_…). Server only.
-//   SMTP_HOST             e.g. smtp.zoho.in or smtp.gmail.com
+//   SMTP_HOST             e.g. smtp.gmail.com (the built-in sender account;
+//                         more accounts are added in the admin panel)
 //   SMTP_PORT             465 (SSL) unless your provider says otherwise
 //   SMTP_USER             the mailbox that sends the codes
 //   SMTP_PASS             its app password
@@ -62,19 +63,86 @@ export async function adminFrom(req) {
   return rows?.length ? user.id : null
 }
 
-let transport
-const mailer = () => {
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    throw new Error('Email is not set up yet (SMTP settings missing)')
+// ─── Sender accounts ──────────────────────────────────────────────────────
+// Codes go out from the accounts in the `mail_senders` table (managed in the
+// admin panel's "Email senders" tab), first usable one first. The built-in
+// account from the SMTP_* env vars is listed there automatically (with no
+// stored password). If the table doesn't exist yet, the env account is used
+// on its own, as before.
+
+export const todayIST = () => new Date(Date.now() + 5.5 * 3600e3).toISOString().slice(0, 10)
+const sameDayIST = (t) => !!t && new Date(new Date(t).getTime() + 5.5 * 3600e3).toISOString().slice(0, 10) === todayIST()
+const envSender = () =>
+  process.env.SMTP_USER && process.env.SMTP_PASS
+    ? { id: null, email: process.env.SMTP_USER, app_password: null, host: process.env.SMTP_HOST || 'smtp.gmail.com', port: Number(process.env.SMTP_PORT || 465), daily_limit: 450, sent_count: 0, status: 'active' }
+    : null
+
+/** All sender accounts (adds the built-in env account to the table if missing). */
+export async function listSenders() {
+  let rows
+  try {
+    rows = await rest('mail_senders?select=*&order=sort.asc,id.asc')
+  } catch {
+    const env = envSender()
+    return env ? [env] : [] // table not created yet
   }
-  transport ??= nodemailer.createTransport({
-    pool: true, // reuse one connection for a batch
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT || 465),
-    secure: Number(process.env.SMTP_PORT || 465) === 465,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-  })
-  return transport
+  const env = envSender()
+  if (env && !rows.some((r) => r.email.toLowerCase() === env.email.toLowerCase())) {
+    const [r] = await rest('mail_senders', { method: 'POST', body: { email: env.email, host: env.host, port: env.port, sort: 0 } }).catch(() => [null])
+    if (r) rows.unshift(r)
+  }
+  return rows
+}
+
+/** How many more emails this account can send today, if any. */
+export const remainingToday = (r) => {
+  if (r.status === 'off' || r.status === 'auth_failed') return 0
+  if (r.status === 'limit_reached' && sameDayIST(r.status_at)) return 0
+  const used = r.sent_date === todayIST() ? r.sent_count : 0
+  return Math.max(0, r.daily_limit - used)
+}
+
+const credsFor = (r) =>
+  r.app_password
+    ? { user: r.email, pass: r.app_password, host: r.host || 'smtp.gmail.com', port: r.port || 465 }
+    : { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS, host: process.env.SMTP_HOST || 'smtp.gmail.com', port: Number(process.env.SMTP_PORT || 465) }
+
+const transports = new Map()
+export const mailerFor = (r) => {
+  const c = credsFor(r)
+  if (!c.user || !c.pass) throw new Error(`No password set for ${r.email}`)
+  const key = `${c.user}:${c.pass}:${c.host}:${c.port}`
+  if (!transports.has(key)) {
+    transports.set(key, nodemailer.createTransport({ pool: true, host: c.host, port: c.port, secure: c.port === 465, auth: { user: c.user, pass: c.pass } }))
+  }
+  return transports.get(key)
+}
+/** Closes pooled mail connections at the end of a request. */
+export const closeMailers = () => {
+  for (const t of transports.values()) t.close()
+  transports.clear()
+}
+export const fromFor = (r) => (r.app_password ? `Sky Eye Technology <${r.email}>` : process.env.MAIL_FROM || `Sky Eye Technology <${r.email}>`)
+
+/**
+ * What a send failure says about the account:
+ *   'auth_failed'    the login/app password no longer works
+ *   'limit_reached'  Gmail's daily sending limit
+ *   'transient'      network trouble: try another account, don't mark this one
+ *   null             about the recipient (bad address…): don't try others
+ */
+export function classify(e) {
+  const code = e?.responseCode
+  const text = `${e?.code || ''} ${e?.response || ''} ${e?.message || ''}`
+  if (e?.code === 'EAUTH' || code === 535 || code === 534 || /invalid login|username and password not accepted|application-specific password/i.test(text)) return 'auth_failed'
+  if (/daily user sending limit|sending limit exceeded|5\.4\.5|quota/i.test(text) || (code === 421 && /4\.7\.0|rate|limit/i.test(text))) return 'limit_reached'
+  if (['ECONNECTION', 'ETIMEDOUT', 'ESOCKET', 'EDNS'].includes(e?.code) || code === 421) return 'transient'
+  return null
+}
+
+export async function markSender(r, status, note) {
+  if (!r.id) return
+  await rest(`mail_senders?id=eq.${r.id}`, { method: 'PATCH', body: { status, status_note: String(note || '').slice(0, 300), status_at: new Date().toISOString() } }).catch(() => {})
 }
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
@@ -159,23 +227,57 @@ const emailHtml = ({ name, code, link }) => {
 </body></html>`
 }
 
-/** Emails a player their spin code, then records when it went out. */
-export async function sendCode(player) {
+/**
+ * Emails a player their spin code from the first sender account that can
+ * still send today. If an account hits Gmail's limit or fails to log in, it's
+ * marked in the table and the next account is tried straight away.
+ */
+export async function sendCode(player, senders) {
   const link = `${PLAY_URL}?code=${player.code}`
   const name = esc(player.first_name)
-  try {
-    await mailer().sendMail({
-      from: process.env.MAIL_FROM || `Sky Eye Technology <${process.env.SMTP_USER}>`,
-      to: player.email,
-      subject: `Your Sky Eye spin code: ${player.code} 🎡`,
-      text: `Hi ${player.first_name},\n\nThanks for registering for the Sky Eye stall games at KIIT MUN!\n\nYour spin code: ${player.code}\n\nWhen the round starts, scan the QR code at the stall (or open ${link}), enter your code and spin. The first spinners of each round win Sky Eye goodies. Each code spins once, so be quick!\n\nSee you at the stall,\nTeam Sky Eye Technology`,
-      html: emailHtml({ name, code: esc(player.code), link }),
-    })
-    await rest(`players?id=eq.${player.id}`, { method: 'PATCH', body: { code_sent_at: new Date().toISOString(), email_error: null } })
-    return { ok: true }
-  } catch (e) {
-    const msg = String(e.message || e).slice(0, 200)
-    await rest(`players?id=eq.${player.id}`, { method: 'PATCH', body: { email_error: msg } }).catch(() => {})
+  const message = {
+    to: player.email,
+    subject: `Your Sky Eye spin code: ${player.code} 🎡`,
+    text: `Hi ${player.first_name},\n\nThanks for registering for the Sky Eye stall games at KIIT MUN!\n\nYour spin code: ${player.code}\n\nWhen the round starts, scan the QR code at the stall (or open ${link}), enter your code and spin. The first spinners of each round win Sky Eye goodies. Each code spins once, so be quick!\n\nSee you at the stall,\nTeam Sky Eye Technology`,
+    html: emailHtml({ name, code: esc(player.code), link }),
+  }
+  const fail = async (msg) => {
+    await rest(`players?id=eq.${player.id}`, { method: 'PATCH', body: { email_error: msg.slice(0, 200) } }).catch(() => {})
     return { ok: false, error: msg }
   }
+
+  const list = (senders || (await listSenders())).filter((r) => remainingToday(r) > 0)
+  if (!list.length) return fail('No email account can send right now: add one in the admin panel (Email senders).')
+
+  let lastError = ''
+  for (const r of list) {
+    try {
+      await mailerFor(r).sendMail({ ...message, from: fromFor(r) })
+      if (r.id) {
+        await rpc('note_mail_sent', { p_id: r.id }).catch(() => {})
+        r.sent_count = (r.sent_date === todayIST() ? r.sent_count : 0) + 1 // keep a shared list in step
+        r.sent_date = todayIST()
+      }
+      await rest(`players?id=eq.${player.id}`, {
+        method: 'PATCH',
+        body: { code_sent_at: new Date().toISOString(), email_error: null, sent_by: r.email },
+      }).catch(() =>
+        // older schema without sent_by
+        rest(`players?id=eq.${player.id}`, { method: 'PATCH', body: { code_sent_at: new Date().toISOString(), email_error: null } }),
+      )
+      return { ok: true, via: r.email }
+    } catch (e) {
+      const kind = classify(e)
+      lastError = String(e.message || e).slice(0, 200)
+      if (kind === 'auth_failed' || kind === 'limit_reached') {
+        await markSender(r, kind, e.response || e.message)
+        r.status = kind
+        r.status_at = new Date().toISOString()
+        continue
+      }
+      if (kind === 'transient') continue
+      return fail(lastError) // the address itself was refused: other accounts won't help
+    }
+  }
+  return fail(`All email accounts failed: ${lastError}`)
 }

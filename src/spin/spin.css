@@ -1175,3 +1175,55 @@
 .sw-app .sa-grid--stack {
   grid-template-columns: 1fr;
 }
+
+/* Email senders */
+.sw-app .sa-pill.is-warn {
+  background: var(--mustard);
+}
+.sw-app .sa-pill.is-bad {
+  background: var(--crimson);
+  color: var(--paper);
+}
+.sw-app .sa-note.is-warn {
+  background: #f5e2b5;
+}
+.sw-app .sa-note.is-bad {
+  background: #f2c9c4;
+  color: var(--crimson);
+  font-weight: 700;
+}
+.sw-app .sa-meter {
+  display: block;
+  width: 110px;
+  height: 7px;
+  margin-top: 6px;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  overflow: hidden;
+}
+.sw-app .sa-meter span {
+  display: block;
+  height: 100%;
+  background: var(--viridian);
+}
+.sw-app .sa-note-line {
+  max-width: 280px;
+  white-space: normal;
+}
+.sw-app .sa-actions {
+  white-space: nowrap;
+}
+.sw-app .sa-actions .sa-pill + .sa-pill {
+  margin-left: 6px;
+}
+.sw-app .sa-capacity {
+  margin-left: auto;
+  order: 9;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--teal);
+}
+.sw-app .sa-capacity.is-bad {
+  color: var(--crimson);
+}

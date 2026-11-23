@@ -2,7 +2,7 @@
 //   { playerIds: [uuid, …] }  to these players (resend), or
 //   { unsent: true }          to everyone who hasn't been emailed yet.
 // The caller must be signed in as an admin (Authorization: Bearer <token>).
-import { adminFrom, json, readBody, rest, sendCode } from './_spin.js'
+import { adminFrom, closeMailers, json, listSenders, readBody, rest, sendCode } from './_spin.js'
 
 // Room for a batch of emails (the admin panel sends 15 per request)
 export const config = { maxDuration: 60 }
@@ -24,14 +24,16 @@ export default async function handler(req, res) {
     let sent = 0
     let failed = 0
     const errors = []
+    const senders = await listSenders() // shared, so the batch spreads across accounts
     for (const p of players) {
-      const r = await sendCode(p)
+      const r = await sendCode(p, senders)
       if (r.ok) sent++
       else {
         failed++
         errors.push(`${p.email}: ${r.error}`)
       }
     }
+    closeMailers()
     return json(res, 200, { ok: true, sent, failed, errors: errors.slice(0, 5) })
   } catch (e) {
     return json(res, 500, { error: String(e.message || e) })

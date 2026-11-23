@@ -2,7 +2,7 @@
 // the admin panel's "Add a player"). Creates or updates the player in
 // Supabase and emails them their spin code. The code itself is never sent
 // back to the browser: only the owner of the email gets it.
-import { json, readBody, rpc, sendCode } from './_spin.js'
+import { closeMailers, json, readBody, rpc, sendCode } from './_spin.js'
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 
@@ -29,6 +29,7 @@ export default async function handler(req, res) {
     if (recent) return json(res, 200, { ok: true, emailed: true, already: true })
 
     const sent = await sendCode(player)
+    closeMailers()
     return json(res, 200, { ok: true, emailed: sent.ok, emailError: sent.error })
   } catch (e) {
     return json(res, 500, { error: String(e.message || e) })
