@@ -38,6 +38,14 @@ function StallRegister({ event }) {
 
   const submit = (e) => {
     e.preventDefault()
+    // Also register them for the spin-the-wheel: their personal spin code is
+    // emailed to them (api/spin-register.js → Supabase). Fire and forget; the
+    // Zoho CRM lead below is what the form waits on.
+    fetch('/api/spin-register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ firstName: form.first, lastName: form.last, email: form.email, phone: form.phone, college: form.college }),
+    }).catch(() => {})
     lead.send({
       firstName: form.first,
       lastName: form.last,
@@ -62,13 +70,13 @@ function StallRegister({ event }) {
         <h3 className="ev-h3">Sign up for the stall games.</h3>
         <ol className="ev-steps">
           <li>
-            <strong>Register here</strong> — it takes a minute, and goes straight to the Sky Eye team.
+            <strong>Register here</strong> — your personal spin code lands in your email.
           </li>
           <li>
             <strong>Come to the stall</strong> — {event.stall.where}.
           </li>
           <li>
-            <strong>Give your name at the stall</strong>, spin the wheel, play and win goodies.
+            <strong>Scan the QR, enter your code and spin</strong> — the fastest spinners of each round win goodies.
           </li>
         </ol>
       </div>
@@ -78,7 +86,7 @@ function StallRegister({ event }) {
           <LeadSent
             className="contact-form-body"
             title="You’re registered!"
-            text={`See you at the Sky Eye stall, ${event.stall.where}. Give your name at the stall to play.`}
+            text={`Your spin code is on its way to ${form.email}. Bring it to the Sky Eye stall, ${event.stall.where}: scan the QR, enter the code and spin!`}
             onReset={() => {
               setForm({ first: '', last: '', phone: '', email: '', college: '', day: 'Any day', message: '' })
               lead.reset()
