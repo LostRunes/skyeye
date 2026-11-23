@@ -1,0 +1,672 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import QRCode from 'qrcode'
+import { supabase } from './supabase'
+import Wheel from './Wheel'
+import SkyParty from './SkyParty'
+import { CuteDrone } from '../components/LeadStatus'
+import { confetti } from '../components/events/confetti'
+import { ik } from '../cdn'
+import './spin.css'
+
+// #/spin-admin — for the stall team. Sign in with a Supabase Auth account
+// that's listed in the `admins` table. Tabs:
+//   Live round  start/end rounds, the round's leaderboard, mark prizes collected
+//   Big screen  full-screen wheel that spins live for every spin + leaderboard
+//   Players     everyone registered, their codes, (re)send code emails
+//   Prizes      what's on the wheel: odds, stock, on/off
+const PLAY_URL = 'https://www.skyeyetechnology.in/#/spin'
+const logo = ik('site/logo-mark-light.png', 'h-96')
+
+const fmtTime = (t) => {
+  if (!t) return '—'
+  const d = new Date(t)
+  return `${d.toLocaleTimeString('en-IN', { hour12: false })}.${String(d.getMilliseconds()).padStart(3, '0')}`
+}
+const fullName = (p) => [p?.first_name, p?.last_name].filter(Boolean).join(' ') || '—'
+
+/* ─── Data ─────────────────────────────────────────────────────────────── */
+
+function useSpinData(enabled) {
+  const [prizes, setPrizes] = useState([])
+  const [sessions, setSessions] = useState([])
+  const [spins, setSpins] = useState([])
+  const [players, setPlayers] = useState([])
+  const [viewId, setViewId] = useState(null) // which round the leaderboard shows
+
+  const loadPrizes = useCallback(async () => {
+    const { data } = await supabase.from('prizes').select('*').order('sort').order('id')
+    if (data) setPrizes(data)
+  }, [])
+  const loadSessions = useCallback(async () => {
+    const { data } = await supabase.from('sessions').select('*').order('started_at', { ascending: false })
+    if (data) setSessions(data)
+  }, [])
+  const loadPlayers = useCallback(async () => {
+    const { data } = await supabase.from('players').select('*').order('created_at', { ascending: false })
+    if (data) setPlayers(data)
+  }, [])
+
+  const open = sessions.find((s) => s.status === 'open') || null
+  const shownId = viewId ?? open?.id ?? sessions[0]?.id ?? null
+
+  const loadSpins = useCallback(async () => {
+    if (!shownId) return setSpins([])
+    const { data } = await supabase
+      .from('spins')
+      .select('*, players(first_name, last_name, email, phone, college, code)')
+      .eq('session_id', shownId)
+      .order('rank')
+    if (data) setSpins(data)
+  }, [shownId])
+
+  useEffect(() => {
+    if (!enabled) return undefined
+    loadPrizes()
+    loadSessions()
+    loadPlayers()
+    const ch = supabase
+      .channel('admin-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'sessions' }, loadSessions)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'players' }, loadPlayers)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'spins' }, () => {
+        loadSpins()
+        loadPrizes() // stock changes
+      })
+      .subscribe()
+    return () => supabase.removeChannel(ch)
+  }, [enabled, loadPrizes, loadSessions, loadPlayers, loadSpins])
+
+  useEffect(() => {
+    if (enabled) loadSpins()
+  }, [enabled, loadSpins])
+
+  return { prizes, sessions, spins, players, open, shownId, setViewId, loadPrizes, loadSessions, loadSpins, loadPlayers }
+}
+
+/* ─── Login ────────────────────────────────────────────────────────────── */
+
+function Login() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const submit = async (e) => {
+    e.preventDefault()
+    setBusy(true)
+    setError('')
+    const { error: err } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+    if (err) setError(err.message === 'Invalid login credentials' ? 'Wrong email or password.' : err.message)
+    setBusy(false)
+  }
+  return (
+    <section className="sw-card sw-login">
+      <CuteDrone text="STAFF ONLY" className="sw-mascot" />
+      <h1 className="sw-title sw-title--sm">
+        Spin <span className="sw-grad">control room</span>
+      </h1>
+      <form onSubmit={submit} className="sw-form">
+        <label className="sw-field">
+          <span>Email</span>
+          <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" />
+        </label>
+        <label className="sw-field">
+          <span>Password</span>
+          <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+        </label>
+        {error && (
+          <p className="sw-error" role="alert">
+            {error}
+          </p>
+        )}
+        <button className="sw-btn" disabled={busy}>
+          {busy ? 'Signing in…' : 'Sign in'}
+        </button>
+      </form>
+    </section>
+  )
+}
+
+/* ─── Live round ───────────────────────────────────────────────────────── */
+
+function RoundPanel({ data }) {
+  const { sessions, spins, open, shownId, setViewId } = data
+  const [name, setName] = useState('')
+  const [max, setMax] = useState(10)
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState('')
+  const shown = sessions.find((s) => s.id === shownId)
+  const winners = spins.filter((s) => s.is_winner)
+
+  const start = async () => {
+    if (open && !window.confirm(`End ${open.name} and start a new round?`)) return
+    setBusy(true)
+    setMsg('')
+    const { error } = await supabase.rpc('start_round', { p_name: name, p_max_winners: Number(max) || 10 })
+    if (error) setMsg(error.message)
+    else {
+      setName('')
+      setViewId(null)
+    }
+    setBusy(false)
+  }
+  const end = async () => {
+    if (!window.confirm(`End ${open.name}? Nobody can spin until you start a new round.`)) return
+    setBusy(true)
+    const { error } = await supabase.rpc('end_round')
+    if (error) setMsg(error.message)
+    setBusy(false)
+  }
+  const toggleCollected = async (s) => {
+    await supabase
+      .from('spins')
+      .update({ collected: !s.collected, collected_at: s.collected ? null : new Date().toISOString() })
+      .eq('id', s.id)
+  }
+
+  return (
+    <div className="sa-grid">
+      <section className="sa-card sa-control">
+        <h2>
+          {open ? (
+            <>
+              <span className="sw-dot" /> {open.name} is live
+            </>
+          ) : (
+            'No round running'
+          )}
+        </h2>
+        {open && (
+          <p className="sa-muted">
+            Started {fmtTime(open.started_at)} · {winners.length}/{open.max_winners} winners · {spins.length} spins
+          </p>
+        )}
+        <div className="sa-row">
+          <label className="sw-field">
+            <span>New round name (optional)</span>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder={`Round ${sessions.length + 1}`} />
+          </label>
+          <label className="sw-field sa-narrow">
+            <span>Winners</span>
+            <input type="number" min="1" max="200" value={max} onChange={(e) => setMax(e.target.value)} />
+          </label>
+        </div>
+        <div className="sa-row">
+          <button className="sw-btn" onClick={start} disabled={busy}>
+            {open ? 'Start a new round' : 'Start round'}
+          </button>
+          {open && (
+            <button className="sw-btn sw-btn--ghost" onClick={end} disabled={busy}>
+              End round
+            </button>
+          )}
+        </div>
+        {msg && <p className="sw-error">{msg}</p>}
+      </section>
+
+      <section className="sa-card sa-board">
+        <div className="sa-board-head">
+          <h2>Leaderboard</h2>
+          <select value={shownId ?? ''} onChange={(e) => setViewId(Number(e.target.value) || null)}>
+            {sessions.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+                {s.status === 'open' ? ' (live)' : ''}
+              </option>
+            ))}
+          </select>
+        </div>
+        {!shown ? (
+          <p className="sa-muted">Start a round to see spins here.</p>
+        ) : !spins.length ? (
+          <p className="sa-muted">No spins in {shown.name} yet.</p>
+        ) : (
+          <div className="sa-table-wrap">
+            <table className="sa-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>College</th>
+                  <th>Landed on</th>
+                  <th>Time</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {spins.map((s) => (
+                  <tr key={s.id} className={s.is_winner ? 'is-win' : 'is-miss'}>
+                    <td className="sa-rank">{s.rank}</td>
+                    <td>
+                      <strong>{fullName(s.players)}</strong>
+                      <span className="sa-muted sa-small">{s.players?.code}</span>
+                    </td>
+                    <td>{s.players?.college || '—'}</td>
+                    <td>{s.prize_name}</td>
+                    <td className="sa-mono">{fmtTime(s.created_at)}</td>
+                    <td>
+                      {s.is_winner ? (
+                        <button className={`sa-pill ${s.collected ? 'is-done' : ''}`} onClick={() => toggleCollected(s)}>
+                          {s.collected ? '✓ Collected' : 'Winner · mark collected'}
+                        </button>
+                      ) : (
+                        <span className="sa-pill is-off">Too late</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </div>
+  )
+}
+
+/* ─── Big screen ───────────────────────────────────────────────────────── */
+
+function BigScreen({ data, onExit }) {
+  const { prizes, spins, open } = data
+  const active = useMemo(() => prizes.filter((p) => p.active), [prizes])
+  const [qr, setQr] = useState('')
+  const [queue, setQueue] = useState([])
+  const [current, setCurrent] = useState(null)
+  const [shown, setShown] = useState(null)
+  const [spinKey, setSpinKey] = useState(0)
+  const seen = useRef(new Set())
+  const box = useRef(null)
+
+  useEffect(() => {
+    QRCode.toDataURL(PLAY_URL, { margin: 1, width: 360, color: { dark: '#0b0f1a', light: '#ffffff' } }).then(setQr)
+  }, [])
+
+  // Every spin that arrives while the screen is open joins the queue
+  useEffect(() => {
+    if (!seen.current.size && spins.length) {
+      spins.forEach((s) => seen.current.add(s.id)) // don't replay spins from before the screen opened
+      return
+    }
+    const fresh = spins.filter((s) => !seen.current.has(s.id))
+    if (!fresh.length) return
+    fresh.forEach((s) => seen.current.add(s.id))
+    setQueue((q) => [...q, ...fresh])
+  }, [spins])
+
+  // Play the queue one spin at a time
+  useEffect(() => {
+    if (current || !queue.length) return
+    const [next, ...rest] = queue
+    setQueue(rest)
+    setCurrent(next)
+    setShown(null)
+    setSpinKey((k) => k + 1)
+  }, [queue, current])
+
+  const landed = () => {
+    setShown(current)
+    if (current?.is_winner) {
+      const r = box.current?.getBoundingClientRect()
+      confetti({ x: r ? (r.left + r.width / 2) / innerWidth : 0.35, y: 0.35, count: 220 })
+    }
+    setTimeout(() => setCurrent(null), queue.length ? 2200 : 4200)
+  }
+
+  const winners = spins.filter((s) => s.is_winner)
+
+  return (
+    <div className="bs">
+      <SkyParty />
+      <button className="bs-exit" onClick={onExit} title="Back to admin">
+        ✕
+      </button>
+      <div className="bs-left" ref={box}>
+        <Wheel prizes={active} landOn={current?.prize_id} spinKey={spinKey} onDone={landed} duration={queue.length ? 3200 : 4800} className="bs-wheel" />
+        <div className={`bs-shout ${shown ? 'is-on' : ''} ${shown?.is_winner ? 'is-win' : 'is-miss'}`} aria-live="polite">
+          {shown && (
+            <>
+              <strong>{fullName(shown.players)}</strong>
+              <span>{shown.is_winner ? `wins: ${shown.prize_name} 🎉` : `landed on ${shown.prize_name} · #${shown.rank}, just missed!`}</span>
+            </>
+          )}
+        </div>
+      </div>
+      <aside className="bs-right">
+        <div className="bs-head">
+          <img src={logo} alt="" />
+          <div>
+            <span className="bs-kicker">SKY EYE · SPIN THE WHEEL</span>
+            <h1>{open ? open.name : 'Next round soon'}</h1>
+            {open && (
+              <p>
+                {winners.length}/{open.max_winners} goodies won
+              </p>
+            )}
+          </div>
+        </div>
+        <ol className="bs-board">
+          {winners.slice(0, open?.max_winners || 10).map((s) => (
+            <li key={s.id}>
+              <span className="bs-rank">{s.rank}</span>
+              <span className="bs-name">{fullName(s.players)}</span>
+              <span className="bs-prize">{s.prize_name}</span>
+            </li>
+          ))}
+          {!winners.length && <li className="bs-empty">Be the first to spin!</li>}
+        </ol>
+        <div className="bs-qr">
+          {qr && <img src={qr} alt="QR code to the spin page" />}
+          <div>
+            <strong>Scan to play</strong>
+            <span>Enter the code from your email</span>
+            <span className="bs-url">skyeyetechnology.in/#/spin</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  )
+}
+
+/* ─── Players ──────────────────────────────────────────────────────────── */
+
+function PlayersPanel({ data }) {
+  const { players } = data
+  const [q, setQ] = useState('')
+  const [busy, setBusy] = useState('')
+  const [msg, setMsg] = useState('')
+  const [add, setAdd] = useState({ first: '', last: '', email: '', phone: '', college: '' })
+
+  const list = players.filter((p) => !q || `${fullName(p)} ${p.email} ${p.phone} ${p.college} ${p.code}`.toLowerCase().includes(q.toLowerCase()))
+  const unsent = players.filter((p) => !p.code_sent_at)
+
+  const send = async (body, label) => {
+    setBusy(label)
+    setMsg('')
+    const { data: s } = await supabase.auth.getSession()
+    try {
+      const res = await fetch('/api/spin-send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${s.session?.access_token}` },
+        body: JSON.stringify(body),
+      })
+      const out = await res.json().catch(() => ({}))
+      setMsg(res.ok ? `Sent ${out.sent ?? 0} email(s)${out.failed ? `, ${out.failed} failed` : ''}.` : out.error || `Failed (${res.status}).`)
+    } catch {
+      setMsg('Couldn’t reach the email service.')
+    }
+    setBusy('')
+  }
+
+  const addPlayer = async (e) => {
+    e.preventDefault()
+    setBusy('add')
+    setMsg('')
+    try {
+      const res = await fetch('/api/spin-register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName: add.first, lastName: add.last, email: add.email, phone: add.phone, college: add.college, source: 'admin' }),
+      })
+      const out = await res.json().catch(() => ({}))
+      if (res.ok) {
+        setMsg(out.emailed ? `Added ${add.first}; code emailed.` : `Added ${add.first}. Email not sent: ${out.emailError || 'unknown'}`)
+        setAdd({ first: '', last: '', email: '', phone: '', college: '' })
+      } else setMsg(out.error || `Failed (${res.status}).`)
+    } catch {
+      setMsg('Couldn’t reach the registration service.')
+    }
+    setBusy('')
+  }
+
+  return (
+    <div className="sa-grid">
+      <section className="sa-card">
+        <h2>Add a player at the stall</h2>
+        <form className="sa-row sa-wrap" onSubmit={addPlayer}>
+          <label className="sw-field">
+            <span>First name *</span>
+            <input required value={add.first} onChange={(e) => setAdd({ ...add, first: e.target.value })} />
+          </label>
+          <label className="sw-field">
+            <span>Last name</span>
+            <input value={add.last} onChange={(e) => setAdd({ ...add, last: e.target.value })} />
+          </label>
+          <label className="sw-field">
+            <span>Email *</span>
+            <input required type="email" value={add.email} onChange={(e) => setAdd({ ...add, email: e.target.value })} />
+          </label>
+          <label className="sw-field">
+            <span>Phone</span>
+            <input value={add.phone} onChange={(e) => setAdd({ ...add, phone: e.target.value })} />
+          </label>
+          <label className="sw-field">
+            <span>College</span>
+            <input value={add.college} onChange={(e) => setAdd({ ...add, college: e.target.value })} />
+          </label>
+          <button className="sw-btn" disabled={busy === 'add'}>
+            {busy === 'add' ? 'Adding…' : 'Add + email code'}
+          </button>
+        </form>
+      </section>
+
+      <section className="sa-card sa-board">
+        <div className="sa-board-head">
+          <h2>Players ({players.length})</h2>
+          <input className="sa-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, email, code…" />
+          <button className="sw-btn sw-btn--ghost" disabled={!unsent.length || !!busy} onClick={() => send({ unsent: true }, 'all')}>
+            {busy === 'all' ? 'Sending…' : `Email all unsent (${unsent.length})`}
+          </button>
+        </div>
+        {msg && <p className="sa-note">{msg}</p>}
+        <div className="sa-table-wrap">
+          <table className="sa-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email / phone</th>
+                <th>College</th>
+                <th>Code</th>
+                <th>Emailed</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((p) => (
+                <tr key={p.id}>
+                  <td>
+                    <strong>{fullName(p)}</strong>
+                    <span className="sa-muted sa-small">{p.source}</span>
+                  </td>
+                  <td>
+                    {p.email}
+                    <span className="sa-muted sa-small">{p.phone || ''}</span>
+                  </td>
+                  <td>{p.college || '—'}</td>
+                  <td className="sa-mono sa-code">{p.code}</td>
+                  <td className="sa-small">{p.code_sent_at ? fmtTime(p.code_sent_at) : p.email_error ? <span className="sw-error">{p.email_error}</span> : 'Not yet'}</td>
+                  <td>
+                    <button className="sa-pill" disabled={!!busy} onClick={() => send({ playerIds: [p.id] }, p.id)}>
+                      {busy === p.id ? 'Sending…' : p.code_sent_at ? 'Resend' : 'Send code'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+/* ─── Prizes ───────────────────────────────────────────────────────────── */
+
+function PrizesPanel({ data }) {
+  const { prizes, loadPrizes } = data
+  const [rows, setRows] = useState(prizes)
+  const [msg, setMsg] = useState('')
+  useEffect(() => setRows(prizes), [prizes])
+  const total = rows.filter((r) => r.active).reduce((n, r) => n + (Number(r.weight) || 0), 0)
+  const edit = (id, k, v) => setRows((rs) => rs.map((r) => (r.id === id ? { ...r, [k]: v } : r)))
+
+  const save = async (r) => {
+    setMsg('')
+    const { error } = await supabase
+      .from('prizes')
+      .update({ name: r.name, icon: r.icon, color: r.color, weight: Number(r.weight) || 0, stock: r.stock === '' || r.stock === null ? null : Number(r.stock), active: r.active, sort: Number(r.sort) || 0 })
+      .eq('id', r.id)
+    setMsg(error ? error.message : `Saved ${r.name}.`)
+    loadPrizes()
+  }
+  const addPrize = async () => {
+    const { error } = await supabase.from('prizes').insert({ name: 'New prize', icon: 'redeem', color: '#5ef2ff', weight: 10, sort: rows.length + 1 })
+    setMsg(error ? error.message : 'Added a prize: edit it below and save.')
+    loadPrizes()
+  }
+
+  return (
+    <section className="sa-card sa-board">
+      <div className="sa-board-head">
+        <h2>Prizes on the wheel</h2>
+        <button className="sw-btn sw-btn--ghost" onClick={addPrize}>
+          + Add prize
+        </button>
+      </div>
+      <p className="sa-muted">
+        Odds are relative: a prize with weight 30 comes up three times as often as one with 10. Leave stock empty for unlimited;
+        stock only goes down when a winner (top spots) lands on it, and a prize at 0 stock is skipped for winners.
+      </p>
+      {msg && <p className="sa-note">{msg}</p>}
+      <div className="sa-table-wrap">
+        <table className="sa-table sa-prizes">
+          <thead>
+            <tr>
+              <th>On</th>
+              <th>Name</th>
+              <th>Icon</th>
+              <th>Colour</th>
+              <th>Weight</th>
+              <th>Chance</th>
+              <th>Stock</th>
+              <th>Order</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.id} className={r.active ? '' : 'is-miss'}>
+                <td>
+                  <input type="checkbox" checked={r.active} onChange={(e) => edit(r.id, 'active', e.target.checked)} />
+                </td>
+                <td>
+                  <input value={r.name} onChange={(e) => edit(r.id, 'name', e.target.value)} />
+                </td>
+                <td>
+                  <span className="material-symbols-outlined sa-icon">{r.icon}</span>
+                  <input className="sa-w8" value={r.icon || ''} onChange={(e) => edit(r.id, 'icon', e.target.value)} />
+                </td>
+                <td>
+                  <input type="color" value={r.color} onChange={(e) => edit(r.id, 'color', e.target.value)} />
+                </td>
+                <td>
+                  <input className="sa-w5" type="number" min="0" value={r.weight} onChange={(e) => edit(r.id, 'weight', e.target.value)} />
+                </td>
+                <td className="sa-mono">{r.active && total ? `${Math.round(((Number(r.weight) || 0) / total) * 100)}%` : '—'}</td>
+                <td>
+                  <input className="sa-w5" type="number" min="0" value={r.stock ?? ''} placeholder="∞" onChange={(e) => edit(r.id, 'stock', e.target.value)} />
+                </td>
+                <td>
+                  <input className="sa-w4" type="number" value={r.sort} onChange={(e) => edit(r.id, 'sort', e.target.value)} />
+                </td>
+                <td>
+                  <button className="sa-pill" onClick={() => save(r)}>
+                    Save
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}
+
+/* ─── Shell ────────────────────────────────────────────────────────────── */
+
+const TABS = [
+  ['round', 'Live round', 'bolt'],
+  ['screen', 'Big screen', 'tv'],
+  ['players', 'Players', 'group'],
+  ['prizes', 'Prizes', 'redeem'],
+]
+
+export default function AdminApp() {
+  const [session, setSession] = useState(undefined)
+  const [isAdmin, setIsAdmin] = useState(null)
+  const [tab, setTab] = useState('round')
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session))
+    const { data } = supabase.auth.onAuthStateChange((_e, s) => setSession(s))
+    return () => data.subscription.unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    if (!session) return setIsAdmin(null)
+    supabase
+      .from('admins')
+      .select('user_id')
+      .eq('user_id', session.user.id)
+      .maybeSingle()
+      .then(({ data }) => setIsAdmin(!!data))
+  }, [session])
+
+  const data = useSpinData(!!session && isAdmin === true)
+
+  if (tab === 'screen' && isAdmin) {
+    return <BigScreen data={data} onExit={() => setTab('round')} />
+  }
+
+  return (
+    <div className="sw-app sa-app">
+      <SkyParty quiet />
+      <header className="sw-top">
+        <span className="sw-brand">
+          <img src={logo} alt="" />
+          <span>
+            SKY EYE <em>SPIN</em> · admin
+          </span>
+        </span>
+        {session && (
+          <button className="sw-chip sw-chip--btn" onClick={() => supabase.auth.signOut()}>
+            Sign out
+          </button>
+        )}
+      </header>
+      <main className="sw-main sa-main">
+        {session === undefined ? null : !session ? (
+          <Login />
+        ) : isAdmin === false ? (
+          <section className="sw-card">
+            <h1 className="sw-title sw-title--sm">Not an admin account</h1>
+            <p className="sw-sub">{session.user.email} isn’t on the admin list. Ask the Sky Eye team to add it.</p>
+          </section>
+        ) : isAdmin ? (
+          <>
+            <nav className="sa-tabs">
+              {TABS.map(([k, label, icon]) => (
+                <button key={k} className={tab === k ? 'is-on' : ''} onClick={() => setTab(k)}>
+                  <span className="material-symbols-outlined">{icon}</span>
+                  {label}
+                </button>
+              ))}
+            </nav>
+            {tab === 'round' && <RoundPanel data={data} />}
+            {tab === 'players' && <PlayersPanel data={data} />}
+            {tab === 'prizes' && <PrizesPanel data={data} />}
+          </>
+        ) : null}
+      </main>
+    </div>
+  )
+}

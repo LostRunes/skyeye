@@ -29,3 +29,7 @@ _src
 
 # launch-video project (large media)
 brag-output*/
+
+# Local secrets (never commit)
+.env
+.env.*
