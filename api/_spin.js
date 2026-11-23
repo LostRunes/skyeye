@@ -68,6 +68,7 @@ const mailer = () => {
     throw new Error('Email is not set up yet (SMTP settings missing)')
   }
   transport ??= nodemailer.createTransport({
+    pool: true, // reuse one connection for a batch
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT || 465),
     secure: Number(process.env.SMTP_PORT || 465) === 465,

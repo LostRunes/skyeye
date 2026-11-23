@@ -4,6 +4,9 @@
 // The caller must be signed in as an admin (Authorization: Bearer <token>).
 import { adminFrom, json, readBody, rest, sendCode } from './_spin.js'
 
+// Room for a batch of emails (the admin panel sends 15 per request)
+export const config = { maxDuration: 60 }
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return json(res, 405, { error: 'POST only' })
   try {
