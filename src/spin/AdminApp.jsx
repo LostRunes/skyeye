@@ -2,8 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import QRCode from 'qrcode'
 import { supabase } from './supabase'
 import Wheel from './Wheel'
-import SkyParty from './SkyParty'
-import { CuteDrone } from '../components/LeadStatus'
+import SkyParty, { DroneCanvas } from './SkyParty'
 import { confetti } from '../components/events/confetti'
 import { ik } from '../cdn'
 import './spin.css'
@@ -42,7 +41,7 @@ function useSpinData(enabled) {
     if (data) setSessions(data)
   }, [])
   const loadPlayers = useCallback(async () => {
-    const { data } = await supabase.from('players').select('*').order('created_at', { ascending: false })
+    const { data } = await supabase.from('players').select('*, spins(is_winner, prize_name)').order('created_at', { ascending: false })
     if (data) setPlayers(data)
   }, [])
 
@@ -70,6 +69,7 @@ function useSpinData(enabled) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'players' }, loadPlayers)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'spins' }, () => {
         loadSpins()
+        loadPlayers() // spin status per player
         loadPrizes() // stock changes
       })
       .subscribe()
@@ -100,7 +100,8 @@ function Login() {
   }
   return (
     <section className="sw-card sw-login">
-      <CuteDrone text="STAFF ONLY" className="sw-mascot" />
+      <DroneCanvas fleet={[{ hover: true, x: 0.5, y: 0.52, size: 0.98 }]} className="sa-login-drone" />
+      <span className="sw-kicker">Staff only</span>
       <h1 className="sw-title sw-title--sm">
         Spin <span className="sw-grad">control room</span>
       </h1>
@@ -315,7 +316,7 @@ function BigScreen({ data, onExit }) {
 
   return (
     <div className="bs">
-      <SkyParty />
+      <SkyParty fleet="screen" />
       <button className="bs-exit" onClick={onExit} title="Back to admin">
         ✕
       </button>
@@ -375,7 +376,19 @@ function PlayersPanel({ data }) {
   const [msg, setMsg] = useState('')
   const [add, setAdd] = useState({ first: '', last: '', email: '', phone: '', college: '' })
 
-  const list = players.filter((p) => !q || `${fullName(p)} ${p.email} ${p.phone} ${p.college} ${p.code}`.toLowerCase().includes(q.toLowerCase()))
+  const [filter, setFilter] = useState('all')
+  const spun = (p) => (p.spins?.length || 0) > 0
+  const FILTERS = [
+    ['all', 'All', () => true],
+    ['emailed', 'Emailed', (p) => !!p.code_sent_at],
+    ['unsent', 'Not emailed', (p) => !p.code_sent_at],
+    ['spun', 'Already spun', spun],
+    ['waiting', 'Not spun yet', (p) => !spun(p)],
+  ]
+  const test = FILTERS.find((f) => f[0] === filter)?.[2] || (() => true)
+  const list = players
+    .filter(test)
+    .filter((p) => !q || `${fullName(p)} ${p.email} ${p.phone} ${p.college} ${p.code}`.toLowerCase().includes(q.toLowerCase()))
   const unsent = players.filter((p) => !p.code_sent_at)
 
   const send = async (body, label) => {
@@ -456,6 +469,13 @@ function PlayersPanel({ data }) {
             {busy === 'all' ? 'Sending…' : `Email all unsent (${unsent.length})`}
           </button>
         </div>
+        <div className="sa-filters" role="group" aria-label="Filter players">
+          {FILTERS.map(([k, label, fn]) => (
+            <button key={k} className={filter === k ? 'is-on' : ''} onClick={() => setFilter(k)}>
+              {label} <span>{players.filter(fn).length}</span>
+            </button>
+          ))}
+        </div>
         {msg && <p className="sa-note">{msg}</p>}
         <div className="sa-table-wrap">
           <table className="sa-table">
@@ -466,6 +486,7 @@ function PlayersPanel({ data }) {
                 <th>College</th>
                 <th>Code</th>
                 <th>Emailed</th>
+                <th>Spin</th>
                 <th />
               </tr>
             </thead>
@@ -483,6 +504,15 @@ function PlayersPanel({ data }) {
                   <td>{p.college || '—'}</td>
                   <td className="sa-mono sa-code">{p.code}</td>
                   <td className="sa-small">{p.code_sent_at ? fmtTime(p.code_sent_at) : p.email_error ? <span className="sw-error">{p.email_error}</span> : 'Not yet'}</td>
+                  <td className="sa-small">
+                    {spun(p) ? (
+                      <span className={`sa-pill ${p.spins[0].is_winner ? 'is-done' : 'is-off'}`}>
+                        {p.spins[0].is_winner ? `Won · ${p.spins[0].prize_name}` : `Spun · ${p.spins[0].prize_name}`}
+                      </span>
+                    ) : (
+                      'Not yet'
+                    )}
+                  </td>
                   <td>
                     <button className="sa-pill" disabled={!!busy} onClick={() => send({ playerIds: [p.id] }, p.id)}>
                       {busy === p.id ? 'Sending…' : p.code_sent_at ? 'Resend' : 'Send code'}
@@ -629,7 +659,7 @@ export default function AdminApp() {
 
   return (
     <div className="sw-app sa-app">
-      <SkyParty quiet />
+      <SkyParty fleet="admin" quiet />
       <header className="sw-top">
         <span className="sw-brand">
           <img src={logo} alt="" />
