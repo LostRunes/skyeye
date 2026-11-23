@@ -1124,3 +1124,54 @@
     transition-duration: 0.3s !important;
   }
 }
+
+/* Players: send bar + row selection */
+.sw-app .sa-send {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  background: var(--paper);
+  border: 2px dashed var(--ink);
+  border-radius: 12px;
+}
+.sw-app .sa-send-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-right: 4px;
+}
+.sw-app .sa-send .sa-pill:not(:disabled):hover {
+  background: var(--crimson);
+  color: var(--paper);
+}
+.sw-app .sa-link {
+  border: 0;
+  background: none;
+  color: var(--crimson);
+  font: 700 13px/1 'Geist', system-ui, sans-serif;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.sw-app .sa-check {
+  width: 36px;
+}
+.sw-app .sa-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--crimson);
+  cursor: pointer;
+}
+.sw-app .sa-table tr.is-picked td {
+  background: #f1dcc7;
+}
+.sw-app .sa-table td.sa-small {
+  display: table-cell;
+}
+.sw-app .sa-grid--stack {
+  grid-template-columns: 1fr;
+}

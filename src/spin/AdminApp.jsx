@@ -389,22 +389,60 @@ function PlayersPanel({ data }) {
   const list = players
     .filter(test)
     .filter((p) => !q || `${fullName(p)} ${p.email} ${p.phone} ${p.college} ${p.code}`.toLowerCase().includes(q.toLowerCase()))
-  const unsent = players.filter((p) => !p.code_sent_at)
+  // Ticked players (by id). Ticks survive filtering and searching.
+  const [picked, setPicked] = useState(() => new Set())
+  const toggle = (id) =>
+    setPicked((s) => {
+      const n = new Set(s)
+      n.has(id) ? n.delete(id) : n.add(id)
+      return n
+    })
+  const allShownPicked = list.length > 0 && list.every((p) => picked.has(p.id))
+  const toggleShown = () =>
+    setPicked((s) => {
+      const n = new Set(s)
+      list.forEach((p) => (allShownPicked ? n.delete(p.id) : n.add(p.id)))
+      return n
+    })
 
-  const send = async (body, label) => {
+  // Who each bulk send goes to
+  const GROUPS = [
+    ['everyone', 'Everyone', players],
+    ['unsent', 'Not emailed', players.filter((p) => !p.code_sent_at)],
+    ['notspun', 'Not spun yet', players.filter((p) => !spun(p))],
+    ['picked', 'Selected', players.filter((p) => picked.has(p.id))],
+    ['except', 'All except selected', players.filter((p) => !picked.has(p.id))],
+  ]
+
+  // Emails these players their codes, 15 per request so a big send never
+  // times out; shows progress as it goes.
+  const send = async (targets, label, confirmText) => {
+    if (!targets.length) return
+    if (confirmText && !window.confirm(confirmText)) return
     setBusy(label)
-    setMsg('')
+    setMsg(`Sending 0/${targets.length}…`)
     const { data: s } = await supabase.auth.getSession()
+    let sent = 0
+    let failed = 0
+    const errors = []
     try {
-      const res = await fetch('/api/spin-send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${s.session?.access_token}` },
-        body: JSON.stringify(body),
-      })
-      const out = await res.json().catch(() => ({}))
-      setMsg(res.ok ? `Sent ${out.sent ?? 0} email(s)${out.failed ? `, ${out.failed} failed` : ''}.` : out.error || `Failed (${res.status}).`)
-    } catch {
-      setMsg('Couldn’t reach the email service.')
+      for (let i = 0; i < targets.length; i += 15) {
+        const ids = targets.slice(i, i + 15).map((p) => p.id)
+        const res = await fetch('/api/spin-send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${s.session?.access_token}` },
+          body: JSON.stringify({ playerIds: ids }),
+        })
+        const out = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(out.error || `Failed (${res.status})`)
+        sent += out.sent || 0
+        failed += out.failed || 0
+        errors.push(...(out.errors || []))
+        setMsg(`Sending ${Math.min(i + 15, targets.length)}/${targets.length}…`)
+      }
+      setMsg(`Sent ${sent} email(s)${failed ? `, ${failed} failed (${errors.slice(0, 2).join('; ')})` : ''}.`)
+    } catch (e) {
+      setMsg(`Stopped after ${sent} sent: ${e.message || 'couldn’t reach the email service'}.`)
     }
     setBusy('')
   }
@@ -431,7 +469,7 @@ function PlayersPanel({ data }) {
   }
 
   return (
-    <div className="sa-grid">
+    <div className="sa-grid sa-grid--stack">
       <section className="sa-card">
         <h2>Add a player at the stall</h2>
         <form className="sa-row sa-wrap" onSubmit={addPlayer}>
@@ -465,9 +503,24 @@ function PlayersPanel({ data }) {
         <div className="sa-board-head">
           <h2>Players ({players.length})</h2>
           <input className="sa-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, email, code…" />
-          <button className="sw-btn sw-btn--ghost" disabled={!unsent.length || !!busy} onClick={() => send({ unsent: true }, 'all')}>
-            {busy === 'all' ? 'Sending…' : `Email all unsent (${unsent.length})`}
-          </button>
+        </div>
+        <div className="sa-send" role="group" aria-label="Email codes">
+          <span className="sa-send-label">Email codes to:</span>
+          {GROUPS.map(([k, label, targets]) => (
+            <button
+              key={k}
+              className="sa-pill"
+              disabled={!targets.length || !!busy}
+              onClick={() => send(targets, k, `Email spin codes to ${targets.length} player${targets.length === 1 ? '' : 's'} (${label.toLowerCase()})?`)}
+            >
+              {busy === k ? 'Sending…' : `${label} (${targets.length})`}
+            </button>
+          ))}
+          {picked.size > 0 && (
+            <button className="sa-link" onClick={() => setPicked(new Set())}>
+              Clear selection
+            </button>
+          )}
         </div>
         <div className="sa-filters" role="group" aria-label="Filter players">
           {FILTERS.map(([k, label, fn]) => (
@@ -481,6 +534,9 @@ function PlayersPanel({ data }) {
           <table className="sa-table">
             <thead>
               <tr>
+                <th className="sa-check">
+                  <input type="checkbox" checked={allShownPicked} onChange={toggleShown} aria-label="Select all shown" title="Select all shown" />
+                </th>
                 <th>Name</th>
                 <th>Email / phone</th>
                 <th>College</th>
@@ -492,7 +548,10 @@ function PlayersPanel({ data }) {
             </thead>
             <tbody>
               {list.map((p) => (
-                <tr key={p.id}>
+                <tr key={p.id} className={picked.has(p.id) ? 'is-picked' : ''}>
+                  <td className="sa-check">
+                    <input type="checkbox" checked={picked.has(p.id)} onChange={() => toggle(p.id)} aria-label={`Select ${fullName(p)}`} />
+                  </td>
                   <td>
                     <strong>{fullName(p)}</strong>
                     <span className="sa-muted sa-small">{p.source}</span>
@@ -514,7 +573,7 @@ function PlayersPanel({ data }) {
                     )}
                   </td>
                   <td>
-                    <button className="sa-pill" disabled={!!busy} onClick={() => send({ playerIds: [p.id] }, p.id)}>
+                    <button className="sa-pill" disabled={!!busy} onClick={() => send([p], p.id)}>
                       {busy === p.id ? 'Sending…' : p.code_sent_at ? 'Resend' : 'Send code'}
                     </button>
                   </td>
