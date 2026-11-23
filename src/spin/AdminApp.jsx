@@ -369,7 +369,7 @@ function BigScreen({ data, onExit }) {
 
 /* ─── Players ──────────────────────────────────────────────────────────── */
 
-function PlayersPanel({ data }) {
+function PlayersPanel({ data, mail }) {
   const { players } = data
   const [q, setQ] = useState('')
   const [busy, setBusy] = useState('')
@@ -440,6 +440,7 @@ function PlayersPanel({ data }) {
         errors.push(...(out.errors || []))
         setMsg(`Sending ${Math.min(i + 15, targets.length)}/${targets.length}…`)
       }
+      mail?.load()
       setMsg(`Sent ${sent} email(s)${failed ? `, ${failed} failed (${errors.slice(0, 2).join('; ')})` : ''}.`)
     } catch (e) {
       setMsg(`Stopped after ${sent} sent: ${e.message || 'couldn’t reach the email service'}.`)
@@ -506,6 +507,11 @@ function PlayersPanel({ data }) {
         </div>
         <div className="sa-send" role="group" aria-label="Email codes">
           <span className="sa-send-label">Email codes to:</span>
+          {mail?.remaining != null && (
+            <span className={`sa-capacity ${mail.remaining === 0 ? 'is-bad' : ''}`}>
+              {mail.remaining === 0 ? 'No email account can send: see Email senders' : `≈${mail.remaining} left today`}
+            </span>
+          )}
           {GROUPS.map(([k, label, targets]) => (
             <button
               key={k}
@@ -582,6 +588,189 @@ function PlayersPanel({ data }) {
             </tbody>
           </table>
         </div>
+      </section>
+    </div>
+  )
+}
+
+/* ─── Email senders ────────────────────────────────────────────────────── */
+
+// Calls an admin-only API route with the signed-in user's token
+async function adminApi(path, body) {
+  const { data: s } = await supabase.auth.getSession()
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${s.session?.access_token}` },
+    body: JSON.stringify(body),
+  })
+  const out = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(out.error || `Failed (${res.status})`)
+  return out
+}
+
+function useSenders(enabled) {
+  const [senders, setSenders] = useState(null)
+  const [error, setError] = useState('')
+  const load = useCallback(async () => {
+    try {
+      const out = await adminApi('/api/spin-senders', { action: 'list' })
+      setSenders(out.senders)
+      setError('')
+    } catch (e) {
+      setError(e.message)
+    }
+  }, [])
+  useEffect(() => {
+    if (!enabled) return undefined
+    load()
+    const t = setInterval(load, 60000)
+    return () => clearInterval(t)
+  }, [enabled, load])
+  const remaining = senders ? senders.reduce((n, s) => n + (s.remaining || 0), 0) : null
+  return { senders, error, load, remaining }
+}
+
+const SENDER_STATUS = {
+  active: ['Active', 'is-done'],
+  limit_reached: ['Limit reached today', 'is-warn'],
+  auth_failed: ['Login failed: needs a new app password', 'is-bad'],
+  off: ['Off', 'is-off'],
+}
+
+function SendersPanel({ mail }) {
+  const { senders, error, load, remaining } = mail
+  const [add, setAdd] = useState({ email: '', password: '', limit: 450 })
+  const [busy, setBusy] = useState('')
+  const [msg, setMsg] = useState('')
+
+  const act = async (label, body, done) => {
+    setBusy(label)
+    setMsg('')
+    try {
+      const out = await adminApi('/api/spin-senders', body)
+      setMsg(out.message || done || 'Done.')
+    } catch (e) {
+      setMsg(e.message)
+    }
+    await load()
+    setBusy('')
+  }
+
+  const submit = (e) => {
+    e.preventDefault()
+    act('add', { action: 'add', email: add.email, password: add.password, daily_limit: add.limit }, `Added ${add.email}. It will be used when the accounts above it run out.`).then(() =>
+      setAdd({ email: '', password: '', limit: 450 }),
+    )
+  }
+
+  return (
+    <div className="sa-grid sa-grid--stack">
+      <section className="sa-card">
+        <h2>Email senders</h2>
+        <p className="sa-muted">
+          Each Gmail account can send about 500 emails a day. Codes go out from the first account below that still has room; when
+          one hits Gmail’s limit or its login stops working, it’s marked here and the next account takes over automatically.
+        </p>
+        {remaining !== null && (
+          <p className={`sa-note ${remaining === 0 ? 'is-bad' : remaining < 50 ? 'is-warn' : ''}`}>
+            {remaining === 0
+              ? 'No account can send right now. Add another Gmail account below.'
+              : `Can still send about ${remaining} email${remaining === 1 ? '' : 's'} today across ${senders.filter((s) => s.remaining > 0).length} account(s).`}
+          </p>
+        )}
+        {error && <p className="sw-error">{error}</p>}
+        {msg && <p className="sa-note">{msg}</p>}
+        <div className="sa-table-wrap">
+          <table className="sa-table">
+            <thead>
+              <tr>
+                <th>Account</th>
+                <th>Sent today</th>
+                <th>Status</th>
+                <th>Last used</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {(senders || []).map((s) => {
+                const [label, cls] = SENDER_STATUS[s.status] || [s.status, '']
+                const pct = Math.min(100, Math.round((s.sent_today / s.daily_limit) * 100))
+                return (
+                  <tr key={s.id ?? s.email}>
+                    <td>
+                      <strong>{s.email}</strong>
+                      <span className="sa-muted sa-small">{s.builtin ? 'Built-in (Vercel settings)' : 'Added here'}</span>
+                    </td>
+                    <td>
+                      <span className="sa-mono">
+                        {s.sent_today} / {s.daily_limit}
+                      </span>
+                      <span className="sa-meter">
+                        <span style={{ width: `${pct}%` }} />
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`sa-pill ${cls}`}>{label}</span>
+                      {s.status_note && <span className="sa-muted sa-small sa-note-line">{s.status_note}</span>}
+                    </td>
+                    <td className="sa-small">{s.last_used_at ? fmtTime(s.last_used_at) : '—'}</td>
+                    <td className="sa-actions">
+                      {s.id && (
+                        <>
+                          <button className="sa-pill" disabled={!!busy} onClick={() => act(`t${s.id}`, { action: 'test', id: s.id })}>
+                            {busy === `t${s.id}` ? 'Testing…' : 'Test'}
+                          </button>
+                          <button
+                            className="sa-pill"
+                            disabled={!!busy}
+                            onClick={() => act(`o${s.id}`, { action: 'set', id: s.id, status: s.status === 'off' ? 'active' : 'off' })}
+                          >
+                            {s.status === 'off' ? 'Turn on' : s.status === 'active' ? 'Turn off' : 'Reset'}
+                          </button>
+                          {!s.builtin && (
+                            <button
+                              className="sa-pill"
+                              disabled={!!busy}
+                              onClick={() => window.confirm(`Remove ${s.email}?`) && act(`r${s.id}`, { action: 'remove', id: s.id }, `Removed ${s.email}.`)}
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="sa-card">
+        <h2>Add a Gmail account</h2>
+        <p className="sa-muted">
+          On that Google account: turn on 2-Step Verification, then create an app password at myaccount.google.com → Security →
+          App passwords. Paste it here; the login is checked before it’s saved. Adding an address that’s already listed updates its
+          password (use this when one shows “Login failed”).
+        </p>
+        <form className="sa-row sa-wrap" onSubmit={submit}>
+          <label className="sw-field">
+            <span>Gmail address</span>
+            <input type="email" required value={add.email} onChange={(e) => setAdd({ ...add, email: e.target.value })} autoComplete="off" />
+          </label>
+          <label className="sw-field">
+            <span>App password</span>
+            <input type="password" required value={add.password} onChange={(e) => setAdd({ ...add, password: e.target.value })} autoComplete="new-password" placeholder="16 letters" />
+          </label>
+          <label className="sw-field sa-narrow">
+            <span>Daily limit</span>
+            <input type="number" min="1" max="2000" value={add.limit} onChange={(e) => setAdd({ ...add, limit: e.target.value })} />
+          </label>
+          <button className="sw-btn" disabled={busy === 'add'}>
+            {busy === 'add' ? 'Checking login…' : 'Add account'}
+          </button>
+        </form>
       </section>
     </div>
   )
@@ -687,6 +876,7 @@ const TABS = [
   ['screen', 'Big screen', 'tv'],
   ['players', 'Players', 'group'],
   ['prizes', 'Prizes', 'redeem'],
+  ['senders', 'Email senders', 'mail'],
 ]
 
 export default function AdminApp() {
@@ -711,6 +901,7 @@ export default function AdminApp() {
   }, [session])
 
   const data = useSpinData(!!session && isAdmin === true)
+  const mail = useSenders(!!session && isAdmin === true)
 
   if (tab === 'screen' && isAdmin) {
     return <BigScreen data={data} onExit={() => setTab('round')} />
@@ -751,7 +942,8 @@ export default function AdminApp() {
               ))}
             </nav>
             {tab === 'round' && <RoundPanel data={data} />}
-            {tab === 'players' && <PlayersPanel data={data} />}
+            {tab === 'players' && <PlayersPanel data={data} mail={mail} />}
+            {tab === 'senders' && <SendersPanel mail={mail} />}
             {tab === 'prizes' && <PrizesPanel data={data} />}
           </>
         ) : null}
