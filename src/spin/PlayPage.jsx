@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { REASONS, supabase } from './supabase'
 import Wheel from './Wheel'
 import SkyParty from './SkyParty'
-import { CuteDrone } from '../components/LeadStatus'
 import { confetti } from '../components/events/confetti'
 import { ik } from '../cdn'
 import './spin.css'
@@ -30,6 +29,21 @@ const store = (c) => {
   }
 }
 const clean = (v) => v.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6)
+
+// The carnival sign at the top of the code screen
+function Marquee() {
+  return (
+    <div className="sw-marquee" aria-hidden="true">
+      <div className="sw-marquee-sign">
+        {Array.from({ length: 14 }, (_, i) => (
+          <span key={i} className="sw-marquee-bulb" style={{ '--i': i }} />
+        ))}
+        <span className="sw-marquee-kicker">Sky Eye presents</span>
+        <span className="sw-marquee-title">Spin &amp; Win</span>
+      </div>
+    </div>
+  )
+}
 
 export default function PlayPage() {
   const [prizes, setPrizes] = useState([])
@@ -145,7 +159,7 @@ export default function PlayPage() {
       <main className="sw-main">
         {(stage === 'enter' || stage === 'checking') && (
           <section className="sw-card sw-enter">
-            <CuteDrone text="SPIN & WIN!" className="sw-mascot" />
+            <Marquee />
             <h1 className="sw-title">
               Got your <span className="sw-grad">spin code?</span>
             </h1>
@@ -251,7 +265,9 @@ export default function PlayPage() {
               </>
             ) : (
               <>
-                <CuteDrone text="SO CLOSE!" glow="#ffd166" accent="#ffd166" className="sw-mascot" />
+                <span className="sw-emblem sw-emblem--miss">
+                  <span className="material-symbols-outlined">sentiment_satisfied</span>
+                </span>
                 <h1 className="sw-title sw-title--sm">
                   You landed on <span className="sw-grad">{result.prize_name}</span>…
                 </h1>
@@ -266,12 +282,11 @@ export default function PlayPage() {
 
         {stage === 'blocked' && (
           <section className="sw-card sw-blocked" aria-live="polite">
-            <CuteDrone
-              text={info?.reason === 'already_won' ? 'WINNER!' : info?.reason === 'already_spun' ? 'ALL DONE!' : 'HANG ON!'}
-              glow={info?.reason === 'already_won' ? '#4ade80' : '#ffd166'}
-              accent={info?.reason === 'already_won' ? '#4ade80' : '#ffd166'}
-              className="sw-mascot"
-            />
+            <span className={`sw-emblem sw-emblem--${info?.reason || 'wait'}`}>
+              <span className="material-symbols-outlined">
+                {info?.reason === 'already_won' ? 'emoji_events' : info?.reason === 'already_spun' ? 'confirmation_number' : 'hourglass_top'}
+              </span>
+            </span>
             <h1 className="sw-title sw-title--sm">{name ? `Hey ${name}!` : 'Hang on!'}</h1>
             <p className="sw-sub">{REASONS[info?.reason] || 'Something went wrong. Ask the stall team.'}</p>
             {info?.reason === 'no_round' && (
