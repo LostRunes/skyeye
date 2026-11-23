@@ -78,6 +78,86 @@ const mailer = () => {
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
 
+// The code email, in the spin pages' carnival look: sunset backdrop, a
+// parchment card in an ink outline under a crimson-and-cream awning, a
+// ticket-stub code and a crimson button. Tables + inline styles so it holds
+// up in Gmail/Outlook; the retro face (Shrikhand) falls back to Georgia
+// where email clients don't load web fonts.
+const emailHtml = ({ name, code, link }) => {
+  const ink = '#2f2926'
+  const parch = '#f4ecd9'
+  const paper = '#fffaf0'
+  const crimson = '#b22026'
+  const teal = '#3f7373'
+  const mustard = '#dda94b'
+  const muted = '#6f6259'
+  const display = "'Shrikhand', Georgia, 'Times New Roman', serif"
+  const body = "'Helvetica Neue', Arial, sans-serif"
+  const stripes = Array.from(
+    { length: 12 },
+    (_, i) => `<td width="8.33%" height="26" style="background:${i % 2 ? paper : crimson};font-size:0;line-height:0">&nbsp;</td>`,
+  ).join('')
+  const step = (n, text) => `<tr>
+    <td width="34" valign="top" style="padding:0 0 10px">
+      <div style="width:26px;height:26px;line-height:26px;border-radius:13px;background:${mustard};border:2px solid ${ink};text-align:center;font:bold 13px ${body};color:${ink}">${n}</div>
+    </td>
+    <td valign="top" style="padding:3px 0 10px;font:15px/1.45 ${body};color:${ink};text-align:left">${text}</td>
+  </tr>`
+
+  return `<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Shrikhand&display=swap" rel="stylesheet"></head>
+<body style="margin:0;padding:0;background:#f1c79c">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#d9989c;background-image:linear-gradient(180deg,#6c6190 0%,#9c7ea3 30%,#d9989c 62%,#f1c79c 100%)">
+<tr><td align="center" style="padding:30px 14px 36px">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px">
+    <tr><td align="center" style="padding:0 0 18px;font-family:${display};font-size:28px;color:${paper};text-shadow:2px 2px 0 ${ink}">
+      Sky Eye <span style="color:${mustard}">Spin</span>
+    </td></tr>
+    <tr><td style="background:${parch};border:3px solid ${ink};border-radius:18px;overflow:hidden;box-shadow:6px 6px 0 ${ink}">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>${stripes}</tr></table>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="border-top:3px solid ${ink};font-size:0;line-height:0">&nbsp;</td></tr></table>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr><td align="center" style="padding:22px 24px 6px">
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+            <td align="center" style="background:${crimson};border:3px solid ${ink};border-radius:90px 90px 12px 12px;padding:16px 30px 12px;box-shadow:4px 4px 0 ${ink}">
+              <div style="font:bold 11px ${body};letter-spacing:3px;color:#e9dbbd">SKY EYE PRESENTS</div>
+              <div style="font-family:${display};font-size:36px;line-height:1.1;color:${paper};text-shadow:2px 2px 0 ${ink}">Spin &amp; Win</div>
+            </td>
+          </tr></table>
+        </td></tr>
+        <tr><td align="center" style="padding:18px 24px 0">
+          <div style="font-family:${display};font-size:28px;line-height:1.15;color:${crimson}">Hi ${name}, you're in!</div>
+          <p style="margin:10px 0 0;font:15px/1.5 ${body};color:${muted}">Thanks for registering for the Sky Eye stall games at <b style="color:${ink}">KIIT MUN</b>. Here's your spin code:</p>
+        </td></tr>
+        <tr><td align="center" style="padding:20px 24px 4px">
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+            <td style="background:${paper};border:3px solid ${ink};border-radius:12px;padding:6px;box-shadow:4px 4px 0 ${ink}">
+              <div style="border:2px dashed ${mustard};border-radius:8px;padding:12px 18px 12px 26px;font:bold 34px 'Courier New',Courier,monospace;letter-spacing:8px;color:${ink}">${code}</div>
+            </td>
+          </tr></table>
+          <div style="padding:8px 0 0;font:bold 11px ${body};letter-spacing:2px;color:${teal}">ONE CODE · ONE SPIN</div>
+        </td></tr>
+        <tr><td style="padding:20px 28px 4px">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            ${step(1, 'Come to the <b>Sky Eye stall</b>, Campus 6.')}
+            ${step(2, 'When a round starts, scan the <b>QR code</b> at the stall.')}
+            ${step(3, `Enter your code and spin. <b style="color:${crimson}">The first spinners of each round win Sky Eye goodies!</b>`)}
+          </table>
+        </td></tr>
+        <tr><td align="center" style="padding:10px 24px 26px">
+          <a href="${link}" style="display:inline-block;background:${crimson};color:${paper};text-decoration:none;font:bold 16px ${body};padding:14px 30px;border:3px solid ${ink};border-radius:999px;box-shadow:4px 4px 0 ${ink}">Open the wheel &rarr;</a>
+        </td></tr>
+      </table>
+    </td></tr>
+    <tr><td align="center" style="padding:20px 10px 0;font:12px/1.5 ${body};color:${paper}">
+      Sky Eye Technology (SET) Pvt. Ltd. · Bhubaneswar, Odisha · <a href="https://www.skyeyetechnology.in" style="color:${paper}">skyeyetechnology.in</a>
+    </td></tr>
+  </table>
+</td></tr></table>
+</body></html>`
+}
+
 /** Emails a player their spin code, then records when it went out. */
 export async function sendCode(player) {
   const link = `${PLAY_URL}?code=${player.code}`
@@ -88,17 +168,7 @@ export async function sendCode(player) {
       to: player.email,
       subject: `Your Sky Eye spin code: ${player.code} 🎡`,
       text: `Hi ${player.first_name},\n\nThanks for registering for the Sky Eye stall games at KIIT MUN!\n\nYour spin code: ${player.code}\n\nWhen the round starts, scan the QR code at the stall (or open ${link}), enter your code and spin. The first spinners of each round win Sky Eye goodies. Each code spins once, so be quick!\n\nSee you at the stall,\nTeam Sky Eye Technology`,
-      html: `<div style="background:#0b0f1a;padding:32px 16px;font-family:Arial,Helvetica,sans-serif">
-  <div style="max-width:480px;margin:0 auto;background:#121a2b;border-radius:20px;padding:32px 24px;text-align:center;color:#e8eef6">
-    <div style="font-size:13px;letter-spacing:3px;color:#5ef2ff;font-weight:bold">SKY EYE · SPIN THE WHEEL</div>
-    <h1 style="margin:16px 0 8px;font-size:24px;color:#ffffff">Hi ${name}, you're in! 🎡</h1>
-    <p style="margin:0 0 24px;color:#a9b4bf;font-size:15px;line-height:1.5">Thanks for registering for the Sky Eye stall games at KIIT MUN. Here's your spin code:</p>
-    <div style="display:inline-block;background:#ffffff;color:#0b0f1a;font-size:34px;font-weight:bold;letter-spacing:8px;padding:14px 22px 14px 30px;border-radius:14px;font-family:'Courier New',monospace">${esc(player.code)}</div>
-    <p style="margin:24px 0;color:#a9b4bf;font-size:15px;line-height:1.5">When a round starts, scan the QR code at the stall, enter your code and spin. <b style="color:#ffd166">The first spinners of each round win Sky Eye goodies.</b> Each code spins once, so be quick!</p>
-    <a href="${link}" style="display:inline-block;background:#5ef2ff;color:#0b0f1a;text-decoration:none;font-weight:bold;padding:14px 28px;border-radius:999px;font-size:16px">Open the wheel →</a>
-    <p style="margin:28px 0 0;color:#6b778a;font-size:12px">Sky Eye Technology (SET) Pvt. Ltd. · Bhubaneswar · skyeyetechnology.in</p>
-  </div>
-</div>`,
+      html: emailHtml({ name, code: esc(player.code), link }),
     })
     await rest(`players?id=eq.${player.id}`, { method: 'PATCH', body: { code_sent_at: new Date().toISOString(), email_error: null } })
     return { ok: true }
