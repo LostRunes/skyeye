@@ -18,17 +18,52 @@ const point = (deg, r) => {
   return [C + r * Math.cos(a), C + r * Math.sin(a)]
 }
 
-export default function Wheel({ prizes, landOn, spinKey, onDone, duration = 5200, hub = null, className = '' }) {
+// The "Better luck next time" prize (is_blank) shows as a few slices spread
+// round the wheel, between the goodies.
+function layout(prizes) {
+  const goods = prizes.filter((p) => !p.is_blank)
+  const blank = prizes.find((p) => p.is_blank)
+  if (!blank) return goods
+  if (!goods.length) return [blank]
+  const copies = Math.max(1, Math.min(3, Math.floor(goods.length / 2)))
+  const every = Math.ceil(goods.length / copies)
+  const slots = []
+  goods.forEach((p, i) => {
+    slots.push(p)
+    if ((i + 1) % every === 0 && slots.filter((s) => s.is_blank).length < copies) slots.push(blank)
+  })
+  while (slots.filter((s) => s.is_blank).length < copies) slots.push(blank)
+  return slots
+}
+
+// Long names go on two lines
+const lines = (name = '') => {
+  if (name.length <= 11 || !name.includes(' ')) return [name]
+  const words = name.split(' ')
+  let best = 1
+  for (let k = 1; k < words.length; k++) {
+    const a = words.slice(0, k).join(' ').length
+    const b = words.slice(k).join(' ').length
+    const bestA = words.slice(0, best).join(' ').length
+    if (Math.abs(a - b) < Math.abs(bestA - words.slice(best).join(' ').length)) best = k
+  }
+  return [words.slice(0, best).join(' '), words.slice(best).join(' ')]
+}
+
+export default function Wheel({ prizes: list, landOn, spinKey, onDone, duration = 5200, hub = null, className = '' }) {
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
   const done = useRef(onDone)
   done.current = onDone
+  const prizes = layout(list)
   const n = Math.max(prizes.length, 1)
+  const many = n > 7
   const seg = 360 / n
 
   useEffect(() => {
     if (!spinKey) return undefined
-    const i = prizes.findIndex((p) => p.id === landOn)
+    const spots = prizes.map((p, k) => (p.id === landOn ? k : -1)).filter((k) => k >= 0)
+    const i = spots.length ? spots[Math.floor(Math.random() * spots.length)] : -1
     if (i < 0) {
       done.current?.()
       return undefined
@@ -57,7 +92,7 @@ export default function Wheel({ prizes, landOn, spinKey, onDone, duration = 5200
   }
 
   return (
-    <div className={`sw-wheel ${spinning ? 'is-spinning' : ''} ${className}`}>
+    <div className={`sw-wheel ${spinning ? 'is-spinning' : ''} ${many ? 'sw-wheel--many' : ''} ${className}`}>
       <div className="sw-pointer" aria-hidden="true">
         <svg viewBox="0 0 60 78" className="sw-pointer-svg">
           <path d="M30 76 L8 30 A24 24 0 1 1 52 30 Z" fill="#b22026" stroke="#2f2926" strokeWidth="3" strokeLinejoin="round" />
@@ -70,20 +105,40 @@ export default function Wheel({ prizes, landOn, spinKey, onDone, duration = 5200
           className="sw-wheel-svg"
           style={{ transform: `rotate(${rotation}deg)`, transitionDuration: `${duration}ms` }}
           role="img"
-          aria-label={`Prize wheel: ${prizes.map((p) => p.name).join(', ')}`}
+          aria-label={`Prize wheel: ${list.map((p) => p.name).join(', ')}`}
         >
           {prizes.map((p, i) => {
             const mid = i * seg + seg / 2
-            const [ix, iy] = point(mid, R * 0.78)
-            const [tx, ty] = point(mid, R * 0.52)
+            const [ix, iy] = point(mid, R * (many ? 0.81 : 0.78))
+            const [tx, ty] = point(mid, R * (many ? 0.57 : 0.52))
+            const label = lines(p.name)
             return (
-              <g key={p.id}>
+              <g key={`${p.id}-${i}`}>
                 <path d={slice(i)} fill={p.color || '#e6d4bf'} stroke="#2f2926" strokeWidth="2.5" />
                 <text x={ix} y={iy} className="sw-seg-icon" fill={inkOn(p.color)} transform={`rotate(${mid}, ${ix}, ${iy})`} textAnchor="middle" dominantBaseline="central">
                   {p.icon || 'redeem'}
                 </text>
-                <text x={tx} y={ty} className="sw-seg-label" fill={inkOn(p.color)} transform={`rotate(${mid}, ${tx}, ${ty})`} textAnchor="middle" dominantBaseline="central">
-                  {p.name}
+                <text
+                  x={tx}
+                  y={ty}
+                  className={`sw-seg-label${label.length > 1 ? ' sw-seg-label--2' : ''}`}
+                  fill={inkOn(p.color)}
+                  transform={`rotate(${mid}, ${tx}, ${ty})`}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                >
+                  {label.length > 1 ? (
+                    <>
+                      <tspan x={tx} dy="-0.55em">
+                        {label[0]}
+                      </tspan>
+                      <tspan x={tx} dy="1.1em">
+                        {label[1]}
+                      </tspan>
+                    </>
+                  ) : (
+                    p.name
+                  )}
                 </text>
               </g>
             )

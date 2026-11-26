@@ -34,7 +34,7 @@ export const EVENTS = [
         { icon: 'flight', title: 'Drone display', text: 'Real drones on show — and some you can buy at the stall.' },
         { icon: 'flight_takeoff', title: 'Opportunities', text: 'Find out about drone training, courses and openings at Sky Eye.' },
       ],
-      // What players can win at the stall (also the segments of the demo wheel)
+      // What players can win at the stall (shown on the Events page)
       prizes: [
         { icon: 'badge', name: 'Pilot card', note: 'PVC Sky Eye pilot card' },
         { icon: 'key', name: 'Keychain' },
@@ -47,6 +47,21 @@ export const EVENTS = [
         title: 'Drones on display and for sale',
         text: 'See working drones up close at the stall, ask the team anything, and take one home: selected drones will be available to buy right there.',
       },
+    },
+    // The reel challenge leaderboard (entries and views: admin panel → Reels)
+    reels: {
+      hashtag: '#skyeyetechnology',
+      text: 'Post a reel on Instagram with #skyeyetechnology — the stall, the drones, the games, your MUN moments. The reels with the most views win Sky Eye prizes.',
+      facts: [
+        { icon: 'tag', text: 'Use #skyeyetechnology' },
+        { icon: 'visibility', text: 'Most views wins' },
+        { icon: 'emoji_events', text: 'Top reels win prizes' },
+      ],
+      steps: [
+        'Post a public reel on Instagram with #skyeyetechnology in the caption.',
+        'Submit the reel’s link here.',
+        'We check it and keep the view counts on the board up to date. Highest views at the end wins.',
+      ],
     },
   },
 ]

@@ -5794,6 +5794,12 @@ html.lenis.rec-snapping {
   .arcade-grid > :first-child {
     grid-row: span 2;
   }
+  .arcade-grid--two {
+    grid-template-columns: 1fr 1fr;
+  }
+  .arcade-grid--two > :first-child {
+    grid-row: auto;
+  }
 }
 
 .arcade-card {

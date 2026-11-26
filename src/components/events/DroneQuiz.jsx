@@ -46,7 +46,7 @@ export default function DroneQuiz() {
   return (
     <div className="arcade-card arcade-quiz">
       <div className="arcade-card-head">
-        <span className="arcade-tag">GAME 03 · DEMO</span>
+        <span className="arcade-tag">GAME 02 · DEMO</span>
         <h4>Drone quiz</h4>
         <p>Five questions. Get them all right and you’re ready for the stall.</p>
       </div>
