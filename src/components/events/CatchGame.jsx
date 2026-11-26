@@ -114,7 +114,7 @@ export default function CatchGame() {
   return (
     <div className="arcade-card arcade-catch">
       <div className="arcade-card-head">
-        <span className="arcade-tag">GAME 02 · DEMO</span>
+        <span className="arcade-tag">GAME 01 · DEMO</span>
         <h4>Catch the drone</h4>
         <p>Tap the drone before it flies off. {ROUND} seconds. How fast are your hands?</p>
       </div>

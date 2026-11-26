@@ -58,7 +58,7 @@ export default function PlayPage() {
   useEffect(() => {
     supabase
       .from('prizes')
-      .select('id, name, icon, color')
+      .select('*')
       .eq('active', true)
       .order('sort')
       .order('id')
@@ -209,7 +209,7 @@ export default function PlayPage() {
               Hey <span className="sw-grad">{name}</span>! 👋
             </h1>
             <p className="sw-sub">
-              {info?.round} · the first {info?.max_winners ?? 10} spins win a goodie. Fastest fingers first!
+              {info?.round} · one spin per code. Good luck!
             </p>
             <div ref={wheelBox}>
               <Wheel
@@ -239,7 +239,7 @@ export default function PlayPage() {
           <section className={`sw-card sw-result ${result.is_winner ? 'is-win' : 'is-miss'}`} aria-live="polite">
             {result.is_winner ? (
               <>
-                <span className="sw-badge">#{result.rank} this round</span>
+                <span className="sw-badge">{result.round}</span>
                 <span className="material-symbols-outlined sw-prize-icon" style={{ color: prize?.color }}>
                   {prize?.icon || 'redeem'}
                 </span>
@@ -269,12 +269,9 @@ export default function PlayPage() {
                   <span className="material-symbols-outlined">sentiment_satisfied</span>
                 </span>
                 <h1 className="sw-title sw-title--sm">
-                  You landed on <span className="sw-grad">{result.prize_name}</span>…
+                  <span className="sw-grad">Better luck</span> next time!
                 </h1>
-                <p className="sw-sub">
-                  …but the first {result.max_winners} spots this round were already taken (you were #{result.rank}).
-                  Thanks for playing, and come say hi at the Sky Eye stall!
-                </p>
+                <p className="sw-sub">Thanks for playing! Come say hi at the Sky Eye stall and see the drones up close.</p>
               </>
             )}
           </section>

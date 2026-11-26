@@ -186,6 +186,8 @@ begin
 end $$;
 
 drop function if exists public.spin(text);
+-- NOTE: replaced by supabase/spin-odds.sql (weighted draw with a "Better luck
+-- next time" slice). If you re-run this file, run spin-odds.sql after it.
 create function public.spin(p_code text)
 returns json language plpgsql volatile security definer set search_path = public as $$
 declare

@@ -13,6 +13,8 @@ import './spin.css'
 //   Big screen  full-screen wheel that spins live for every spin + leaderboard
 //   Players     everyone registered, their codes, (re)send code emails
 //   Prizes      what's on the wheel: odds, stock, on/off
+//   Email senders  the Gmail accounts the codes go out from
+//   Reels       the #skyeyetechnology reel challenge: approve entries, set views
 const PLAY_URL = 'https://www.skyeyetechnology.in/#/spin'
 const logo = ik('site/logo-mark-light.png', 'h-96')
 
@@ -178,7 +180,7 @@ function RoundPanel({ data }) {
         </h2>
         {open && (
           <p className="sa-muted">
-            Started {fmtTime(open.started_at)} · {winners.length}/{open.max_winners} winners · {spins.length} spins
+            Started {fmtTime(open.started_at)} · {winners.length}/{open.max_winners} goodies won · {spins.length} spins
           </p>
         )}
         <div className="sa-row">
@@ -187,7 +189,7 @@ function RoundPanel({ data }) {
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder={`Round ${sessions.length + 1}`} />
           </label>
           <label className="sw-field sa-narrow">
-            <span>Winners</span>
+            <span>Max goodies</span>
             <input type="number" min="1" max="200" value={max} onChange={(e) => setMax(e.target.value)} />
           </label>
         </div>
@@ -326,7 +328,7 @@ function BigScreen({ data, onExit }) {
           {shown && (
             <>
               <strong>{fullName(shown.players)}</strong>
-              <span>{shown.is_winner ? `wins: ${shown.prize_name} 🎉` : `landed on ${shown.prize_name} · #${shown.rank}, just missed!`}</span>
+              <span>{shown.is_winner ? `wins: ${shown.prize_name} 🎉` : 'better luck next time!'}</span>
             </>
           )}
         </div>
@@ -810,8 +812,10 @@ function PrizesPanel({ data }) {
         </button>
       </div>
       <p className="sa-muted">
-        Odds are relative: a prize with weight 30 comes up three times as often as one with 10. Leave stock empty for unlimited;
-        stock only goes down when a winner (top spots) lands on it, and a prize at 0 stock is skipped for winners.
+        Every spin is a weighted draw: a prize with weight 30 comes up three times as often as one with 10, and “Chance” shows the
+        odds per spin (“1 in N”). The “Better luck next time” row is the blank slice, so keep it the biggest. Stock goes down each time
+        a prize is won and a prize at 0 is skipped; leave stock empty for unlimited. Once a round has given out its “max goodies”,
+        every spin in it lands on Better luck next time.
       </p>
       {msg && <p className="sa-note">{msg}</p>}
       <div className="sa-table-wrap">
@@ -848,7 +852,11 @@ function PrizesPanel({ data }) {
                 <td>
                   <input className="sa-w5" type="number" min="0" value={r.weight} onChange={(e) => edit(r.id, 'weight', e.target.value)} />
                 </td>
-                <td className="sa-mono">{r.active && total ? `${Math.round(((Number(r.weight) || 0) / total) * 100)}%` : '—'}</td>
+                <td className="sa-mono">
+                  {r.active && total && Number(r.weight) > 0
+                    ? `${(((Number(r.weight) || 0) / total) * 100).toFixed(1)}% · 1 in ${Math.max(1, Math.round(total / Number(r.weight)))}`
+                    : '—'}
+                </td>
                 <td>
                   <input className="sa-w5" type="number" min="0" value={r.stock ?? ''} placeholder="∞" onChange={(e) => edit(r.id, 'stock', e.target.value)} />
                 </td>
@@ -869,6 +877,210 @@ function PrizesPanel({ data }) {
   )
 }
 
+/* ─── Reels (#skyeyetechnology challenge) ───────────────────────────────── */
+
+const REEL_CODE = /instagram\.com\/(?:[A-Za-z0-9_.]+\/)?(?:reel|reels|p|tv)\/([A-Za-z0-9_-]+)/
+const REEL_FILTERS = [
+  ['pending', 'Waiting for review'],
+  ['approved', 'On the board'],
+  ['rejected', 'Rejected'],
+  ['all', 'All'],
+]
+
+function ReelsPanel() {
+  const [rows, setRows] = useState(null)
+  const [views, setViews] = useState({})
+  const [filter, setFilter] = useState('pending')
+  const [msg, setMsg] = useState('')
+  const [add, setAdd] = useState({ handle: '', url: '', views: '' })
+
+  const load = useCallback(async () => {
+    const { data, error } = await supabase.from('reel_entries').select('*').order('views', { ascending: false }).order('id')
+    if (error) setMsg(error.message.includes('reel_entries') ? 'Run supabase/reels.sql in Supabase first.' : error.message)
+    setRows(data || [])
+  }, [])
+  useEffect(() => {
+    load()
+    const ch = supabase
+      .channel('reels-admin')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reel_entries' }, load)
+      .subscribe()
+    return () => supabase.removeChannel(ch)
+  }, [load])
+
+  const update = async (r, body, done) => {
+    setMsg('')
+    const { error } = await supabase.from('reel_entries').update(body).eq('id', r.id)
+    setMsg(error ? error.message : done)
+    load()
+  }
+  const saveViews = (r) => {
+    const v = Number(String(views[r.id] ?? r.views).replace(/[^\d]/g, ''))
+    update(r, { views: v, views_at: new Date().toISOString() }, `@${r.handle}: ${v.toLocaleString('en-IN')} views saved.`)
+    setViews((all) => {
+      const next = { ...all }
+      delete next[r.id]
+      return next
+    })
+  }
+  const remove = async (r) => {
+    if (!window.confirm(`Delete the reel entry from @${r.handle}?`)) return
+    const { error } = await supabase.from('reel_entries').delete().eq('id', r.id)
+    setMsg(error ? error.message : `Deleted the entry from @${r.handle}.`)
+    load()
+  }
+  const addReel = async (e) => {
+    e.preventDefault()
+    const code = add.url.match(REEL_CODE)?.[1]
+    const handle = add.handle.trim().replace(/^@+/, '').toLowerCase()
+    if (!code) return setMsg('That isn’t an Instagram reel link.')
+    const { error } = await supabase.from('reel_entries').insert({
+      handle,
+      reel_url: `https://www.instagram.com/reel/${code}/`,
+      shortcode: code,
+      views: Number(add.views) || 0,
+      views_at: add.views ? new Date().toISOString() : null,
+      status: 'approved',
+    })
+    setMsg(error ? (error.code === '23505' ? 'That reel is already in the list.' : error.message) : `Added @${handle} to the board.`)
+    if (!error) setAdd({ handle: '', url: '', views: '' })
+    load()
+  }
+
+  const list = rows || []
+  const count = (k) => (k === 'all' ? list.length : list.filter((r) => r.status === k).length)
+  const shown = filter === 'all' ? list : list.filter((r) => r.status === filter)
+  const approved = list.filter((r) => r.status === 'approved')
+  const rankOf = (r) => (r.status === 'approved' ? approved.filter((a) => a.views > r.views).length + 1 : null)
+
+  return (
+    <div className="sa-grid sa-grid--stack">
+      <section className="sa-card sa-board">
+        <div className="sa-board-head">
+          <h2>#skyeyetechnology reels</h2>
+          <a className="sa-pill" href="https://www.instagram.com/explore/tags/skyeyetechnology/" target="_blank" rel="noreferrer noopener">
+            See the hashtag on Instagram ↗
+          </a>
+        </div>
+        <p className="sa-muted">
+          Reels people submit on the Events page land in “Waiting for review”. Open each one, check it’s public and uses
+          #skyeyetechnology, then approve it. Type in the view count Instagram shows and press Save: the board on the website
+          updates within a minute. Instagram doesn’t let other apps read reel views, so they’re updated by hand here.
+        </p>
+        {msg && <p className="sa-note">{msg}</p>}
+        <div className="sa-send">
+          {REEL_FILTERS.map(([k, label]) => (
+            <button key={k} className={`sa-pill ${filter === k ? 'is-done' : ''}`} onClick={() => setFilter(k)}>
+              {label} · {count(k)}
+            </button>
+          ))}
+        </div>
+        <div className="sa-table-wrap">
+          <table className="sa-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Account</th>
+                <th>Reel</th>
+                <th>Views</th>
+                <th>Status</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {shown.map((r) => (
+                <tr key={r.id} className={r.status === 'rejected' ? 'is-miss' : ''}>
+                  <td className="sa-rank">{rankOf(r) ?? '—'}</td>
+                  <td>
+                    <a href={`https://www.instagram.com/${r.handle}/`} target="_blank" rel="noreferrer noopener">
+                      <strong>@{r.handle}</strong>
+                    </a>
+                    <span className="sa-muted sa-small">{r.email || 'added by the team'}</span>
+                  </td>
+                  <td>
+                    <a className="sa-pill" href={r.reel_url} target="_blank" rel="noreferrer noopener">
+                      Open reel ↗
+                    </a>
+                  </td>
+                  <td>
+                    <form
+                      className="sa-views"
+                      onSubmit={(e) => {
+                        e.preventDefault()
+                        saveViews(r)
+                      }}
+                    >
+                      <input
+                        inputMode="numeric"
+                        value={views[r.id] ?? r.views}
+                        onChange={(e) => setViews((v) => ({ ...v, [r.id]: e.target.value }))}
+                        aria-label={`Views for @${r.handle}`}
+                      />
+                      <button className="sa-pill" disabled={views[r.id] === undefined}>
+                        Save
+                      </button>
+                    </form>
+                    <span className="sa-muted sa-small">
+                      {r.views_at ? `updated ${new Date(r.views_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}` : 'not updated yet'}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`sa-pill ${r.status === 'approved' ? 'is-done' : r.status === 'rejected' ? 'is-bad' : 'is-warn'}`}>
+                      {r.status === 'approved' ? 'On the board' : r.status === 'rejected' ? 'Rejected' : 'Waiting'}
+                    </span>
+                  </td>
+                  <td className="sa-actions">
+                    {r.status !== 'approved' && (
+                      <button className="sa-pill" onClick={() => update(r, { status: 'approved' }, `@${r.handle} is on the board.`)}>
+                        Approve
+                      </button>
+                    )}
+                    {r.status !== 'rejected' && (
+                      <button className="sa-pill" onClick={() => update(r, { status: 'rejected' }, `@${r.handle} rejected.`)}>
+                        Reject
+                      </button>
+                    )}
+                    <button className="sa-pill" onClick={() => remove(r)}>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {rows && !shown.length && (
+                <tr>
+                  <td colSpan={6} className="sa-muted">
+                    Nothing here.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="sa-card">
+        <h2>Add a reel yourself</h2>
+        <p className="sa-muted">For reels you found on the hashtag that weren’t submitted. They go straight onto the board.</p>
+        <form className="sa-row sa-wrap" onSubmit={addReel}>
+          <label className="sw-field">
+            <span>Instagram username</span>
+            <input required value={add.handle} onChange={(e) => setAdd({ ...add, handle: e.target.value })} placeholder="@handle" />
+          </label>
+          <label className="sw-field">
+            <span>Reel link</span>
+            <input required value={add.url} onChange={(e) => setAdd({ ...add, url: e.target.value })} placeholder="https://www.instagram.com/reel/…" />
+          </label>
+          <label className="sw-field sa-narrow">
+            <span>Views</span>
+            <input inputMode="numeric" value={add.views} onChange={(e) => setAdd({ ...add, views: e.target.value.replace(/[^\d]/g, '') })} />
+          </label>
+          <button className="sw-btn">Add to board</button>
+        </form>
+      </section>
+    </div>
+  )
+}
+
 /* ─── Shell ────────────────────────────────────────────────────────────── */
 
 const TABS = [
@@ -877,6 +1089,7 @@ const TABS = [
   ['players', 'Players', 'group'],
   ['prizes', 'Prizes', 'redeem'],
   ['senders', 'Email senders', 'mail'],
+  ['reels', 'Reels', 'movie'],
 ]
 
 export default function AdminApp() {
@@ -945,6 +1158,7 @@ export default function AdminApp() {
             {tab === 'players' && <PlayersPanel data={data} mail={mail} />}
             {tab === 'senders' && <SendersPanel mail={mail} />}
             {tab === 'prizes' && <PrizesPanel data={data} />}
+            {tab === 'reels' && <ReelsPanel />}
           </>
         ) : null}
       </main>

@@ -4,16 +4,17 @@ import { PHONE_PATTERN, PHONE_TITLE, SOURCE, cleanPhone, useLeadForm } from '../
 import { LeadError, LeadSent } from './LeadStatus'
 import { EVENTS, isPast, statusLabel } from '../data/event'
 import Countdown from './events/Countdown'
-import SpinWheel from './events/SpinWheel'
 import CatchGame from './events/CatchGame'
 import DroneQuiz from './events/DroneQuiz'
 import GoodiesShowcase from './events/GoodiesShowcase'
+import ReelLeaderboard from './events/ReelLeaderboard'
 import '../goodies.css'
 
 // Events page: every event Sky Eye takes part in (src/data/event.js). Each
 // gets a showcase — animated banner with a live countdown, a ticker, what
 // the event is, and (where Sky Eye runs a stall) the "Sky Eye Arcade": demo
-// versions of the stall games, then the sign-up for the real ones. Sign-ups
+// versions of the stall games, the #skyeyetechnology reel leaderboard, then
+// the sign-up for the real games. Sign-ups
 // go to Zoho CRM as Leads (Lead Source "Website - MUN stall"); WhatsApp stays
 // as a second way to register.
 
@@ -76,7 +77,7 @@ function StallRegister({ event }) {
             <strong>Come to the stall</strong> — {event.stall.where}.
           </li>
           <li>
-            <strong>Scan the QR, enter your code and spin</strong> — the fastest spinners of each round win goodies.
+            <strong>Scan the QR, enter your code and spin</strong> — and try your luck for Sky Eye goodies.
           </li>
         </ol>
       </div>
@@ -356,20 +357,19 @@ function EventShowcase({ event }) {
               </div>
             )}
 
-            <div className="arcade-grid">
+            <div className="arcade-grid arcade-grid--two">
               <div data-reveal>
-                <SpinWheel />
-              </div>
-              <div data-reveal style={{ transitionDelay: '0.08s' }}>
                 <CatchGame />
               </div>
-              <div data-reveal style={{ transitionDelay: '0.16s' }}>
+              <div data-reveal style={{ transitionDelay: '0.08s' }}>
                 <DroneQuiz />
               </div>
             </div>
           </div>
         </section>
       )}
+
+      {event.reels && <ReelLeaderboard reels={event.reels} />}
 
       {event.stall && !past && (
         <div className="container">

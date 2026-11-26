@@ -211,7 +211,7 @@ const emailHtml = ({ name, code, link }) => {
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
             ${step(1, 'Come to the <b>Sky Eye stall</b>, Campus 6.')}
             ${step(2, 'When a round starts, scan the <b>QR code</b> at the stall.')}
-            ${step(3, `Enter your code and spin. <b style="color:${crimson}">The first spinners of each round win Sky Eye goodies!</b>`)}
+            ${step(3, `Enter your code and spin. <b style="color:${crimson}">Spin for a chance to win Sky Eye goodies!</b>`)}
           </table>
         </td></tr>
         <tr><td align="center" style="padding:10px 24px 26px">
@@ -238,7 +238,7 @@ export async function sendCode(player, senders) {
   const message = {
     to: player.email,
     subject: `Your Sky Eye spin code: ${player.code} 🎡`,
-    text: `Hi ${player.first_name},\n\nThanks for registering for the Sky Eye stall games at KIIT MUN!\n\nYour spin code: ${player.code}\n\nWhen the round starts, scan the QR code at the stall (or open ${link}), enter your code and spin. The first spinners of each round win Sky Eye goodies. Each code spins once, so be quick!\n\nSee you at the stall,\nTeam Sky Eye Technology`,
+    text: `Hi ${player.first_name},\n\nThanks for registering for the Sky Eye stall games at KIIT MUN!\n\nYour spin code: ${player.code}\n\nWhen the round starts, scan the QR code at the stall (or open ${link}), enter your code and spin. Spin for a chance to win Sky Eye goodies. Each code spins once, so make it count!\n\nSee you at the stall,\nTeam Sky Eye Technology`,
     html: emailHtml({ name, code: esc(player.code), link }),
   }
   const fail = async (msg) => {

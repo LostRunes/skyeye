@@ -493,6 +493,16 @@
 .sw-seg-label {
   font: 800 16px/1 'Geist', system-ui, sans-serif;
 }
+.sw-wheel--many .sw-seg-label {
+  font-size: 13px;
+}
+.sw-seg-label--2,
+.sw-wheel--many .sw-seg-label--2 {
+  font-size: 12px;
+}
+.sw-wheel--many .sw-seg-icon {
+  font-size: 22px;
+}
 .sw-seg-icon {
   font-family: 'Material Symbols Outlined';
   font-size: 26px;
@@ -949,6 +959,13 @@
 .bs-wheel .sw-seg-label {
   font-size: 18px;
 }
+.bs-wheel.sw-wheel--many .sw-seg-label {
+  font-size: 14px;
+}
+.bs-wheel .sw-seg-label--2,
+.bs-wheel.sw-wheel--many .sw-seg-label--2 {
+  font-size: 13px;
+}
 .bs-shout {
   margin-top: 3vh;
   min-height: 12vh;
@@ -1226,4 +1243,29 @@
 }
 .sw-app .sa-capacity.is-bad {
   color: var(--crimson);
+}
+
+/* Reels tab */
+.sa-views {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.sa-views input {
+  width: 8.5em;
+  padding: 7px 9px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 700 13px/1 'JetBrains Mono', 'Courier New', monospace;
+}
+.sa-views input:focus {
+  outline: 3px solid var(--marigold, #dda94b);
+  outline-offset: 1px;
+}
+.sa-actions a.sa-pill,
+td > a.sa-pill {
+  display: inline-block;
+  text-decoration: none;
 }
