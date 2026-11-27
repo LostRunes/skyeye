@@ -1,6 +1,11 @@
 // Every image, clip and drone frame on the site is served from ImageKit —
 // nothing heavier than a favicon ships in the repo.
-export const CDN = 'https://ik.imagekit.io/hiesc7f4v'
+export const CDN = 'https://ik.imagekit.io/eslimd17h'
+
+// The previous ImageKit account. Only the scroll-scrubbed drone frames on the
+// courses site still live there (their source files aren't in the repo or the
+// Drive), so they come back when that account's monthly bandwidth resets.
+export const LEGACY_CDN = 'https://ik.imagekit.io/hiesc7f4v'
 
 const withTr = (url, tr) => (tr ? `${url}?tr=${tr}` : url)
 

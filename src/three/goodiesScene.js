@@ -12,7 +12,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 // spin. goTo / next / prev swoosh the current goodie out one side (spinning,
 // leaning, trailing speed lines) while the next one flies in from the other.
 
-const LOGO_URL = 'https://ik.imagekit.io/hiesc7f4v/skyeye/site/logo-mark.png?tr=h-256'
+const LOGO_URL = 'https://ik.imagekit.io/eslimd17h/skyeye/site/logo-mark.png?tr=h-256'
 const FONT = "'Geist', 'Space Grotesk', system-ui, sans-serif"
 const MONO = "'JetBrains Mono', 'Courier New', monospace"
 const ORANGE = '#ff5a1f'
