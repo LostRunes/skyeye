@@ -87,12 +87,23 @@ function StallRegister({ event }) {
           <LeadSent
             className="contact-form-body"
             title="You’re registered!"
-            text={`Your spin code is on its way to ${form.email}. Bring it to the Sky Eye stall, ${event.stall.where}: scan the QR, enter the code and spin!`}
+            text={`Bring the code to the Sky Eye stall, ${event.stall.where}: scan the QR, enter the code and spin!`}
             onReset={() => {
               setForm({ first: '', last: '', phone: '', email: '', college: '', day: 'Any day', message: '' })
               lead.reset()
             }}
-          />
+          >
+            <div className="lead-sent-callout">
+              <span className="material-symbols-outlined" aria-hidden="true">
+                mark_email_unread
+              </span>
+              <strong>Check your email</strong>
+              <span className="lead-sent-callout-sub">to spin the wheel!</span>
+              <small>
+                Your spin code is on its way to <b>{form.email}</b>. Not there in a minute? Look in Spam or Promotions.
+              </small>
+            </div>
+          </LeadSent>
         ) : (
           <div className="contact-form-body">
             <span className="contact-form-title">STALL GAMES · {name}</span>

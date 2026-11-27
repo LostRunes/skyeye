@@ -180,3 +180,52 @@
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
+
+/* Stall games sign-up: the big "check your email" nudge */
+.lead-sent-callout {
+  display: grid;
+  justify-items: center;
+  gap: 0.15rem;
+  width: 100%;
+  margin: 0.4rem 0 0.2rem;
+  padding: 1.1rem 1rem 1rem;
+  border: 2px solid var(--color-secondary, #ff4f00);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--color-secondary, #ff4f00) 10%, transparent);
+  text-align: center;
+}
+.lead-sent-callout .material-symbols-outlined {
+  font-size: 44px;
+  color: var(--color-secondary, #ff4f00);
+  animation: lead-callout-bob 1.6s ease-in-out infinite;
+}
+.lead-sent-callout strong {
+  font-size: clamp(30px, 7vw, 48px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+.lead-sent-callout-sub {
+  font-size: clamp(18px, 3.6vw, 24px);
+  font-weight: 700;
+  color: var(--color-secondary, #ff4f00);
+}
+.lead-sent-callout small {
+  margin-top: 0.5rem;
+  max-width: 36ch;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  opacity: 0.8;
+  overflow-wrap: anywhere;
+}
+@keyframes lead-callout-bob {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lead-sent-callout .material-symbols-outlined {
+    animation: none;
+  }
+}

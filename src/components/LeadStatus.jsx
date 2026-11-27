@@ -107,11 +107,12 @@ export function CuteDrone({ text = 'THANK YOU!', glow = '#5ef2ff', accent = '#22
   )
 }
 
-export function LeadSent({ title = 'Thank you — request received.', text, onReset, className = '', banner }) {
+export function LeadSent({ title = 'Thank you — request received.', text, onReset, className = '', banner, children }) {
   return (
     <div className={`lead-sent ${className}`} role="status">
       <CuteDrone text={banner} />
       <strong className="lead-sent-title">{title}</strong>
+      {children}
       <p className="lead-sent-text">{text || 'The Sky Eye team will get back to you within a day.'}</p>
       {onReset && (
         <button type="button" className="lead-sent-again" onClick={onReset}>
