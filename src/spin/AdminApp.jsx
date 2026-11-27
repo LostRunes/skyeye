@@ -15,6 +15,7 @@ import './spin.css'
 //   Prizes      what's on the wheel: odds, stock, on/off
 //   Email senders  the Gmail accounts the codes go out from
 //   Reels       the #skyeyetechnology reel challenge: approve entries, set views
+//   Assigned prizes  set the prize a particular email gets when they spin
 const PLAY_URL = 'https://www.skyeyetechnology.in/#/spin'
 const logo = ik('site/logo-mark-light.png', 'h-96')
 
@@ -1149,6 +1150,179 @@ function ReelsPanel() {
   )
 }
 
+/* ─── Assigned prizes ──────────────────────────────────────────────────── */
+
+// Set the prize a particular player gets: when the player with this email
+// spins, the wheel lands on it (supabase/prize-assignments.sql). Used once.
+function AssignPanel({ data }) {
+  const { prizes, players } = data
+  const [rows, setRows] = useState(null)
+  const [form, setForm] = useState({ email: '', prize: '', note: '' })
+  const [msg, setMsg] = useState('')
+  const [busy, setBusy] = useState(false)
+  const active = prizes.filter((p) => p.active)
+
+  const load = useCallback(async () => {
+    const { data: d, error } = await supabase.from('prize_assignments').select('*').order('created_at', { ascending: false })
+    if (error) setMsg(error.message.includes('prize_assignments') ? 'Run supabase/prize-assignments.sql in Supabase first.' : error.message)
+    setRows(d || [])
+  }, [])
+  useEffect(() => {
+    load()
+    const ch = supabase
+      .channel('assign-admin')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'prize_assignments' }, load)
+      .subscribe()
+    return () => supabase.removeChannel(ch)
+  }, [load])
+
+  const byEmail = useMemo(() => new Map((players || []).map((p) => [String(p.email || '').toLowerCase(), p])), [players])
+  const prizeName = (id) => prizes.find((p) => p.id === id)?.name || '—'
+  const email = form.email.trim().toLowerCase()
+  const match = email ? byEmail.get(email) : null
+
+  const submit = async (e) => {
+    e.preventDefault()
+    const prizeId = Number(form.prize)
+    if (!email || !prizeId) return
+    setBusy(true)
+    setMsg('')
+    const open = (rows || []).find((r) => !r.used_at && r.email.toLowerCase() === email)
+    const { error } = open
+      ? await supabase.from('prize_assignments').update({ prize_id: prizeId, note: form.note || null }).eq('id', open.id)
+      : await supabase.from('prize_assignments').insert({ email, prize_id: prizeId, note: form.note || null })
+    if (error) setMsg(error.message)
+    else {
+      const spun = match?.spins?.length
+      setMsg(
+        `${email} will get ${prizeName(prizeId)} when they spin.` +
+          (spun ? ' Heads up: this player has already spun, and each code spins once, so it only applies if they register again with a new code.' : ''),
+      )
+      setForm({ email: '', prize: form.prize, note: '' })
+    }
+    setBusy(false)
+    load()
+  }
+  const remove = async (r) => {
+    if (!window.confirm(`Remove the assigned ${prizeName(r.prize_id)} for ${r.email}?`)) return
+    const { error } = await supabase.from('prize_assignments').delete().eq('id', r.id)
+    setMsg(error ? error.message : `Removed the assignment for ${r.email}.`)
+    load()
+  }
+
+  const waiting = (rows || []).filter((r) => !r.used_at)
+  const used = (rows || []).filter((r) => r.used_at)
+
+  return (
+    <div className="sa-grid sa-grid--stack">
+      <section className="sa-card">
+        <h2>Assign a prize</h2>
+        <p className="sa-muted">
+          Enter a player’s email and pick a prize. When that player spins, the wheel lands on that prize (the round’s “max goodies”
+          limit doesn’t stop it). It works once per assignment, and you can set it before or after they register. If the prize is
+          switched off or out of stock when they spin, they get a normal spin instead.
+        </p>
+        {msg && <p className="sa-note">{msg}</p>}
+        <form className="sa-row sa-wrap" onSubmit={submit}>
+          <label className="sw-field">
+            <span>Player’s email</span>
+            <input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} autoComplete="off" />
+          </label>
+          <label className="sw-field">
+            <span>Prize</span>
+            <select className="sa-select" required value={form.prize} onChange={(e) => setForm({ ...form, prize: e.target.value })}>
+              <option value="">Choose…</option>
+              {active.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                  {p.stock !== null && p.stock !== undefined ? ` (${p.stock} left)` : ''}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="sw-field">
+            <span>Note (optional)</span>
+            <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} placeholder="e.g. guest of the organisers" />
+          </label>
+          <button className="sw-btn" disabled={busy}>
+            {busy ? 'Saving…' : 'Assign prize'}
+          </button>
+        </form>
+        {email && (
+          <p className="sa-muted sa-small">
+            {match
+              ? `Registered: ${fullName(match)} · code ${match.code}${match.spins?.length ? ` · already spun (${match.spins[0].prize_name})` : ' · hasn’t spun yet'}`
+              : 'No player with this email yet. It will apply once they register and spin.'}
+          </p>
+        )}
+      </section>
+
+      <section className="sa-card sa-board">
+        <h2>Waiting to spin · {waiting.length}</h2>
+        <div className="sa-table-wrap">
+          <table className="sa-table">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Player</th>
+                <th>Prize</th>
+                <th>Note</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {waiting.map((r) => {
+                const p = byEmail.get(r.email.toLowerCase())
+                return (
+                  <tr key={r.id}>
+                    <td>{r.email}</td>
+                    <td>{p ? `${fullName(p)}${p.spins?.length ? ' · already spun' : ''}` : <span className="sa-muted">not registered yet</span>}</td>
+                    <td>
+                      <strong>{prizeName(r.prize_id)}</strong>
+                    </td>
+                    <td className="sa-small">{r.note || '—'}</td>
+                    <td className="sa-actions">
+                      <button className="sa-pill" onClick={() => remove(r)}>
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
+              {rows && !waiting.length && (
+                <tr>
+                  <td colSpan={5} className="sa-muted">
+                    No prizes assigned right now.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        {used.length > 0 && (
+          <>
+            <h2 className="sa-mt">Already given · {used.length}</h2>
+            <div className="sa-table-wrap">
+              <table className="sa-table">
+                <tbody>
+                  {used.map((r) => (
+                    <tr key={r.id} className="is-miss">
+                      <td>{r.email}</td>
+                      <td>{prizeName(r.prize_id)}</td>
+                      <td className="sa-small">spun {new Date(r.used_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                      <td className="sa-small">{r.note || ''}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+      </section>
+    </div>
+  )
+}
+
 /* ─── Shell ────────────────────────────────────────────────────────────── */
 
 const TABS = [
@@ -1156,6 +1330,7 @@ const TABS = [
   ['screen', 'Big screen', 'tv'],
   ['players', 'Players', 'group'],
   ['prizes', 'Prizes', 'redeem'],
+  ['assign', 'Assigned prizes', 'person_pin'],
   ['senders', 'Email senders', 'mail'],
   ['reels', 'Reels', 'movie'],
 ]
@@ -1226,6 +1401,7 @@ export default function AdminApp() {
             {tab === 'players' && <PlayersPanel data={data} mail={mail} />}
             {tab === 'senders' && <SendersPanel mail={mail} />}
             {tab === 'prizes' && <PrizesPanel data={data} />}
+            {tab === 'assign' && <AssignPanel data={data} />}
             {tab === 'reels' && <ReelsPanel />}
           </>
         ) : null}
