@@ -1,0 +1,225 @@
+/* The stall games sign-up (Events page), dressed like the spin-the-wheel
+   pages so nobody mixes it up with the other forms: sunset card, ink outline,
+   Shrikhand title, parchment form and fairy lights all round. */
+@import url('https://fonts.googleapis.com/css2?family=Shrikhand&display=swap');
+
+.evx .ev-register.ev-carnival {
+  --ink: #2f2926;
+  --cream: #f6eedc;
+  --paper: #fffaf0;
+  --crimson: #b22026;
+  --mustard: #dda94b;
+  position: relative;
+  margin-top: clamp(2rem, 5vw, 3.5rem);
+  margin-bottom: clamp(3rem, 6vw, 5rem);
+  padding: clamp(3rem, 6vw, 4rem) clamp(1.4rem, 4vw, 3.2rem);
+  border: 3px solid var(--ink);
+  border-radius: 28px;
+  background:
+    radial-gradient(1.5px 1.5px at 12% 18%, rgba(255, 245, 225, 0.8) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 34% 9%, rgba(255, 245, 225, 0.6) 50%, transparent 51%),
+    radial-gradient(2px 2px at 58% 22%, rgba(255, 245, 225, 0.7) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 81% 12%, rgba(255, 245, 225, 0.7) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 92% 30%, rgba(255, 245, 225, 0.5) 50%, transparent 51%),
+    linear-gradient(165deg, #4a3a66 0%, #7d5a80 45%, #c27f78 80%, #d98e72 100%);
+  box-shadow: 6px 6px 0 var(--ink);
+  color: var(--cream);
+  scroll-margin-top: 90px;
+}
+
+/* Title block */
+.ev-carnival-tag {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--mustard);
+  color: var(--ink);
+  font: 800 12px/1 var(--font-sans, system-ui);
+  letter-spacing: 0.08em;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.ev-carnival-title {
+  margin: 0.9rem 0 0;
+  font-family: 'Shrikhand', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(40px, 8vw, 72px);
+  line-height: 1;
+  color: var(--cream);
+  text-shadow: 3px 3px 0 var(--ink);
+}
+
+.ev-carnival-sub {
+  margin: 0.8rem 0 0;
+  max-width: 34ch;
+  font-size: clamp(17px, 2.2vw, 20px);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ev-carnival .ev-steps li {
+  color: rgba(246, 238, 220, 0.88);
+}
+
+.ev-carnival .ev-steps li::before {
+  color: var(--mustard);
+  font-weight: 700;
+}
+
+.ev-carnival .ev-steps strong {
+  color: var(--cream);
+}
+
+/* The form: a parchment ticket */
+.ev-carnival .contact-form {
+  border: 3px solid var(--ink);
+  border-radius: 20px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+  overflow: hidden;
+}
+
+.ev-carnival .contact-form-title {
+  color: var(--crimson);
+  font-weight: 700;
+}
+
+.ev-carnival .field span {
+  color: #6f6259;
+}
+
+.ev-carnival .field input,
+.ev-carnival .field select,
+.ev-carnival .field textarea {
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.ev-carnival .field input:focus,
+.ev-carnival .field select:focus,
+.ev-carnival .field textarea:focus {
+  border-color: var(--crimson);
+}
+
+.evx .ev-register.ev-carnival .btn-request {
+  background: var(--crimson);
+  color: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.evx .ev-register.ev-carnival .btn-request:hover {
+  background: #8f1a1f;
+  border-color: var(--ink);
+}
+
+.evx .ev-register.ev-carnival .btn-outline {
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  color: var(--ink);
+  background: transparent;
+}
+
+/* Thank-you state on the parchment */
+.ev-carnival .lead-sent,
+.ev-carnival .lead-sent-title,
+.ev-carnival .lead-sent-text {
+  color: var(--ink);
+}
+
+.ev-carnival .lead-sent-callout {
+  border-color: var(--crimson);
+  background: rgba(178, 32, 38, 0.07);
+}
+
+.ev-carnival .lead-sent-callout .material-symbols-outlined,
+.ev-carnival .lead-sent-callout-sub {
+  color: var(--crimson);
+}
+
+/* Fairy lights (FairyLights.jsx) */
+.fl-edge {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.fl-edge svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.fl-edge--top,
+.fl-edge--bottom {
+  left: 18px;
+  right: 18px;
+  height: 22px;
+}
+
+.fl-edge--top {
+  top: -6px;
+}
+
+.fl-edge--bottom {
+  bottom: -6px;
+  transform: scaleY(-1);
+}
+
+.fl-edge--left,
+.fl-edge--right {
+  top: 30px;
+  bottom: 30px;
+  width: 22px;
+}
+
+.fl-edge--left {
+  left: -6px;
+}
+
+.fl-edge--right {
+  right: -6px;
+  transform: scaleX(-1);
+}
+
+.fl-bulb {
+  position: absolute;
+  width: 10px;
+  height: 13px;
+  margin: -2px 0 0 -5px;
+  border-radius: 50% 50% 50% 50% / 58% 58% 42% 42%;
+  background: var(--c);
+  border: 1.5px solid rgba(47, 41, 38, 0.55);
+  box-shadow: 0 0 8px 1px color-mix(in srgb, var(--c) 65%, transparent);
+  animation: fl-twinkle 2.4s ease-in-out infinite;
+}
+
+.fl-edge--left .fl-bulb,
+.fl-edge--right .fl-bulb {
+  margin: -5px 0 0 -2px;
+  transform: rotate(-90deg);
+}
+
+@keyframes fl-twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+    box-shadow: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fl-bulb {
+    animation: none;
+  }
+}

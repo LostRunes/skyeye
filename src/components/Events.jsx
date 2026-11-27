@@ -8,6 +8,8 @@ import CatchGame from './events/CatchGame'
 import DroneQuiz from './events/DroneQuiz'
 import GoodiesShowcase from './events/GoodiesShowcase'
 import ReelLeaderboard from './events/ReelLeaderboard'
+import FairyLights from './events/FairyLights'
+import './events/carnival.css'
 import '../goodies.css'
 
 // Events page: every event Sky Eye takes part in (src/data/event.js). Each
@@ -65,10 +67,12 @@ function StallRegister({ event }) {
   }
 
   return (
-    <div className="ev-register" id="stall-register">
+    <div className="ev-register ev-carnival" id="stall-register">
+      <FairyLights />
       <div className="ev-register-intro">
-        <span className="section-label">REGISTER TO PLAY</span>
-        <h3 className="ev-h3">Sign up for the stall games.</h3>
+        <span className="ev-carnival-tag">STALL GAMES · {name.toUpperCase()}</span>
+        <h3 className="ev-carnival-title">Spin the wheel!</h3>
+        <p className="ev-carnival-sub">Register here and we’ll email you your spin code.</p>
         <ol className="ev-steps">
           <li>
             <strong>Register here</strong> — your personal spin code lands in your email.

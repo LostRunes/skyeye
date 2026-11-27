@@ -35,7 +35,8 @@ const easeOutBack = (t) => {
 const easeInCubic = (t) => t * t * t
 
 export default function EventPopup() {
-  const [open, setOpen] = useState(() => !!EVENT && !seen())
+  // Not for people arriving on the stall sign-up link (the QR code): they're already where it points
+  const [open, setOpen] = useState(() => !!EVENT && !seen() && !/[?&]to=stall-register/.test(window.location.hash))
   const [closing, setClosing] = useState(false)
   const cardRef = useRef(null)
   const layerRef = useRef(null)
