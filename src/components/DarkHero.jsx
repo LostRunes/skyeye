@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { FOOTAGE, cloudVideo } from '../cdn'
+import { clip } from '../cdn'
 
 // Dark-mode home hero. Same layout, type and buttons as the light VideoHero so
 // the two themes read as one site; only the footage, headline and colours change.
@@ -26,13 +26,13 @@ export default function DarkHero() {
       <div className="vh-media">
         <video
           ref={videoRef}
-          src={cloudVideo(FOOTAGE.skyline, 'q_auto:eco,w_1920')}
+          src={clip('hero-dark')}
           autoPlay
           muted
           loop
           playsInline
           preload="auto"
-          aria-label="Aerial view over a city at dusk"
+          aria-label="Drone flying against a dusk sky"
         />
       </div>
       <div className="vh-topfade" />
