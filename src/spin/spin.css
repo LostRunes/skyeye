@@ -1269,3 +1269,39 @@ td > a.sa-pill {
   display: inline-block;
   text-decoration: none;
 }
+
+/* Prizes tab: odds */
+.sa-odds {
+  margin: 6px 0 14px;
+}
+.sa-odds-bar {
+  display: flex;
+  height: 18px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--paper);
+}
+.sa-odds-bar span {
+  height: 100%;
+  border-right: 1px solid rgba(47, 41, 38, 0.35);
+}
+.sa-odds-bar span:last-child {
+  border-right: 0;
+}
+.sa-odds-bar .sa-odds-blank {
+  background: #e9dbbd;
+}
+.sa-odds p {
+  margin: 8px 0 0;
+}
+.sa-odds.is-bad p {
+  color: var(--crimson);
+}
+.sa-onein {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-weight: 700;
+}
