@@ -780,26 +780,58 @@ function SendersPanel({ mail }) {
 
 /* ─── Prizes ───────────────────────────────────────────────────────────── */
 
+// Odds are set as "1 in N spins" per goodie; "Better luck next time" gets
+// whatever is left. Weights are stored out of 10,000.
+const SCALE = 10000
+const oneInOf = (weight, total) => (weight > 0 && total > 0 ? String(Math.round((total / weight) * 10) / 10) : '')
+const weightOf = (oneIn) => (Number(oneIn) >= 1 ? Math.round(SCALE / Number(oneIn)) : 0)
+
 function PrizesPanel({ data }) {
   const { prizes, loadPrizes } = data
-  const [rows, setRows] = useState(prizes)
+  const [rows, setRows] = useState([])
   const [msg, setMsg] = useState('')
-  useEffect(() => setRows(prizes), [prizes])
-  const total = rows.filter((r) => r.active).reduce((n, r) => n + (Number(r.weight) || 0), 0)
+  const [busy, setBusy] = useState(false)
+  useEffect(() => {
+    const total = prizes.filter((p) => p.active).reduce((n, p) => n + (Number(p.weight) || 0), 0)
+    setRows(prizes.map((p) => ({ ...p, oneIn: p.is_blank ? '' : oneInOf(Number(p.weight), total) })))
+  }, [prizes])
   const edit = (id, k, v) => setRows((rs) => rs.map((r) => (r.id === id ? { ...r, [k]: v } : r)))
 
-  const save = async (r) => {
+  const goods = rows.filter((r) => r.active && !r.is_blank)
+  const goodsWeight = goods.reduce((n, r) => n + weightOf(r.oneIn), 0)
+  const blankWeight = Math.max(0, SCALE - goodsWeight)
+  const blank = rows.find((r) => r.is_blank)
+  const pct = (w) => `${((w / SCALE) * 100).toFixed(1)}%`
+  const over = goodsWeight > SCALE
+
+  const saveAll = async () => {
+    if (over) return setMsg('The goodies add up to more than every spin: make some of them rarer.')
+    setBusy(true)
     setMsg('')
-    const { error } = await supabase
-      .from('prizes')
-      .update({ name: r.name, icon: r.icon, color: r.color, weight: Number(r.weight) || 0, stock: r.stock === '' || r.stock === null ? null : Number(r.stock), active: r.active, sort: Number(r.sort) || 0 })
-      .eq('id', r.id)
-    setMsg(error ? error.message : `Saved ${r.name}.`)
+    const results = await Promise.all(
+      rows.map((r) =>
+        supabase
+          .from('prizes')
+          .update({
+            name: r.name,
+            icon: r.icon,
+            color: r.color,
+            weight: r.is_blank ? blankWeight : weightOf(r.oneIn),
+            stock: r.stock === '' || r.stock === null ? null : Number(r.stock),
+            active: r.active,
+            sort: Number(r.sort) || 0,
+          })
+          .eq('id', r.id),
+      ),
+    )
+    const err = results.find((x) => x.error)?.error
+    setMsg(err ? err.message : `Saved. ${pct(blankWeight)} of spins land on Better luck next time.`)
+    setBusy(false)
     loadPrizes()
   }
   const addPrize = async () => {
-    const { error } = await supabase.from('prizes').insert({ name: 'New prize', icon: 'redeem', color: '#5ef2ff', weight: 10, sort: rows.length + 1 })
-    setMsg(error ? error.message : 'Added a prize: edit it below and save.')
+    const { error } = await supabase.from('prizes').insert({ name: 'New prize', icon: 'redeem', color: '#c9b79c', weight: 0, active: false, sort: rows.length + 1 })
+    setMsg(error ? error.message : 'Added a prize at the bottom: name it, set its odds, tick “On” and save.')
     loadPrizes()
   }
 
@@ -807,16 +839,39 @@ function PrizesPanel({ data }) {
     <section className="sa-card sa-board">
       <div className="sa-board-head">
         <h2>Prizes on the wheel</h2>
-        <button className="sw-btn sw-btn--ghost" onClick={addPrize}>
-          + Add prize
-        </button>
+        <div className="sa-row">
+          <button className="sw-btn sw-btn--ghost" onClick={addPrize}>
+            + Add prize
+          </button>
+          <button className="sw-btn" onClick={saveAll} disabled={busy || over}>
+            {busy ? 'Saving…' : 'Save changes'}
+          </button>
+        </div>
       </div>
       <p className="sa-muted">
-        Every spin is a weighted draw: a prize with weight 30 comes up three times as often as one with 10, and “Chance” shows the
-        odds per spin (“1 in N”). The “Better luck next time” row is the blank slice, so keep it the biggest. Stock goes down each time
-        a prize is won and a prize at 0 is skipped; leave stock empty for unlimited. Once a round has given out its “max goodies”,
-        every spin in it lands on Better luck next time.
+        Set how often each goodie comes up as “1 in N spins” (1 in 50 = 2% of spins). Better luck next time gets all the
+        rest. Stock goes down each time a prize is won, and a prize at 0 stops coming up; leave it empty for unlimited. Once a round
+        has given out its “max goodies”, every spin in it lands on Better luck next time. Changes apply to the next spin after you
+        save.
       </p>
+      <div className={`sa-odds ${over ? 'is-bad' : ''}`}>
+        <div className="sa-odds-bar" aria-hidden="true">
+          <span className="sa-odds-blank" style={{ width: pct(blankWeight) }} />
+          {goods.map((r) => (
+            <span key={r.id} style={{ width: pct(weightOf(r.oneIn)), background: r.color }} title={r.name} />
+          ))}
+        </div>
+        <p>
+          {over ? (
+            <strong>The goodies add up to more than 100% of spins: make some of them rarer.</strong>
+          ) : (
+            <>
+              Out of every 100 spins, about <strong>{Math.round(blankWeight / 100)}</strong> land on Better luck next time and{' '}
+              <strong>{Math.round(goodsWeight / 100)}</strong> win something.
+            </>
+          )}
+        </p>
+      </div>
       {msg && <p className="sa-note">{msg}</p>}
       <div className="sa-table-wrap">
         <table className="sa-table sa-prizes">
@@ -826,53 +881,66 @@ function PrizesPanel({ data }) {
               <th>Name</th>
               <th>Icon</th>
               <th>Colour</th>
-              <th>Weight</th>
-              <th>Chance</th>
+              <th>Odds</th>
+              <th>Per 100 spins</th>
               <th>Stock</th>
               <th>Order</th>
-              <th />
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
-              <tr key={r.id} className={r.active ? '' : 'is-miss'}>
-                <td>
-                  <input type="checkbox" checked={r.active} onChange={(e) => edit(r.id, 'active', e.target.checked)} />
-                </td>
-                <td>
-                  <input value={r.name} onChange={(e) => edit(r.id, 'name', e.target.value)} />
-                </td>
-                <td>
-                  <span className="material-symbols-outlined sa-icon">{r.icon}</span>
-                  <input className="sa-w8" value={r.icon || ''} onChange={(e) => edit(r.id, 'icon', e.target.value)} />
-                </td>
-                <td>
-                  <input type="color" value={r.color} onChange={(e) => edit(r.id, 'color', e.target.value)} />
-                </td>
-                <td>
-                  <input className="sa-w5" type="number" min="0" value={r.weight} onChange={(e) => edit(r.id, 'weight', e.target.value)} />
-                </td>
-                <td className="sa-mono">
-                  {r.active && total && Number(r.weight) > 0
-                    ? `${(((Number(r.weight) || 0) / total) * 100).toFixed(1)}% · 1 in ${Math.max(1, Math.round(total / Number(r.weight)))}`
-                    : '—'}
-                </td>
-                <td>
-                  <input className="sa-w5" type="number" min="0" value={r.stock ?? ''} placeholder="∞" onChange={(e) => edit(r.id, 'stock', e.target.value)} />
-                </td>
-                <td>
-                  <input className="sa-w4" type="number" value={r.sort} onChange={(e) => edit(r.id, 'sort', e.target.value)} />
-                </td>
-                <td>
-                  <button className="sa-pill" onClick={() => save(r)}>
-                    Save
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {rows.map((r) => {
+              const w = r.is_blank ? blankWeight : weightOf(r.oneIn)
+              return (
+                <tr key={r.id} className={r.active ? '' : 'is-miss'}>
+                  <td>
+                    <input type="checkbox" checked={r.active} onChange={(e) => edit(r.id, 'active', e.target.checked)} />
+                  </td>
+                  <td>
+                    <input value={r.name} onChange={(e) => edit(r.id, 'name', e.target.value)} />
+                  </td>
+                  <td>
+                    <span className="material-symbols-outlined sa-icon">{r.icon}</span>
+                    <input className="sa-w8" value={r.icon || ''} onChange={(e) => edit(r.id, 'icon', e.target.value)} />
+                  </td>
+                  <td>
+                    <input type="color" value={r.color} onChange={(e) => edit(r.id, 'color', e.target.value)} />
+                  </td>
+                  <td>
+                    {r.is_blank ? (
+                      <span className="sa-muted">all the rest</span>
+                    ) : (
+                      <label className="sa-onein">
+                        1 in
+                        <input
+                          className="sa-w5"
+                          type="number"
+                          min="1"
+                          step="any"
+                          value={r.oneIn}
+                          onChange={(e) => edit(r.id, 'oneIn', e.target.value)}
+                          aria-label={`${r.name}: one in how many spins`}
+                        />
+                      </label>
+                    )}
+                  </td>
+                  <td className="sa-mono">{r.active && w > 0 ? `${(w / 100).toFixed(1)} · ${pct(w)}` : '—'}</td>
+                  <td>
+                    {r.is_blank ? (
+                      <span className="sa-muted">∞</span>
+                    ) : (
+                      <input className="sa-w5" type="number" min="0" value={r.stock ?? ''} placeholder="∞" onChange={(e) => edit(r.id, 'stock', e.target.value)} />
+                    )}
+                  </td>
+                  <td>
+                    <input className="sa-w4" type="number" value={r.sort} onChange={(e) => edit(r.id, 'sort', e.target.value)} />
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
+      {blank && !blank.active && <p className="sw-error">Better luck next time is switched off, so every spin wins something. Tick “On” for it.</p>}
     </section>
   )
 }

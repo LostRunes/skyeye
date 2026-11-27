@@ -36,12 +36,13 @@ export const EVENTS = [
       ],
       // What players can win at the stall (shown on the Events page)
       prizes: [
-        { icon: 'badge', name: 'Pilot card', note: 'PVC Sky Eye pilot card' },
-        { icon: 'key', name: 'Keychain' },
         { icon: 'coffee', name: 'Mug' },
-        { icon: 'water_bottle', name: 'Bottle' },
+        { icon: 'key', name: 'Keychain' },
         { icon: 'sell', name: 'Stickers' },
-        { icon: 'cookie', name: 'Toffees', note: 'free for everyone who stops by' },
+        { icon: 'videocam', name: 'Drone video shot' },
+        { icon: 'photo_camera', name: 'Drone photo print' },
+        { icon: 'cookie', name: 'Chocolate' },
+        { icon: 'sports_soccer', name: 'Fly the soccer drone' },
       ],
       shop: {
         title: 'Drones on display and for sale',

@@ -9,13 +9,28 @@ import { importScene, resilient } from '../../three/resilient'
 // once the showcase nears the viewport. Styles: src/goodies.css.
 
 // Prize name (src/data/event.js) -> the model the scene builds for it
-const KINDS = { 'Pilot card': 'card', Keychain: 'keychain', Mug: 'mug', Bottle: 'bottle', Stickers: 'stickers', Toffees: 'toffees' }
+const KINDS = {
+  'Pilot card': 'card',
+  Keychain: 'keychain',
+  Mug: 'mug',
+  Bottle: 'bottle',
+  Stickers: 'stickers',
+  Toffees: 'toffees',
+  Chocolate: 'chocolate',
+  'Drone photo print': 'photo',
+  'Drone video shot': 'video',
+  'Fly the soccer drone': 'soccer',
+}
 // Shown when a prize has no `note` of its own
 const NOTES = {
   keychain: 'Metal Sky Eye keychain with a drone charm',
   mug: 'Sky Eye ceramic mug',
   bottle: 'Sky Eye water bottle',
   stickers: 'A pack of Sky Eye stickers',
+  chocolate: 'A Sky Eye chocolate bar',
+  photo: 'A printed aerial photo, shot by our drones',
+  video: 'We film you with a drone and send you the clip',
+  soccer: 'Take the controls of our caged soccer drone',
 }
 
 const PRIZES = (EVENTS[0]?.stall?.prizes || [])

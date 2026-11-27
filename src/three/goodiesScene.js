@@ -740,7 +740,308 @@ function buildToffees(ctx) {
   return { group, shadow: 1.25 }
 }
 
-const BUILDERS = { mug: buildMug, bottle: buildBottle, keychain: buildKeychain, card: buildCard, stickers: buildStickers, toffees: buildToffees }
+// An aerial drone shot of a campus, drawn into (x, y, w, h): lawns, paths,
+// rooftops with shadows, trees and a few people. Deterministic per `seed`.
+function aerialShot(g, x, y, w, h, seed = 1) {
+  let s = seed * 9301 + 49297
+  const rnd = () => ((s = (s * 9301 + 49297) % 233280) / 233280)
+  g.save()
+  g.beginPath()
+  g.rect(x, y, w, h)
+  g.clip()
+  const grass = g.createLinearGradient(x, y, x + w, y + h)
+  grass.addColorStop(0, '#6f9b52')
+  grass.addColorStop(1, '#4f7d3f')
+  g.fillStyle = grass
+  g.fillRect(x, y, w, h)
+  // paths
+  g.strokeStyle = '#d9cdb4'
+  g.lineCap = 'round'
+  g.lineWidth = w * 0.07
+  g.beginPath()
+  g.moveTo(x - 10, y + h * 0.62)
+  g.bezierCurveTo(x + w * 0.35, y + h * 0.5, x + w * 0.6, y + h * 0.78, x + w + 10, y + h * 0.66)
+  g.stroke()
+  g.lineWidth = w * 0.045
+  g.beginPath()
+  g.moveTo(x + w * 0.42, y - 10)
+  g.lineTo(x + w * 0.5, y + h + 10)
+  g.stroke()
+  // buildings: roof + shadow
+  const roofs = ['#e9e4da', '#c9563c', '#d8d2c6', '#b8a68a']
+  for (const [bx, by, bw, bh] of [
+    [0.06, 0.08, 0.3, 0.22],
+    [0.58, 0.06, 0.34, 0.3],
+    [0.62, 0.74, 0.28, 0.2],
+    [0.05, 0.76, 0.24, 0.18],
+  ]) {
+    const X = x + bx * w
+    const Y = y + by * h
+    g.fillStyle = 'rgba(20,30,15,0.35)'
+    g.fillRect(X + w * 0.025, Y + h * 0.03, bw * w, bh * h)
+    g.fillStyle = roofs[Math.floor(rnd() * roofs.length)]
+    g.fillRect(X, Y, bw * w, bh * h)
+    g.fillStyle = 'rgba(255,255,255,0.18)'
+    g.fillRect(X, Y, bw * w, bh * h * 0.45)
+  }
+  // trees
+  for (let i = 0; i < 16; i++) {
+    const tx = x + rnd() * w
+    const ty = y + (0.32 + rnd() * 0.24) * h
+    const r = w * (0.025 + rnd() * 0.025)
+    g.fillStyle = 'rgba(15,30,10,0.35)'
+    g.beginPath()
+    g.arc(tx + r * 0.4, ty + r * 0.4, r, 0, Math.PI * 2)
+    g.fill()
+    g.fillStyle = rnd() > 0.5 ? '#2f5e2a' : '#3d6f33'
+    g.beginPath()
+    g.arc(tx, ty, r, 0, Math.PI * 2)
+    g.fill()
+  }
+  // people on the path
+  for (let i = 0; i < 9; i++) {
+    g.fillStyle = ['#ff5a1f', '#2563b8', '#f2f0eb', '#ffb020'][i % 4]
+    g.beginPath()
+    g.arc(x + (0.1 + rnd() * 0.8) * w, y + (0.56 + rnd() * 0.12) * h, w * 0.009, 0, Math.PI * 2)
+    g.fill()
+  }
+  // a little vignette
+  const v = g.createRadialGradient(x + w / 2, y + h / 2, Math.min(w, h) * 0.3, x + w / 2, y + h / 2, Math.max(w, h) * 0.75)
+  v.addColorStop(0, 'rgba(0,0,0,0)')
+  v.addColorStop(1, 'rgba(0,0,0,0.32)')
+  g.fillStyle = v
+  g.fillRect(x, y, w, h)
+  g.restore()
+}
+
+function buildChocolate(ctx) {
+  const group = new THREE.Group()
+  const bar = new THREE.Group()
+  const W = 1.5
+  const D = 0.74
+  const choc = new THREE.MeshPhysicalMaterial({ color: 0x4b2a1b, roughness: 0.36, clearcoat: 0.55, clearcoatRoughness: 0.28 })
+  const slab = new THREE.Mesh(new RoundedBoxGeometry(W, 0.06, D, 3, 0.02), choc)
+  slab.position.y = 0.03
+  bar.add(slab)
+  const square = new RoundedBoxGeometry(W / 4 - 0.045, 0.07, D / 2 - 0.045, 4, 0.03)
+  for (let i = 0; i < 4; i++) {
+    for (const z of [-D / 4, D / 4]) {
+      const m = new THREE.Mesh(square, choc)
+      m.position.set(-W / 2 + W / 8 + (i * W) / 4, 0.085, z)
+      bar.add(m)
+    }
+  }
+  // The wrapper sleeve over the right half, with a strip of foil peeking out
+  const sleeveW = 0.86
+  const print = makePrint(ctx, 640, 320, (g, w, h, logo) => {
+    g.fillStyle = ORANGE
+    g.fillRect(0, 0, w, h)
+    g.fillStyle = AMBER
+    g.beginPath()
+    g.moveTo(0, h)
+    g.bezierCurveTo(w * 0.3, h * 0.7, w * 0.7, h * 1.05, w, h * 0.62)
+    g.lineTo(w, h)
+    g.fill()
+    const has = drawMark(g, logo, '#ffffff', w * 0.2, h * 0.42, 92)
+    g.fillStyle = '#ffffff'
+    g.font = `800 58px ${FONT}`
+    spaced(g, 'SKY EYE', has ? w * 0.6 : w / 2, h * 0.43, 1)
+    g.fillStyle = INK
+    g.font = `700 24px ${MONO}`
+    spaced(g, 'MILK CHOCOLATE', has ? w * 0.6 : w / 2, h * 0.6, 4)
+  })
+  const paper = new THREE.MeshPhysicalMaterial({ color: ORANGE, roughness: 0.45, clearcoat: 0.3 })
+  const top = new THREE.MeshPhysicalMaterial({ map: print, roughness: 0.45, clearcoat: 0.3 })
+  // BoxGeometry faces: +x, -x, +y, -y, +z, -z
+  const sleeve = new THREE.Mesh(new RoundedBoxGeometry(sleeveW, 0.16, D + 0.04, 3, 0.02), [paper, paper, top, top, paper, paper])
+  sleeve.position.set(W / 2 - sleeveW / 2 + 0.02, 0.07, 0)
+  bar.add(sleeve)
+  const foil = new THREE.Mesh(
+    new RoundedBoxGeometry(0.07, 0.15, D + 0.03, 2, 0.015),
+    new THREE.MeshPhysicalMaterial({ color: 0xcfd3d8, roughness: 0.22, metalness: 0.9 })
+  )
+  foil.position.set(W / 2 - sleeveW - 0.0, 0.068, 0)
+  bar.add(foil)
+  // Stand it up, leaning back, so the front faces the camera
+  bar.rotation.x = Math.PI / 2 - 0.28
+  bar.position.y = 0.42
+  group.add(bar)
+  group.scale.setScalar(1.15)
+  return { group, float: 0.22, shadow: 0.9 }
+}
+
+function buildPhotoPrint(ctx) {
+  const group = new THREE.Group()
+  const W = 1.2
+  const H = 1.44
+  const body = new THREE.ExtrudeGeometry(roundedRectShape(W, H, 0.03), { depth: 0.02, bevelEnabled: false, curveSegments: 8 })
+  body.translate(0, 0, -0.01)
+  group.add(new THREE.Mesh(body, new THREE.MeshPhysicalMaterial({ color: 0xf7f4ee, roughness: 0.55 })))
+  const front = makePrint(ctx, 600, 720, (g, w) => {
+    g.fillStyle = '#f7f4ee'
+    g.fillRect(0, 0, w, h)
+    aerialShot(g, 36, 36, w - 72, w - 72, 3)
+    g.fillStyle = '#2a2724'
+    g.font = `700 30px ${FONT}`
+    spaced(g, 'KIIT MUN 2026', w / 2, w + 22, 0)
+    g.fillStyle = '#8a857c'
+    g.font = `600 17px ${MONO}`
+    spaced(g, 'SHOT BY SKY EYE DRONES', w / 2, w + 64, 3)
+  })
+  const face = new THREE.Mesh(fitUVs(new THREE.ShapeGeometry(roundedRectShape(W, H, 0.03), 8)), new THREE.MeshPhysicalMaterial({ map: front, roughness: 0.4, clearcoat: 0.5 }))
+  face.position.z = 0.011
+  group.add(face)
+  const back = makePrint(ctx, 300, 360, (g, w, h, logo) => {
+    g.fillStyle = '#efeae1'
+    g.fillRect(0, 0, w, h)
+    drawMark(g, logo, '#c9bfb0', w / 2, h / 2 - 16, 70)
+    g.fillStyle = '#a89f92'
+    g.font = `600 16px ${MONO}`
+    spaced(g, 'SKY EYE TECHNOLOGY', w / 2, h / 2 + 50, 2)
+  })
+  const rear = new THREE.Mesh(fitUVs(new THREE.ShapeGeometry(roundedRectShape(W, H, 0.03), 8)), new THREE.MeshPhysicalMaterial({ map: back, roughness: 0.6 }))
+  rear.position.z = -0.011
+  rear.rotation.y = Math.PI
+  group.add(rear)
+  group.position.y = H / 2 + 0.12
+  group.rotation.x = -0.08
+  const wrap = new THREE.Group()
+  wrap.add(group)
+  return { group: wrap, float: 0.14, shadow: 0.8 }
+}
+
+function buildVideoShot(ctx) {
+  const group = new THREE.Group()
+  const phone = new THREE.Group()
+  const W = 0.8
+  const H = 1.62
+  phone.add(new THREE.Mesh(new RoundedBoxGeometry(W, H, 0.08, 6, 0.1), new THREE.MeshPhysicalMaterial({ color: 0x17181c, roughness: 0.3, metalness: 0.6, clearcoat: 0.8 })))
+  const screen = makePrint(ctx, 400, 820, (g, w, h, logo) => {
+    g.fillStyle = '#050506'
+    g.fillRect(0, 0, w, h)
+    aerialShot(g, 0, 150, w, 520, 7)
+    // recording UI
+    g.fillStyle = '#e5484d'
+    g.beginPath()
+    g.arc(34, 190, 9, 0, Math.PI * 2)
+    g.fill()
+    g.fillStyle = '#ffffff'
+    g.font = `700 20px ${MONO}`
+    g.textAlign = 'left'
+    g.fillText('REC 00:42', 52, 197)
+    g.textAlign = 'right'
+    g.fillText('4K', w - 24, 197)
+    // play button
+    g.fillStyle = 'rgba(0,0,0,0.35)'
+    g.beginPath()
+    g.arc(w / 2, 410, 52, 0, Math.PI * 2)
+    g.fill()
+    g.fillStyle = '#ffffff'
+    g.beginPath()
+    g.moveTo(w / 2 - 16, 384)
+    g.lineTo(w / 2 + 26, 410)
+    g.lineTo(w / 2 - 16, 436)
+    g.closePath()
+    g.fill()
+    // timeline
+    g.fillStyle = 'rgba(255,255,255,0.25)'
+    g.fillRect(28, 700, w - 56, 6)
+    g.fillStyle = ORANGE
+    g.fillRect(28, 700, (w - 56) * 0.58, 6)
+    g.beginPath()
+    g.arc(28 + (w - 56) * 0.58, 703, 10, 0, Math.PI * 2)
+    g.fill()
+    const has = drawMark(g, logo, '#ffffff', 52, 92, 34)
+    g.fillStyle = '#ffffff'
+    g.textAlign = 'left'
+    g.font = `800 26px ${FONT}`
+    g.fillText('Your drone shot', has ? 82 : 28, 102)
+    g.fillStyle = 'rgba(255,255,255,0.6)'
+    g.font = `500 17px ${MONO}`
+    g.fillText('filmed at the Sky Eye stall', 28, 760)
+  })
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(W - 0.07, H - 0.08), new THREE.MeshBasicMaterial({ map: screen, toneMapped: false }))
+  face.position.z = 0.041
+  phone.add(face)
+  // camera bump on the back
+  const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.03, 32), new THREE.MeshPhysicalMaterial({ color: 0x0b0c0e, roughness: 0.1, metalness: 0.8, clearcoat: 1 }))
+  lens.rotation.x = Math.PI / 2
+  lens.position.set(-W / 2 + 0.17, H / 2 - 0.17, -0.05)
+  phone.add(lens)
+  phone.position.y = H / 2 + 0.1
+  phone.rotation.x = -0.06
+  group.add(phone)
+  return { group, float: 0.12, shadow: 0.7 }
+}
+
+function buildSoccerDrone() {
+  const group = new THREE.Group()
+  const R = 0.66
+  // the protective cage
+  const cage = new THREE.Group()
+  const carbon = new THREE.MeshStandardMaterial({ color: 0x1c1d22, roughness: 0.42, metalness: 0.45 })
+  const edges = new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(R, 1)).attributes.position
+  const tube = new THREE.CylinderGeometry(0.011, 0.011, 1, 6)
+  const up = new THREE.Vector3(0, 1, 0)
+  for (let i = 0; i < edges.count; i += 2) {
+    const a = new THREE.Vector3().fromBufferAttribute(edges, i)
+    const b = new THREE.Vector3().fromBufferAttribute(edges, i + 1)
+    const m = new THREE.Mesh(tube, carbon)
+    m.position.copy(a).add(b).multiplyScalar(0.5)
+    m.scale.y = a.distanceTo(b)
+    m.quaternion.setFromUnitVectors(up, b.clone().sub(a).normalize())
+    cage.add(m)
+  }
+  const band = new THREE.Mesh(new THREE.TorusGeometry(R * 0.995, 0.022, 10, 96), new THREE.MeshPhysicalMaterial({ color: ORANGE, roughness: 0.35, clearcoat: 0.6 }))
+  band.rotation.x = Math.PI / 2
+  cage.add(band)
+  group.add(cage)
+  // the quad inside
+  const quad = new THREE.Group()
+  const shell = new THREE.MeshPhysicalMaterial({ color: 0xf2f0eb, roughness: 0.35, clearcoat: 0.7 })
+  quad.add(new THREE.Mesh(new RoundedBoxGeometry(0.2, 0.08, 0.26, 3, 0.03), shell))
+  const armGeo = new THREE.BoxGeometry(0.5, 0.025, 0.04)
+  const propGeo = new THREE.CylinderGeometry(0.11, 0.11, 0.006, 32)
+  const propMat = new THREE.MeshStandardMaterial({ color: 0x9aa0a8, transparent: true, opacity: 0.45, roughness: 0.4 })
+  const motorGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.05, 16)
+  for (const a of [Math.PI / 4, -Math.PI / 4]) {
+    const arm = new THREE.Mesh(armGeo, carbon)
+    arm.rotation.y = a
+    quad.add(arm)
+  }
+  for (const [x, z] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) {
+    const px = x * 0.177
+    const pz = z * 0.177
+    const motor = new THREE.Mesh(motorGeo, carbon)
+    motor.position.set(px, 0.03, pz)
+    quad.add(motor)
+    const prop = new THREE.Mesh(propGeo, propMat)
+    prop.position.set(px, 0.06, pz)
+    quad.add(prop)
+  }
+  const eye = new THREE.Mesh(new THREE.SphereGeometry(0.025, 16, 12), new THREE.MeshBasicMaterial({ color: ORANGE }))
+  eye.position.set(0, 0.0, 0.135)
+  quad.add(eye)
+  quad.rotation.x = 0.18
+  group.add(quad)
+  group.position.y = R
+  const wrap = new THREE.Group()
+  wrap.add(group)
+  return { group: wrap, shadow: 1.1 }
+}
+
+const BUILDERS = {
+  mug: buildMug,
+  bottle: buildBottle,
+  keychain: buildKeychain,
+  card: buildCard,
+  stickers: buildStickers,
+  toffees: buildToffees,
+  chocolate: buildChocolate,
+  photo: buildPhotoPrint,
+  video: buildVideoShot,
+  soccer: buildSoccerDrone,
+}
 
 // ---------------------------------------------------------------------------
 // Stage pieces

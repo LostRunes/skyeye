@@ -109,8 +109,10 @@ export default function Wheel({ prizes: list, landOn, spinKey, onDone, duration 
         >
           {prizes.map((p, i) => {
             const mid = i * seg + seg / 2
-            const [ix, iy] = point(mid, R * (many ? 0.81 : 0.78))
-            const [tx, ty] = point(mid, R * (many ? 0.57 : 0.52))
+            const [ix, iy] = point(mid, R * (many ? 0.84 : 0.78))
+            const [tx, ty] = point(mid, R * (many ? 0.5 : 0.52))
+            // Many slices: labels run along the slice (flipped on the left so they never read upside down)
+            const turn = many ? (mid % 360 > 180 ? mid + 90 : mid - 90) : mid
             const label = lines(p.name)
             return (
               <g key={`${p.id}-${i}`}>
@@ -123,7 +125,7 @@ export default function Wheel({ prizes: list, landOn, spinKey, onDone, duration 
                   y={ty}
                   className={`sw-seg-label${label.length > 1 ? ' sw-seg-label--2' : ''}`}
                   fill={inkOn(p.color)}
-                  transform={`rotate(${mid}, ${tx}, ${ty})`}
+                  transform={`rotate(${turn}, ${tx}, ${ty})`}
                   textAnchor="middle"
                   dominantBaseline="central"
                 >
