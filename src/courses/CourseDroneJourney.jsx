@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { clamp, piecewise, beatVisibility, smoothstep } from '../utils/motion'
-import { CDN } from '../cdn'
+import { LEGACY_CDN } from '../cdn'
 import { useImageSequence } from '../hooks/useImageSequence'
 
 // The scroll-scrubbed drone from the first drafts of the main site, reused on
@@ -10,8 +10,8 @@ import { useImageSequence } from '../hooks/useImageSequence'
 // the right edge as the hero scrolls away, and three text beats on the left
 // tie each stage to a course.
 const SEQUENCES = [
-  { key: 'assembly', folder: `${CDN}/frames2`, count: 90 },
-  { key: 'flight', folder: `${CDN}/frames`, count: 57 },
+  { key: 'assembly', folder: `${LEGACY_CDN}/frames2`, count: 90 },
+  { key: 'flight', folder: `${LEGACY_CDN}/frames`, count: 57 },
 ]
 
 const SPLIT = 0.6
