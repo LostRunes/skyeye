@@ -1,3 +1,6 @@
+-- NOTE: spin() is now defined in supabase/prize-assignments.sql (this version plus
+-- assigned prizes). If you re-run this file, run prize-assignments.sql after it.
+
 -- Spin odds: "Better luck next time" + rarer goodies (run once in Supabase →
 -- SQL Editor; safe to re-run).
 --

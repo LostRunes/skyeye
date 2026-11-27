@@ -670,6 +670,7 @@
   color: var(--teal);
 }
 .sw-field input,
+.sw-field select,
 .sa-search,
 .sa-board-head select,
 .sa-prizes input:not([type='checkbox']):not([type='color']) {
@@ -1304,4 +1305,9 @@ td > a.sa-pill {
   gap: 6px;
   white-space: nowrap;
   font-weight: 700;
+}
+
+/* Assigned prizes tab */
+.sa-mt {
+  margin-top: 22px;
 }
