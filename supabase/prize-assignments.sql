@@ -1,3 +1,6 @@
+-- NOTE: spin() and check_code() are now defined in supabase/extra-spins.sql. If you
+-- re-run this file, run extra-spins.sql after it.
+
 -- Assigned prizes (run once in Supabase → SQL Editor; safe to re-run).
 --
 -- The admin panel's "Assigned prizes" tab sets a prize for a player's email.

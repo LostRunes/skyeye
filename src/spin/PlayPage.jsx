@@ -132,6 +132,12 @@ export default function PlayPage() {
     setSpinKey((k) => k + 1)
   }
 
+  // After a spin, with spins left: back to the wheel for the next one
+  const spinAgain = () => {
+    setResult(null)
+    check(code)
+  }
+
   const landed = () => {
     setStage('result')
     if (result?.is_winner) {
@@ -209,8 +215,16 @@ export default function PlayPage() {
               Hey <span className="sw-grad">{name}</span>! 👋
             </h1>
             <p className="sw-sub">
-              {info?.round} · one spin per code. Good luck!
+              {info?.round} · good luck!
             </p>
+            {info?.spins_left > 0 && (
+              <p className="sw-spins-left">
+                <span className="material-symbols-outlined" aria-hidden="true">
+                  confirmation_number
+                </span>
+                {info.spins_left} spin{info.spins_left === 1 ? '' : 's'} left
+              </p>
+            )}
             <div ref={wheelBox}>
               <Wheel
                 prizes={prizes}
@@ -274,6 +288,13 @@ export default function PlayPage() {
                 <p className="sw-sub">Thanks for playing! Come say hi at the Sky Eye stall and see the drones up close.</p>
               </>
             )}
+            {result.spins_left > 0 ? (
+              <button className="sw-btn sw-btn--big sw-again" onClick={spinAgain}>
+                Spin again! ({result.spins_left} left)
+              </button>
+            ) : (
+              <p className="sw-fine">That was your last spin. Earn an extra one at the stall!</p>
+            )}
           </section>
         )}
 
@@ -286,6 +307,11 @@ export default function PlayPage() {
             </span>
             <h1 className="sw-title sw-title--sm">{name ? `Hey ${name}!` : 'Hang on!'}</h1>
             <p className="sw-sub">{REASONS[info?.reason] || 'Something went wrong. Ask the stall team.'}</p>
+            {(info?.reason === 'already_spun' || info?.reason === 'already_won') && (
+              <button className="sw-btn" onClick={() => check(code)}>
+                Check for an extra spin
+              </button>
+            )}
             {info?.reason === 'no_round' && (
               <p className="sw-fine sw-live">
                 <span className="sw-dot" /> This page updates by itself when the next round starts.

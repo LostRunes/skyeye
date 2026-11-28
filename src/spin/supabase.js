@@ -14,7 +14,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 export const REASONS = {
   invalid: 'That code doesn’t look right. Check the email we sent you.',
   no_round: 'No round is running right now. Hang tight, the next one starts soon!',
-  already_spun: 'This code has already been used. Each code gets one spin. Thanks for playing!',
-  already_won: 'You’ve already won with this code! Show your winning screen at the stall to collect.',
+  already_spun: 'You’ve used all your spins. Done a challenge at the stall? Ask the team for an extra spin, then tap the button below.',
+  already_won: 'You’ve used all your spins (and won!). Show your winning screen at the stall to collect. Earned an extra spin? Tap the button below once the team has added it.',
   no_prizes: 'The wheel is out of prizes for now. Ask the stall team!',
 }

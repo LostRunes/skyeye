@@ -1311,3 +1311,50 @@ td > a.sa-pill {
 .sa-mt {
   margin-top: 22px;
 }
+
+/* Players tab: spins and extra spins */
+.sa-spin-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.sa-spins-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.sa-spins-left strong {
+  min-width: 1.4em;
+  text-align: center;
+  font-size: 16px;
+  color: var(--muted);
+}
+.sa-spins-left strong.is-on {
+  color: var(--crimson);
+}
+.sa-pill--quiet {
+  background: transparent;
+}
+
+/* Spin page: spins left + spin again */
+.sw-spins-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px auto 0;
+  padding: 6px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--mustard);
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 15px;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.sw-spins-left .material-symbols-outlined {
+  font-size: 18px;
+}
+.sw-again {
+  margin-top: 18px;
+}
