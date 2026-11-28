@@ -385,13 +385,15 @@ function PlayersPanel({ data, mail }) {
   const addSpin = async (p, n) => {
     setBusy(`s${p.id}`)
     setMsg('')
-    const { data: left, error } = await supabase.rpc('add_spins', { p_player: p.id, p_n: n })
+    const next = Math.max(0, (p.spins_left || 0) + n)
+    const { data: rows, error } = await supabase.from('players').update({ spins_left: next }).eq('id', p.id).select('spins_left')
+    const left = rows?.[0]?.spins_left
     setMsg(
       error
-        ? error.message.includes('add_spins')
-          ? 'Run supabase/extra-spins.sql in Supabase first.'
-          : error.message
-        : `${fullName(p)} now has ${left} spin${left === 1 ? '' : 's'} left${n > 0 ? '. They can reload the spin page and spin again.' : '.'}`,
+        ? error.message
+        : left === undefined
+          ? 'Couldn’t update that player. Sign out and back in, then try again.'
+          : `${fullName(p)} now has ${left} spin${left === 1 ? '' : 's'} left${n > 0 ? '. They can reload the spin page and spin again.' : '.'}`,
     )
     await data.loadPlayers?.()
     setBusy('')
