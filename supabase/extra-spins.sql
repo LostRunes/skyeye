@@ -24,7 +24,8 @@ do $$ declare c text; begin
 end $$;
 
 -- Admin: give a player more spins (or take them away with a negative n)
-create or replace function public.add_spins(p_player bigint, p_n int default 1)
+drop function if exists public.add_spins(bigint, int);
+create or replace function public.add_spins(p_player uuid, p_n int default 1)
 returns int language plpgsql security definer set search_path = public as $$
 declare v int;
 begin
@@ -32,8 +33,8 @@ begin
   update public.players set spins_left = greatest(0, spins_left + coalesce(p_n, 1)) where id = p_player returning spins_left into v;
   return v;
 end $$;
-revoke all on function public.add_spins(bigint, int) from public, anon;
-grant execute on function public.add_spins(bigint, int) to authenticated;
+revoke all on function public.add_spins(uuid, int) from public, anon;
+grant execute on function public.add_spins(uuid, int) to authenticated;
 
 -- Can this code spin right now?
 create or replace function public.check_code(p_code text)

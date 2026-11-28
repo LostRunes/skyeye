@@ -135,7 +135,7 @@ function Login() {
 function RoundPanel({ data }) {
   const { sessions, spins, open, shownId, setViewId } = data
   const [name, setName] = useState('')
-  const [max, setMax] = useState(10)
+  const [max, setMax] = useState(1000)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   const shown = sessions.find((s) => s.id === shownId)
@@ -145,7 +145,7 @@ function RoundPanel({ data }) {
     if (open && !window.confirm(`End ${open.name} and start a new round?`)) return
     setBusy(true)
     setMsg('')
-    const { error } = await supabase.rpc('start_round', { p_name: name, p_max_winners: Number(max) || 10 })
+    const { error } = await supabase.rpc('start_round', { p_name: name, p_max_winners: Number(max) || 1000 })
     if (error) setMsg(error.message)
     else {
       setName('')
@@ -191,7 +191,7 @@ function RoundPanel({ data }) {
           </label>
           <label className="sw-field sa-narrow">
             <span>Max goodies</span>
-            <input type="number" min="1" max="200" value={max} onChange={(e) => setMax(e.target.value)} />
+            <input type="number" min="1" max="5000" value={max} onChange={(e) => setMax(e.target.value)} />
           </label>
         </div>
         <div className="sa-row">
@@ -385,13 +385,15 @@ function PlayersPanel({ data, mail }) {
   const addSpin = async (p, n) => {
     setBusy(`s${p.id}`)
     setMsg('')
-    const { data: left, error } = await supabase.rpc('add_spins', { p_player: p.id, p_n: n })
+    const next = Math.max(0, (p.spins_left || 0) + n)
+    const { data: rows, error } = await supabase.from('players').update({ spins_left: next }).eq('id', p.id).select('spins_left')
+    const left = rows?.[0]?.spins_left
     setMsg(
       error
-        ? error.message.includes('add_spins')
-          ? 'Run supabase/extra-spins.sql in Supabase first.'
-          : error.message
-        : `${fullName(p)} now has ${left} spin${left === 1 ? '' : 's'} left${n > 0 ? '. They can reload the spin page and spin again.' : '.'}`,
+        ? error.message
+        : left === undefined
+          ? 'Couldn’t update that player. Sign out and back in, then try again.'
+          : `${fullName(p)} now has ${left} spin${left === 1 ? '' : 's'} left${n > 0 ? '. They can reload the spin page and spin again.' : '.'}`,
     )
     await data.loadPlayers?.()
     setBusy('')
