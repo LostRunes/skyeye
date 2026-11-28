@@ -137,7 +137,7 @@
   background: rgba(178, 32, 38, 0.07);
 }
 
-.ev-carnival .lead-sent-callout .material-symbols-outlined,
+.ev-carnival .lead-sent-callout > .material-symbols-outlined,
 .ev-carnival .lead-sent-callout-sub {
   color: var(--crimson);
 }
@@ -222,4 +222,34 @@
   .fl-bulb {
     animation: none;
   }
+}
+
+/* "Did you mean …@gmail.com?" under the email field */
+.field .ev-email-hint {
+  font-family: var(--font-sans, system-ui);
+  letter-spacing: 0;
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #6f6259;
+}
+.ev-email-hint button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--crimson, #b22026);
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.ev-email-hint.is-warned {
+  padding: 6px 10px;
+  border: 2px solid var(--crimson, #b22026);
+  border-radius: 10px;
+  background: rgba(178, 32, 38, 0.07);
+  color: var(--ink, #2f2926);
+  font-weight: 600;
 }

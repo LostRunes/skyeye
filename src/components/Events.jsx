@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { CONTACTS } from '../cdn'
 import { PHONE_PATTERN, PHONE_TITLE, SOURCE, cleanPhone, useLeadForm } from '../lib/zohoLead'
-import { LeadError, LeadSent } from './LeadStatus'
+import { LeadSent } from './LeadStatus'
 import { EVENTS, isPast, statusLabel } from '../data/event'
 import Countdown from './events/Countdown'
 import CatchGame from './events/CatchGame'
@@ -20,10 +20,91 @@ import '../goodies.css'
 // go to Zoho CRM as Leads (Lead Source "Website - MUN stall"); WhatsApp stays
 // as a second way to register.
 
+// "Open your inbox" buttons for the thank-you screen, picked by the email's
+// domain. Gmail opens that exact account, searching for the spin-code mail
+// (in Spam/Promotions too); on phones it usually hands over to the Gmail app.
+function inboxLinks(email) {
+  const e = String(email || '').trim().toLowerCase()
+  const domain = e.split('@')[1] || ''
+  const gmail = {
+    label: 'Open Gmail',
+    href: `https://mail.google.com/mail/?authuser=${encodeURIComponent(e)}#search/${encodeURIComponent('in:anywhere "Sky Eye spin code"')}`,
+  }
+  const outlook = { label: 'Open Outlook', href: 'https://outlook.live.com/mail/0/' }
+  if (domain === 'gmail.com' || domain === 'googlemail.com') return [gmail]
+  if (/^(outlook|hotmail|live|msn)\./.test(domain)) return [outlook]
+  if (/^(yahoo|ymail|rocketmail)\./.test(domain)) return [{ label: 'Open Yahoo Mail', href: 'https://mail.yahoo.com/' }]
+  if (domain === 'icloud.com' || domain === 'me.com') return [{ label: 'Open iCloud Mail', href: 'https://www.icloud.com/mail' }]
+  // College and work addresses: could be either
+  return [gmail, { label: 'Open Outlook', href: 'https://outlook.office.com/mail/' }]
+}
+
+// Common email-domain slips (seen in real sign-ups: gmai.com, gmail.clm…)
+const DOMAIN_FIXES = {
+  'gmai.com': 'gmail.com',
+  'gmial.com': 'gmail.com',
+  'gamil.com': 'gmail.com',
+  'gmal.com': 'gmail.com',
+  'gmil.com': 'gmail.com',
+  'gnail.com': 'gmail.com',
+  'gmaill.com': 'gmail.com',
+  'gmail.co': 'gmail.com',
+  'gmail.in': 'gmail.com',
+  'gmail.om': 'gmail.com',
+  gmail: 'gmail.com',
+  'yaho.com': 'yahoo.com',
+  'hotmial.com': 'hotmail.com',
+  'kiit.ac': 'kiit.ac.in',
+  'kiit.in': 'kiit.ac.in',
+  'kitt.ac.in': 'kiit.ac.in',
+  'kiit.ac.on': 'kiit.ac.in',
+  'kiit.com': 'kiit.ac.in',
+}
+/** A likely-intended address for a mistyped one, or null. */
+export function suggestEmail(email) {
+  const e = String(email || '').trim().toLowerCase()
+  const at = e.lastIndexOf('@')
+  if (at < 1) return null
+  const domain = e.slice(at + 1)
+  if (DOMAIN_FIXES[domain]) return e.slice(0, at + 1) + DOMAIN_FIXES[domain]
+  if (/\.(con|cm|clm|comm|vom|xom|cpm)$/.test(domain)) return e.slice(0, at + 1) + domain.replace(/\.[a-z]+$/, '.com')
+  return null
+}
+
+// Creates the player in the spin database and emails their code. Retries a
+// couple of times (patchy campus data), so a sign-up is never silently lost.
+async function registerPlayer(body) {
+  let last = 'We couldn’t reach our server.'
+  for (let i = 0; i < 3; i++) {
+    try {
+      const res = await fetch('/api/spin-register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        keepalive: true,
+      })
+      const out = await res.json().catch(() => ({}))
+      if (res.ok && out.ok) return { ok: true, emailed: out.emailed !== false }
+      if (res.status === 400) return { ok: false, error: out.error || 'Please check your details.' }
+      last = out.error ? 'Our server had a problem.' : `Our server had a problem (${res.status}).`
+    } catch {
+      /* network: try again */
+    }
+    if (i < 2) await new Promise((r) => setTimeout(r, 800 * (i + 1)))
+  }
+  return { ok: false, error: last }
+}
+
 function StallRegister({ event }) {
   const lead = useLeadForm()
   const [form, setForm] = useState({ first: '', last: '', phone: '', email: '', college: '', day: 'Any day', message: '' })
-  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+  const [reg, setReg] = useState({ status: 'idle', error: '', emailed: true })
+  const [warned, setWarned] = useState(false)
+  const set = (k) => (e) => {
+    if (k === 'email') setWarned(false)
+    setForm((f) => ({ ...f, [k]: e.target.value }))
+  }
+  const emailFix = suggestEmail(form.email)
   const setPhone = (e) => setForm((f) => ({ ...f, phone: cleanPhone(e.target.value) }))
   const dayOptions = ['Any day', ...event.days.map((d) => `${d} ${event.month}`)]
   const name = event.short || event.title
@@ -39,16 +120,19 @@ function StallRegister({ event }) {
       form.message ? `\n${form.message}` : '',
     ].join('\n')
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault()
-    // Also register them for the spin-the-wheel: their personal spin code is
-    // emailed to them (api/spin-register.js → Supabase). Fire and forget; the
-    // Zoho CRM lead below is what the form waits on.
-    fetch('/api/spin-register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ firstName: form.first, lastName: form.last, email: form.email, phone: form.phone, college: form.college }),
-    }).catch(() => {})
+    if (reg.status === 'sending') return
+    // Looks like a typo in the email: point it out once before sending
+    if (emailFix && !warned) {
+      setWarned(true)
+      return
+    }
+    setReg({ status: 'sending', error: '', emailed: true })
+    // The spin-the-wheel registration (api/spin-register.js → Supabase, which
+    // emails the code) is what the form waits on; the Zoho CRM lead goes in
+    // alongside it.
+    const pending = registerPlayer({ firstName: form.first, lastName: form.last, email: form.email, phone: form.phone, college: form.college })
     lead.send({
       firstName: form.first,
       lastName: form.last,
@@ -58,6 +142,8 @@ function StallRegister({ event }) {
       description: body(),
       source: SOURCE.stall,
     })
+    const r = await pending
+    setReg(r.ok ? { status: 'ok', error: '', emailed: r.emailed } : { status: 'error', error: r.error, emailed: true })
   }
 
   const sendWhatsApp = (e) => {
@@ -87,13 +173,18 @@ function StallRegister({ event }) {
       </div>
 
       <form className="contact-form ev-form" onSubmit={submit}>
-        {lead.status === 'sent' ? (
+        {reg.status === 'ok' ? (
           <LeadSent
             className="contact-form-body"
             title="You’re registered!"
-            text={`Bring the code to the Sky Eye stall, ${event.stall.where}: scan the QR, enter the code and spin!`}
+            text={
+              reg.emailed
+                ? `Bring the code to the Sky Eye stall, ${event.stall.where}: scan the QR, enter the code and spin!`
+                : `Your email is running a little late. If it hasn’t arrived in a few minutes, show this screen at the Sky Eye stall and the team will find your code.`
+            }
             onReset={() => {
               setForm({ first: '', last: '', phone: '', email: '', college: '', day: 'Any day', message: '' })
+              setReg({ status: 'idle', error: '', emailed: true })
               lead.reset()
             }}
           >
@@ -103,6 +194,16 @@ function StallRegister({ event }) {
               </span>
               <strong>Check your email</strong>
               <span className="lead-sent-callout-sub">to spin the wheel!</span>
+              <span className="lead-sent-inbox">
+                {inboxLinks(form.email).map((l) => (
+                  <a key={l.label} className="lead-sent-inbox-btn" href={l.href} target="_blank" rel="noreferrer noopener">
+                    <span className="material-symbols-outlined" aria-hidden="true">
+                      inbox
+                    </span>
+                    {l.label}
+                  </a>
+                ))}
+              </span>
               <small>
                 Your spin code is on its way to <b>{form.email}</b>. Not there in a minute? Look in Spam or Promotions.
               </small>
@@ -128,7 +229,30 @@ function StallRegister({ event }) {
               </label>
               <label className="field">
                 <span>Email *</span>
-                <input required type="email" value={form.email} onChange={set('email')} autoComplete="email" />
+                <input
+                  required
+                  type="email"
+                  value={form.email}
+                  onChange={set('email')}
+                  autoComplete="email"
+                  pattern="[^@\s]+@[^@\s]+\.[^@\s]{2,}"
+                  title="Enter your full email address, e.g. name@gmail.com"
+                />
+                {emailFix && (
+                  <span className={`ev-email-hint${warned ? ' is-warned' : ''}`} role={warned ? 'alert' : undefined}>
+                    Did you mean{' '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setForm((f) => ({ ...f, email: emailFix }))
+                        setWarned(false)
+                      }}
+                    >
+                      {emailFix}
+                    </button>
+                    ?{warned && ' Tap it to fix, or tap Register again if yours is right.'}
+                  </span>
+                )}
               </label>
             </div>
             <div className="te-row">
@@ -149,10 +273,15 @@ function StallRegister({ event }) {
               <span>Anything else</span>
               <textarea rows={2} value={form.message} onChange={set('message')} placeholder="Questions about the games or Sky Eye…" />
             </label>
-            {lead.status === 'error' && <LeadError whatsappHref={`${CONTACTS.whatsapp}&text=${encodeURIComponent(body())}`} />}
+            {reg.status === 'error' && (
+              <p className="lead-error" role="alert">
+                <b>You’re not registered yet.</b> {reg.error} Check your internet and tap Register again, or register on
+                WhatsApp below.
+              </p>
+            )}
             <div className="contact-form-actions">
-              <button type="submit" className="btn-request" disabled={lead.status === 'sending'}>
-                {lead.status === 'sending' ? 'Registering…' : 'Register'}
+              <button type="submit" className="btn-request" disabled={reg.status === 'sending'}>
+                {reg.status === 'sending' ? 'Registering…' : 'Register'}
               </button>
               <button type="button" className="btn-outline" onClick={sendWhatsApp}>
                 [ Register on WhatsApp ]
