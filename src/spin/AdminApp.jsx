@@ -135,7 +135,7 @@ function Login() {
 function RoundPanel({ data }) {
   const { sessions, spins, open, shownId, setViewId } = data
   const [name, setName] = useState('')
-  const [max, setMax] = useState(10)
+  const [max, setMax] = useState(1000)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   const shown = sessions.find((s) => s.id === shownId)
@@ -145,7 +145,7 @@ function RoundPanel({ data }) {
     if (open && !window.confirm(`End ${open.name} and start a new round?`)) return
     setBusy(true)
     setMsg('')
-    const { error } = await supabase.rpc('start_round', { p_name: name, p_max_winners: Number(max) || 10 })
+    const { error } = await supabase.rpc('start_round', { p_name: name, p_max_winners: Number(max) || 1000 })
     if (error) setMsg(error.message)
     else {
       setName('')
@@ -191,7 +191,7 @@ function RoundPanel({ data }) {
           </label>
           <label className="sw-field sa-narrow">
             <span>Max goodies</span>
-            <input type="number" min="1" max="200" value={max} onChange={(e) => setMax(e.target.value)} />
+            <input type="number" min="1" max="5000" value={max} onChange={(e) => setMax(e.target.value)} />
           </label>
         </div>
         <div className="sa-row">
