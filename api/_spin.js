@@ -197,15 +197,19 @@ const emailHtml = ({ name, code, link }) => {
         </td></tr>
         <tr><td align="center" style="padding:18px 24px 0">
           <div style="font-family:${display};font-size:28px;line-height:1.15;color:${crimson}">Hi ${name}, you're in!</div>
-          <p style="margin:10px 0 0;font:15px/1.5 ${body};color:${muted}">Thanks for registering for the Sky Eye stall games at <b style="color:${ink}">KIIT MUN</b>. Here's your spin code:</p>
+          <p style="margin:10px 0 0;font:15px/1.5 ${body};color:${muted}">Thanks for registering for the Sky Eye stall games at <b style="color:${ink}">KIIT MUN</b>. Tap the button to open the wheel and spin:</p>
         </td></tr>
-        <tr><td align="center" style="padding:20px 24px 4px">
+        <tr><td align="center" style="padding:18px 24px 6px">
+          <a href="${link}" style="display:inline-block;background:${crimson};color:${paper};text-decoration:none;font:bold 20px ${body};padding:16px 38px;border:3px solid ${ink};border-radius:999px;box-shadow:4px 4px 0 ${ink}">Open the wheel &rarr;</a>
+        </td></tr>
+        <tr><td align="center" style="padding:16px 24px 0;font:13px/1.4 ${body};color:${muted}">Your spin code (the wheel fills it in for you):</td></tr>
+        <tr><td align="center" style="padding:10px 24px 4px">
           <table role="presentation" cellpadding="0" cellspacing="0"><tr>
             <td style="background:${paper};border:3px solid ${ink};border-radius:12px;padding:6px;box-shadow:4px 4px 0 ${ink}">
               <div style="border:2px dashed ${mustard};border-radius:8px;padding:12px 18px 12px 26px;font:bold 34px 'Courier New',Courier,monospace;letter-spacing:8px;color:${ink}">${code}</div>
             </td>
           </tr></table>
-          <div style="padding:8px 0 0;font:bold 11px ${body};letter-spacing:2px;color:${teal}">ONE CODE · ONE SPIN</div>
+          <div style="padding:8px 0 0;font:bold 11px ${body};letter-spacing:2px;color:${teal}">KEEP THIS EMAIL · YOU'LL NEED THE CODE</div>
         </td></tr>
         <tr><td style="padding:20px 28px 4px">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -238,7 +242,7 @@ export async function sendCode(player, senders) {
   const message = {
     to: player.email,
     subject: `Your Sky Eye spin code: ${player.code} 🎡`,
-    text: `Hi ${player.first_name},\n\nThanks for registering for the Sky Eye stall games at KIIT MUN!\n\nYour spin code: ${player.code}\n\nWhen the round starts, scan the QR code at the stall (or open ${link}), enter your code and spin. Spin for a chance to win Sky Eye goodies. Each code spins once, so make it count!\n\nSee you at the stall,\nTeam Sky Eye Technology`,
+    text: `Hi ${player.first_name},\n\nThanks for registering for the Sky Eye stall games at KIIT MUN!\n\nOpen the wheel: ${link}\n\nYour spin code: ${player.code}\n\nWhen the round starts, scan the QR code at the stall (or open ${link}), enter your code and spin. Spin for a chance to win Sky Eye goodies. Each code spins once, so make it count!\n\nSee you at the stall,\nTeam Sky Eye Technology`,
     html: emailHtml({ name, code: esc(player.code), link }),
   }
   const fail = async (msg) => {
