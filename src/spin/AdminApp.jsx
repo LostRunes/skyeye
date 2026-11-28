@@ -381,6 +381,21 @@ function PlayersPanel({ data, mail }) {
 
   const [filter, setFilter] = useState('all')
   const spun = (p) => (p.spins?.length || 0) > 0
+  // Extra spins: +1 (or -1) on a player's spins_left (supabase/extra-spins.sql)
+  const addSpin = async (p, n) => {
+    setBusy(`s${p.id}`)
+    setMsg('')
+    const { data: left, error } = await supabase.rpc('add_spins', { p_player: p.id, p_n: n })
+    setMsg(
+      error
+        ? error.message.includes('add_spins')
+          ? 'Run supabase/extra-spins.sql in Supabase first.'
+          : error.message
+        : `${fullName(p)} now has ${left} spin${left === 1 ? '' : 's'} left${n > 0 ? '. They can reload the spin page and spin again.' : '.'}`,
+    )
+    await data.loadPlayers?.()
+    setBusy('')
+  }
   const FILTERS = [
     ['all', 'All', () => true],
     ['emailed', 'Emailed', (p) => !!p.code_sent_at],
@@ -551,7 +566,8 @@ function PlayersPanel({ data, mail }) {
                 <th>College</th>
                 <th>Code</th>
                 <th>Emailed</th>
-                <th>Spin</th>
+                <th>Spins</th>
+                <th>Spins left</th>
                 <th />
               </tr>
             </thead>
@@ -574,12 +590,29 @@ function PlayersPanel({ data, mail }) {
                   <td className="sa-small">{p.code_sent_at ? fmtTime(p.code_sent_at) : p.email_error ? <span className="sw-error">{p.email_error}</span> : 'Not yet'}</td>
                   <td className="sa-small">
                     {spun(p) ? (
-                      <span className={`sa-pill ${p.spins[0].is_winner ? 'is-done' : 'is-off'}`}>
-                        {p.spins[0].is_winner ? `Won · ${p.spins[0].prize_name}` : `Spun · ${p.spins[0].prize_name}`}
+                      <span className="sa-spin-list">
+                        {p.spins.map((s, i) => (
+                          <span key={i} className={`sa-pill ${s.is_winner ? 'is-done' : 'is-off'}`}>
+                            {s.is_winner ? `Won · ${s.prize_name}` : s.prize_name}
+                          </span>
+                        ))}
                       </span>
                     ) : (
                       'Not yet'
                     )}
+                  </td>
+                  <td>
+                    <span className="sa-spins-left">
+                      <strong className={`sa-mono ${p.spins_left > 0 ? 'is-on' : ''}`}>{p.spins_left ?? '—'}</strong>
+                      <button className="sa-pill" disabled={!!busy} onClick={() => addSpin(p, 1)} title="Give this player one more spin">
+                        {busy === `s${p.id}` ? '…' : '+1 spin'}
+                      </button>
+                      {p.spins_left > 0 && (
+                        <button className="sa-pill sa-pill--quiet" disabled={!!busy} onClick={() => addSpin(p, -1)} title="Take one spin away">
+                          −1
+                        </button>
+                      )}
+                    </span>
                   </td>
                   <td>
                     <button className="sa-pill" disabled={!!busy} onClick={() => send([p], p.id)}>
