@@ -137,7 +137,7 @@
   background: rgba(178, 32, 38, 0.07);
 }
 
-.ev-carnival .lead-sent-callout .material-symbols-outlined,
+.ev-carnival .lead-sent-callout > .material-symbols-outlined,
 .ev-carnival .lead-sent-callout-sub {
   color: var(--crimson);
 }

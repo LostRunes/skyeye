@@ -194,7 +194,7 @@
   background: color-mix(in srgb, var(--color-secondary, #ff4f00) 10%, transparent);
   text-align: center;
 }
-.lead-sent-callout .material-symbols-outlined {
+.lead-sent-callout > .material-symbols-outlined {
   font-size: 44px;
   color: var(--color-secondary, #ff4f00);
   animation: lead-callout-bob 1.6s ease-in-out infinite;
@@ -225,7 +225,41 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .lead-sent-callout .material-symbols-outlined {
+  .lead-sent-callout > .material-symbols-outlined {
     animation: none;
   }
+}
+
+/* "Open Gmail" etc. under the check-your-email nudge */
+.lead-sent-inbox {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 0.7rem;
+}
+.lead-sent-inbox-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 22px;
+  border: 2px solid #2f2926;
+  border-radius: 999px;
+  background: var(--color-secondary, #ff4f00);
+  color: #fff;
+  font-weight: 800;
+  font-size: 17px;
+  text-decoration: none;
+  box-shadow: 3px 3px 0 #2f2926;
+}
+.lead-sent-inbox-btn .material-symbols-outlined {
+  font-size: 22px;
+}
+.lead-sent-inbox-btn:hover {
+  filter: brightness(1.08);
+}
+.ev-carnival .lead-sent-inbox-btn {
+  background: #b22026;
+  color: #f6eedc;
 }

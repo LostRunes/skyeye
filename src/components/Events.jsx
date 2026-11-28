@@ -20,6 +20,25 @@ import '../goodies.css'
 // go to Zoho CRM as Leads (Lead Source "Website - MUN stall"); WhatsApp stays
 // as a second way to register.
 
+// "Open your inbox" buttons for the thank-you screen, picked by the email's
+// domain. Gmail opens that exact account, searching for the spin-code mail
+// (in Spam/Promotions too); on phones it usually hands over to the Gmail app.
+function inboxLinks(email) {
+  const e = String(email || '').trim().toLowerCase()
+  const domain = e.split('@')[1] || ''
+  const gmail = {
+    label: 'Open Gmail',
+    href: `https://mail.google.com/mail/?authuser=${encodeURIComponent(e)}#search/${encodeURIComponent('in:anywhere "Sky Eye spin code"')}`,
+  }
+  const outlook = { label: 'Open Outlook', href: 'https://outlook.live.com/mail/0/' }
+  if (domain === 'gmail.com' || domain === 'googlemail.com') return [gmail]
+  if (/^(outlook|hotmail|live|msn)\./.test(domain)) return [outlook]
+  if (/^(yahoo|ymail|rocketmail)\./.test(domain)) return [{ label: 'Open Yahoo Mail', href: 'https://mail.yahoo.com/' }]
+  if (domain === 'icloud.com' || domain === 'me.com') return [{ label: 'Open iCloud Mail', href: 'https://www.icloud.com/mail' }]
+  // College and work addresses: could be either
+  return [gmail, { label: 'Open Outlook', href: 'https://outlook.office.com/mail/' }]
+}
+
 function StallRegister({ event }) {
   const lead = useLeadForm()
   const [form, setForm] = useState({ first: '', last: '', phone: '', email: '', college: '', day: 'Any day', message: '' })
@@ -103,6 +122,16 @@ function StallRegister({ event }) {
               </span>
               <strong>Check your email</strong>
               <span className="lead-sent-callout-sub">to spin the wheel!</span>
+              <span className="lead-sent-inbox">
+                {inboxLinks(form.email).map((l) => (
+                  <a key={l.label} className="lead-sent-inbox-btn" href={l.href} target="_blank" rel="noreferrer noopener">
+                    <span className="material-symbols-outlined" aria-hidden="true">
+                      inbox
+                    </span>
+                    {l.label}
+                  </a>
+                ))}
+              </span>
               <small>
                 Your spin code is on its way to <b>{form.email}</b>. Not there in a minute? Look in Spam or Promotions.
               </small>
